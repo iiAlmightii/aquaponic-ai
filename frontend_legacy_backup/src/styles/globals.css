@@ -1,0 +1,290 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Theme Tokens (Farmbrite-inspired) ───────────────────────────────────── */
+:root,
+html[data-theme='light'] {
+  --forest-950: 244 250 247;
+  --forest-900: 233 245 237;
+  --forest-800: 214 234 221;
+  --forest-700: 183 215 196;
+  --forest-600: 135 180 155;
+  --forest-500: 55 140 98;
+  --forest-400: 39 117 82;
+  --forest-300: 29 90 64;
+  --forest-200: 21 72 51;
+  --forest-100: 14 54 39;
+
+  --amber-950: 255 252 243;
+  --amber-900: 254 246 225;
+  --amber-800: 249 231 182;
+  --amber-700: 242 206 118;
+  --amber-600: 230 175 65;
+  --amber-500: 214 142 33;
+  --amber-400: 180 116 20;
+  --amber-300: 144 90 18;
+  --amber-200: 117 75 20;
+  --amber-100: 96 64 20;
+
+  --slate-950: 255 255 255;
+  --slate-900: 248 249 250;
+  --slate-800: 240 243 246;
+  --slate-700: 220 227 233;
+  --slate-600: 183 194 205;
+  --slate-500: 128 141 154;
+  --slate-400: 93 108 122;
+  --slate-300: 69 84 98;
+  --slate-200: 47 60 72;
+  --slate-100: 31 43 53;
+
+  --page-bg:
+    radial-gradient(circle at 8% 12%, rgba(96, 170, 127, 0.12) 0%, rgba(96, 170, 127, 0) 34%),
+    radial-gradient(circle at 93% 8%, rgba(230, 175, 65, 0.08) 0%, rgba(230, 175, 65, 0) 28%),
+    linear-gradient(180deg, #f9fcfa 0%, #eef4f0 100%);
+
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(111, 138, 125, 0.28);
+  --glass-subtle: rgba(255, 255, 255, 0.9);
+  --grid-line: rgba(96, 116, 102, 0.08);
+  --scrollbar-track: #e3ebe5;
+  --scrollbar-thumb: #92b6a3;
+}
+
+html[data-theme='dark'] {
+  --forest-950: 3 12 8;
+  --forest-900: 7 24 16;
+  --forest-800: 14 45 33;
+  --forest-700: 19 69 49;
+  --forest-600: 29 98 69;
+  --forest-500: 42 136 94;
+  --forest-400: 59 171 119;
+  --forest-300: 109 205 155;
+  --forest-200: 163 229 193;
+  --forest-100: 216 246 231;
+
+  --amber-950: 26 15 2;
+  --amber-900: 48 28 5;
+  --amber-800: 84 46 7;
+  --amber-700: 126 69 10;
+  --amber-600: 165 94 15;
+  --amber-500: 208 124 24;
+  --amber-400: 234 153 46;
+  --amber-300: 246 185 96;
+  --amber-200: 252 217 162;
+  --amber-100: 255 237 208;
+
+  --slate-950: 8 12 16;
+  --slate-900: 12 18 24;
+  --slate-800: 18 27 36;
+  --slate-700: 27 42 57;
+  --slate-600: 51 71 90;
+  --slate-500: 87 107 127;
+  --slate-400: 124 146 168;
+  --slate-300: 167 186 204;
+  --slate-200: 206 219 230;
+  --slate-100: 236 243 249;
+
+  --page-bg:
+    radial-gradient(circle at 10% 10%, rgba(42, 136, 94, 0.25) 0%, rgba(42, 136, 94, 0) 34%),
+    radial-gradient(circle at 88% 6%, rgba(208, 124, 24, 0.2) 0%, rgba(208, 124, 24, 0) 33%),
+    linear-gradient(180deg, #071511 0%, #06100d 100%);
+
+  --glass-bg: rgba(12, 20, 17, 0.68);
+  --glass-border: rgba(75, 129, 98, 0.34);
+  --glass-subtle: rgba(17, 30, 24, 0.5);
+  --grid-line: rgba(109, 205, 155, 0.08);
+  --scrollbar-track: #0a1a13;
+  --scrollbar-thumb: #215a40;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--page-bg);
+  font-feature-settings: 'ss01' on, 'cv02' on;
+  letter-spacing: 0.01em;
+  color: rgb(var(--slate-200));
+}
+
+/* ── Light Theme Contrast Guardrails ───────────────────────────────────── */
+/*
+  Many components use Tailwind `text-slate-*` classes from earlier dark-first UI.
+  In light mode these can become too faint on white surfaces. Remap them to
+  high-contrast semantic text values for readability.
+*/
+html[data-theme='light'] .text-slate-100 { color: rgb(var(--slate-100)) !important; }
+html[data-theme='light'] .text-slate-200 { color: rgb(var(--slate-200)) !important; }
+html[data-theme='light'] .text-slate-300 { color: rgb(var(--slate-300)) !important; }
+html[data-theme='light'] .text-slate-400 { color: rgb(var(--slate-400)) !important; }
+html[data-theme='light'] .text-slate-500 { color: rgb(var(--slate-500)) !important; }
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb  { background: var(--scrollbar-thumb); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--forest-500)); }
+
+/* ── Selection ──────────────────────────────────────────────────────────── */
+::selection { background: rgba(42,136,94,0.22); color: rgb(var(--slate-100)); }
+
+/* ── Glass morphism card ─────────────────────────────────────────────────── */
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    @apply backdrop-blur-lg border rounded-2xl shadow-sm;
+    border-color: var(--glass-border);
+  }
+  .panel {
+    @apply glass p-5 lg:p-6;
+    box-shadow: 0 14px 36px rgba(16, 45, 32, 0.08);
+  }
+  .glass-sm {
+    background: var(--glass-subtle);
+    @apply backdrop-blur-md border rounded-xl;
+    border-color: rgba(120, 150, 136, 0.24);
+  }
+  .glow-green {
+    box-shadow: 0 16px 35px rgba(39, 104, 70, 0.2);
+  }
+  .glow-green-sm {
+    box-shadow: 0 8px 20px rgba(39, 104, 70, 0.16);
+  }
+  .btn-primary {
+    @apply px-6 py-3 text-white font-semibold rounded-xl
+           transition-all duration-200 active:scale-95;
+    background: linear-gradient(135deg, rgb(var(--forest-500)) 0%, rgb(var(--forest-400)) 100%);
+    box-shadow: 0 10px 20px rgba(39, 117, 83, 0.2);
+  }
+  .btn-ghost {
+    @apply px-6 py-3 border border-slate-300 hover:border-forest-600/55
+           hover:bg-forest-900/25 text-slate-600 hover:text-forest-300 font-medium rounded-xl transition-all duration-200;
+  }
+  .input-field {
+    @apply w-full bg-white border border-slate-300 hover:border-forest-600/55
+           focus:border-forest-400/70 focus:ring-2 focus:ring-forest-400/20
+           rounded-xl px-4 py-3 text-slate-200 placeholder:text-slate-500
+           outline-none transition-all duration-200;
+  }
+  .stat-card {
+    @apply glass p-5 flex flex-col gap-1 hover:border-forest-600/45 transition-colors duration-300;
+    box-shadow: 0 8px 24px rgba(16, 45, 32, 0.07);
+  }
+  .section-title {
+    @apply font-display text-2xl font-semibold text-slate-200 tracking-tight;
+  }
+  .page-title {
+    @apply font-display text-3xl lg:text-4xl text-slate-200 tracking-tight;
+  }
+  .label-sm {
+    @apply text-xs font-semibold text-slate-400 uppercase tracking-wider;
+  }
+  .icon-chip {
+    @apply w-9 h-9 rounded-xl border border-forest-600/35 bg-forest-800/45 flex items-center justify-center text-forest-300;
+  }
+  .data-list-row {
+    @apply rounded-xl border border-forest-700/20 bg-forest-900/30 px-3 py-2.5 transition-colors;
+  }
+  .data-list-row:hover {
+    @apply border-forest-600/40 bg-forest-800/35;
+  }
+  .dense-table thead th {
+    @apply text-[11px] px-4 py-2.5;
+  }
+  .dense-table tbody td {
+    @apply px-4 py-2.5;
+  }
+  @media (min-width: 1280px) {
+    .dense-table thead th {
+      @apply text-[10px] px-3 py-2;
+    }
+    .dense-table tbody td {
+      @apply text-xs px-3 py-2;
+    }
+  }
+  /* Voice waveform bars */
+  .wave-bar {
+    @apply w-1 rounded-full bg-forest-400;
+    animation: wave 1.2s ease-in-out infinite;
+  }
+  .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+  .wave-bar:nth-child(3) { animation-delay: 0.30s; }
+  .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+  .wave-bar:nth-child(5) { animation-delay: 0.60s; }
+}
+
+/* ── Gradient text ──────────────────────────────────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, rgb(var(--forest-500)) 0%, rgb(var(--forest-300)) 58%, rgb(var(--amber-500)) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Animated background grid ─────────────────────────────────────────────── */
+.bg-grid {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.bg-orchard {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    var(--page-bg);
+  background-size: 40px 40px, 40px 40px, cover;
+}
+
+@keyframes wave {
+  0% {
+    transform: scaleY(0.35);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(0.45);
+    opacity: 0.6;
+  }
+}
+
+@keyframes riseFade {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-in > * {
+  animation: riseFade 0.45s ease-out both;
+}
+.stagger-in > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger-in > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger-in > *:nth-child(3) { animation-delay: 0.14s; }
+.stagger-in > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-in > *:nth-child(5) { animation-delay: 0.24s; }
+.stagger-in > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* ── Recharts overrides ──────────────────────────────────────────────────── */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(12px);
+}
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--grid-line) !important;
+}
