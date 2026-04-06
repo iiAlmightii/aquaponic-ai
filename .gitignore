@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+htmlcov/
+.coverage
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+.secrets/
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# Storage
+storage/
+*.pdf
+
+# Docker
+*.override.yml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Credentials
+*.json
+!package.json
+!package-lock.json
+!tsconfig*.json
+
+# Model files & caches
+*.pkl
+*.h5
+*.onnx
+backend/.cache/
+*.bin
+*.safetensors
