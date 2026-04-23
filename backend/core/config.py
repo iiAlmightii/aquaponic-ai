@@ -85,6 +85,7 @@ class Settings(BaseSettings):
     # ── Evaluation ────────────────────────────────────────────────────────────
     EVAL_MODE: bool = False            # set true to enable /api/v1/eval/* endpoints
     SARVAM_API_KEY: str = ""           # required only when EVAL_MODE=true; get key at sarvam.ai
+    SARVAM_CHAT_MODEL: str = "sarvam-m"   # Sarvam 30B chat completions model
 
     # ── Rate Limiting ─────────────────────────────────────────────────────────
     RATE_LIMIT_AUTH: str = "10/minute"
