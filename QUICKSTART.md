@@ -184,3 +184,137 @@ curl http://localhost:8000/api/docs
 ```
 
 If health returns a JSON response with status healthy, backend startup is successful.
+
+## start
+The build failed because your disk is full. Clean Docker first:
+
+
+docker system prune -af --volumes
+This removes unused images, containers, and volumes (safe — your running containers won't be touched until you stop them). Then retry:
+
+
+docker compose build --no-cache frontend && docker compose up -d frontend
+Will it work if you copy it elsewhere?
+
+Yes, with one condition: you must copy the .env file too (it's gitignored, so not in git). The .env contains:
+
+DATABASE_URL → your Supabase credentials
+JWT_SECRET_KEY, SECRET_KEY
+Any API keys (Anthropic, Google Sheets service account)
+If you move the whole folder including .env, docker compose up --build will work identically on any machine with Docker installed.
+
+---
+
+## Audio Evaluation Pipeline (IEEE paper data collection)
+
+This section is for collecting STT benchmark recordings from participants and running the WER evaluation comparing Whisper+normalization vs Sarvam Saarika v2.
+
+### Step 1 — Enable eval mode
+
+In `.env`, set:
+```env
+EVAL_MODE=true
+SARVAM_API_KEY=your_sarvam_key_here   # get free key at https://dashboard.sarvam.ai
+```
+
+Then recreate the backend container to load the new vars:
+```bash
+docker compose up -d --no-deps backend
+```
+
+Verify the eval endpoint is live:
+```bash
+curl http://localhost:8000/api/v1/eval/status
+# → {"status":"idle"}
+```
+
+### Step 2 — Expose the app publicly via ngrok
+
+Install ngrok (snap, one-time):
+```bash
+sudo snap install ngrok
+```
+
+Sign up at https://ngrok.com (free), copy your auth token from the dashboard, then:
+```bash
+ngrok config add-authtoken <YOUR_TOKEN>
+```
+
+Expose port 80 (Nginx, which proxies both frontend and backend):
+```bash
+ngrok http 80
+```
+
+ngrok prints a URL like `https://abc123.ngrok-free.app`. **Share this URL with participants.**
+
+### Step 3 — Participants record clips
+
+Each participant opens `https://abc123.ngrok-free.app/eval/record` in their browser.
+
+- Enter a unique name (e.g. `priya_01`, `rahul_02`) — no spaces
+- Read each of the 40 sentences shown on screen, one at a time
+- Record → Stop → re-record if needed → Next
+- Takes about 5–7 minutes per participant
+
+Clips are saved to `backend/data/eval_clips/<participant_id>/` with a `manifest.json` ground-truth index.
+
+### Step 4 — Run the WER evaluation
+
+Once all participants have finished, click **Run Evaluation** on the completion screen (or POST directly):
+```bash
+curl -s -X POST http://localhost:8000/api/v1/eval/run
+```
+
+Poll progress:
+```bash
+watch -n 3 'curl -s http://localhost:8000/api/v1/eval/status'
+```
+
+When `status` reaches `complete`, download results:
+```bash
+curl -o results.csv http://localhost:8000/api/v1/eval/results/csv
+```
+
+Full outputs are in `backend/eval/eval_results/`:
+| File | Contents |
+|---|---|
+| `results.csv` | Per-clip WER for both systems |
+| `summary.md` | Group-level WER table (paper-ready) |
+| `wer_by_group.png` | Grouped bar chart for the paper |
+| `agreement_analysis.md` | Clips both systems found hard |
+
+### Sarvam free tier note
+
+Sarvam Saarika v2 gives 500 min/month free. 8 participants × 40 clips × ~4 s ≈ **21 min** — well within the free quota.
+
+---
+
+##Other useful commands:
+
+
+# Stop everything
+docker compose down
+
+# Stop but keep rebuilding from fresh (if you hit caching issues)
+docker compose down && docker compose up --build
+
+# Wipe all data (DB volumes too)
+docker compose down -v
+
+# View live logs
+docker compose logs -f backend
+
+# Check if everything is healthy
+docker compose ps
+Shortcut for dev (skip Docker, run locally):
+
+
+# Terminal 1 — backend
+cd backend
+source .venv/bin/activate
+uvicorn main:app --reload --port 8000
+
+# Terminal 2 — frontend
+cd frontend
+npm run dev
+The --reload flag in local mode means the backend auto-restarts whenever you edit a Python file — much faster for development than rebuilding Docker each time
