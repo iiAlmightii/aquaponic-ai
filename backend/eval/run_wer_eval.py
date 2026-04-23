@@ -31,12 +31,28 @@ GROUPS = {
 }
 
 _STRIP_PUNCT = re.compile(r"[^\w\s]")
+_whisper_model = None  # module-level singleton; loaded once per process
+
+
+def _get_whisper_model():
+    global _whisper_model
+    if _whisper_model is None:
+        from faster_whisper import WhisperModel
+        _whisper_model = WhisperModel("large-v3", device="cpu", compute_type="int8")
+        logger.info("faster-whisper large-v3 loaded")
+    return _whisper_model
 
 
 def run_evaluation(clips_dir: Path, results_dir: Path, status_file: Path) -> None:
     results_dir.mkdir(parents=True, exist_ok=True)
     clips = _collect_clips(clips_dir)
     total = len(clips)
+
+    if total == 0:
+        logger.warning("No clips found in %s — aborting evaluation", clips_dir)
+        _write_status(status_file, "error", 0, 0)
+        return
+
     _write_status(status_file, "running", 0, total)
     logger.info("Eval pipeline: %d clips to process", total)
 
@@ -44,15 +60,17 @@ def run_evaluation(clips_dir: Path, results_dir: Path, status_file: Path) -> Non
     for i, clip in enumerate(clips):
         logger.info("Processing %d/%d — %s / %s", i + 1, total,
                     clip["participant_id"], clip["file"].name)
-        wav_path = _webm_to_wav(clip["file"])
+        wav_path = None
         try:
+            wav_path = _webm_to_wav(clip["file"])
             whisper_out = _transcribe_whisper(wav_path)
             sarvam_out = _transcribe_sarvam(wav_path)
         finally:
-            try:
-                os.unlink(wav_path)
-            except OSError:
-                pass
+            if wav_path is not None:
+                try:
+                    os.unlink(wav_path)
+                except OSError:
+                    pass
 
         gt = _normalise(clip["ground_truth"])
         rows.append({
@@ -112,9 +130,8 @@ def _webm_to_wav(webm_path: Path) -> str:
 
 
 def _transcribe_whisper(wav_path: str) -> str:
-    from faster_whisper import WhisperModel
     from services.voice_interpretation import post_process_transcript
-    model = WhisperModel("large-v3", device="cpu", compute_type="int8")
+    model = _get_whisper_model()
     segments, _ = model.transcribe(wav_path)
     raw = " ".join(s.text.strip() for s in segments)
     return post_process_transcript(raw)
