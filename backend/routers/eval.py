@@ -5,11 +5,14 @@ Registered only when EVAL_MODE=true in .env.
 import asyncio
 import json
 import logging
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
+
+_SAFE_ID = re.compile(r"^[a-zA-Z0-9_\-]{1,64}$")
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -27,11 +30,16 @@ async def upload_clip(
     ground_truth: str = Form(...),
     group: str = Form(...),
 ):
+    if not _SAFE_ID.match(participant_id):
+        raise HTTPException(status_code=400, detail="participant_id must be alphanumeric/underscore/hyphen, max 64 chars.")
+
     participant_dir = CLIPS_DIR / participant_id
     participant_dir.mkdir(parents=True, exist_ok=True)
 
     clip_filename = f"clip_{clip_id:02d}.webm"
     content = await audio.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Empty audio file.")
     (participant_dir / clip_filename).write_bytes(content)
 
     manifest_path = participant_dir / "manifest.json"
