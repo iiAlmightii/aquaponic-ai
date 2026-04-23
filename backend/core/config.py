@@ -63,6 +63,29 @@ class Settings(BaseSettings):
     MARKET_API_KEY: str = ""
     MARKET_API_URL: str = "https://api.commodityprices.io/v1"
 
+    # ── Supabase ──────────────────────────────────────────────────────────────
+    # Optional: use Supabase as PostgreSQL host.
+    # When set, DATABASE_URL should point to the Supabase connection pooler URL.
+    SUPABASE_URL: str = ""
+    SUPABASE_ANON_KEY: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+    # Supabase direct connection details (used by Looker Studio PostgreSQL connector)
+    SUPABASE_DB_HOST: str = ""
+    SUPABASE_DB_PORT: int = 5432
+    SUPABASE_DB_NAME: str = "postgres"
+    SUPABASE_DB_USER: str = "postgres"
+
+    # ── Looker Studio ─────────────────────────────────────────────────────────
+    # Pre-built Looker Studio report template connected to Supabase PostgreSQL.
+    # Set LOOKER_STUDIO_REPORT_ID to a Google Data Studio report UUID.
+    # The report must have a "session_id" filter control for per-session views.
+    LOOKER_STUDIO_REPORT_ID: str = ""
+    LOOKER_STUDIO_PAGE_ID: str = "p_page1"   # default first page ID
+
+    # ── Evaluation ────────────────────────────────────────────────────────────
+    EVAL_MODE: bool = False
+    SARVAM_API_KEY: str = ""
+
     # ── Rate Limiting ─────────────────────────────────────────────────────────
     RATE_LIMIT_AUTH: str = "10/minute"
     RATE_LIMIT_API: str = "200/minute"

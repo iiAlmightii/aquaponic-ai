@@ -51,6 +51,11 @@ numpy==1.26.4
 pandas==2.2.2
 scikit-learn==1.5.1
 
+# Evaluation pipeline
+jiwer==3.0.4
+pydub==0.25.1
+matplotlib==3.9.0
+
 # Google Sheets Sync
 google-api-python-client
 google-auth
