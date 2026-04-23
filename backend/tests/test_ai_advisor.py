@@ -256,6 +256,63 @@ async def test_chat_sarvam_error_returns_502(override_auth_and_db, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_chat_timeout_returns_502(override_auth_and_db, monkeypatch):
+    import core.config as cfg
+    import httpx
+    from main import app
+    from services.sarvam_llm_service import SarvamLLMService
+    from httpx import AsyncClient, ASGITransport
+
+    original_key = cfg.settings.SARVAM_API_KEY
+    cfg.settings.SARVAM_API_KEY = "test-key"
+
+    async def mock_chat_timeout(self, message, session_id, db):
+        raise httpx.TimeoutException("timed out")
+
+    monkeypatch.setattr(SarvamLLMService, "chat", mock_chat_timeout)
+
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post(
+                "/api/v1/ai/chat",
+                json={"message": "What is aquaponics?"},
+            )
+        assert response.status_code == 502
+        assert response.json()["detail"] == "AI service temporarily unavailable"
+    finally:
+        cfg.settings.SARVAM_API_KEY = original_key
+
+
+@pytest.mark.asyncio
+async def test_chat_parse_error_returns_502(override_auth_and_db, monkeypatch):
+    import core.config as cfg
+    from main import app
+    from services.sarvam_llm_service import SarvamLLMService
+    from httpx import AsyncClient, ASGITransport
+
+    original_key = cfg.settings.SARVAM_API_KEY
+    cfg.settings.SARVAM_API_KEY = "test-key"
+
+    async def mock_chat_parse_error(self, message, session_id, db):
+        raise ValueError("Unexpected Sarvam response format: 'choices'")
+
+    monkeypatch.setattr(SarvamLLMService, "chat", mock_chat_parse_error)
+
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post(
+                "/api/v1/ai/chat",
+                json={"message": "What is aquaponics?"},
+            )
+        assert response.status_code == 502
+        assert response.json()["detail"] == "AI service temporarily unavailable"
+    finally:
+        cfg.settings.SARVAM_API_KEY = original_key
+
+
+@pytest.mark.asyncio
 async def test_chat_empty_message_returns_422(override_auth_and_db):
     from main import app
     from httpx import AsyncClient, ASGITransport

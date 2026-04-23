@@ -51,8 +51,8 @@ async def ai_chat(
     except httpx.HTTPStatusError as exc:
         logger.error("Sarvam API error: %s", exc.response.status_code)
         raise HTTPException(status_code=502, detail="AI service temporarily unavailable")
-    except httpx.TimeoutException:
-        logger.error("Sarvam API timed out")
+    except httpx.RequestError as exc:
+        logger.error("Sarvam network error: %s (%s)", type(exc).__name__, exc)
         raise HTTPException(status_code=502, detail="AI service temporarily unavailable")
     except ValueError as exc:
         logger.error("Sarvam response parse error: %s", exc)
