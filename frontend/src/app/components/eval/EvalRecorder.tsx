@@ -67,9 +67,22 @@ export function EvalRecorder() {
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentClip = CLIPS[clipIndex];
   const isFinished = clipIndex >= CLIPS.length;
+
+  // Stop mic and cancel pending timer on unmount
+  useEffect(() => {
+    return () => {
+      if (mediaRef.current && mediaRef.current.state !== "inactive") {
+        mediaRef.current.stop();
+      }
+      if (advanceTimerRef.current !== null) {
+        clearTimeout(advanceTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!polling) return;
@@ -117,6 +130,7 @@ export function EvalRecorder() {
   }, []);
 
   const reRecord = useCallback(() => {
+    setErrorMsg("");
     setBlob(null);
     setClipState("idle");
   }, []);
@@ -136,7 +150,8 @@ export function EvalRecorder() {
       const res = await fetch(`${API_BASE}/eval/upload`, { method: "POST", body: form });
       if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
       setClipState("done");
-      setTimeout(() => {
+      advanceTimerRef.current = setTimeout(() => {
+        advanceTimerRef.current = null;
         setClipIndex((i) => i + 1);
         setClipState("idle");
         setBlob(null);
