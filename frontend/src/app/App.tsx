@@ -7,10 +7,11 @@ import { LandVoiceSurvey } from './components/surveys/LandVoiceSurvey';
 import { FarmManagement } from './components/farms/FarmManagement';
 import { Reports } from './components/reports/Reports';
 import { Analytics } from './components/analytics/Analytics';
+import { AIAdvisor } from './components/ai/AIAdvisor';
 import { MainLayout } from './components/layout/MainLayout';
 import { useStore } from './store';
 
-type View = 'login' | 'register' | 'dashboard' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics';
+type View = 'login' | 'register' | 'dashboard' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor';
 
 interface User {
   id: string;
@@ -65,6 +66,7 @@ export default function App() {
       {currentView === 'farms' && <FarmManagement />}
       {currentView === 'reports' && <Reports onNavigate={setCurrentView} />}
       {currentView === 'analytics' && <Analytics />}
+      {currentView === 'ai-advisor' && <AIAdvisor />}
     </MainLayout>
   );
 }

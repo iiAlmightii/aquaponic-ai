@@ -11,9 +11,10 @@ import {
   LogOut,
   Menu,
   X,
+  Bot,
 } from 'lucide-react';
 
-type View = 'dashboard' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics';
+type View = 'dashboard' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -34,11 +35,12 @@ export function MainLayout({
 
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-    { id: 'ai-survey', name: 'AI Survey', icon: Sprout },
-    { id: 'land-survey', name: 'Land Voice', icon: Mic },
+    { id: 'ai-survey', name: 'Aquaponics Survey', icon: Sprout },
+    { id: 'land-survey', name: 'Land Survey', icon: Mic },
     { id: 'farms', name: 'Farm Records', icon: Leaf },
     { id: 'reports', name: 'Reports', icon: FileText },
     { id: 'analytics', name: 'Analytics', icon: BarChart3 },
+    { id: 'ai-advisor', name: 'AI Advisor', icon: Bot },
   ];
 
   return (
