@@ -77,7 +77,10 @@ class SarvamLLMService:
                 headers={"API-Subscription-Key": settings.SARVAM_API_KEY},
             )
             response.raise_for_status()
-        return response.json()["choices"][0]["message"]["content"]
+        try:
+            return response.json()["choices"][0]["message"]["content"]
+        except (KeyError, IndexError) as exc:
+            raise ValueError(f"Unexpected Sarvam response format: {exc}") from exc
 
 
 # ── Prompt builders ───────────────────────────────────────────────────────────
@@ -118,7 +121,7 @@ def _build_aquaponic_prompt(ctx: dict, plan: FinancialPlan | None) -> str:
         lines += [
             f"- Monthly revenue: ₹{monthly_revenue:,.0f}"
             f" | Monthly OPEX: ₹{monthly_opex:,.0f}",
-            f"- ROI: {plan.roi_percent:.1f}%"
+            f"- ROI: {plan.roi_percent or 0:.1f}%"
             f" | Payback: {int(plan.payback_period_months or 0)} months",
         ]
 
@@ -141,8 +144,14 @@ def _build_land_prompt(ctx: dict) -> str:
         f"- Crops: {crop_str}",
     ]
 
+    def _safe_float(val: object) -> float:
+        try:
+            return float(val or 0)
+        except (ValueError, TypeError):
+            return 0.0
+
     total_monthly = sum(
-        float(c.get("price_per_kg", 0) or 0) * float(c.get("monthly_yield_kg", 0) or 0)
+        _safe_float(c.get("price_per_kg")) * _safe_float(c.get("monthly_yield_kg"))
         for c in crops_list
     )
     if total_monthly > 0:
