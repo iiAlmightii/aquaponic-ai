@@ -125,3 +125,28 @@ async def test_run_returns_started_when_clips_exist(tmp_path, monkeypatch):
         response = await client.post("/api/v1/eval/run")
     assert response.status_code == 200
     assert response.json()["status"] == "started"
+
+
+def test_wer_identical_strings_is_zero():
+    import jiwer
+    assert jiwer.wer("my farm uses an nft system", "my farm uses an nft system") == 0.0
+
+
+def test_wer_completely_wrong_is_one():
+    import jiwer
+    assert jiwer.wer("my farm uses an nft system", "xyz abc def ghi jkl mno") == 1.0
+
+
+def test_wer_one_substitution():
+    import jiwer
+    # 1 substitution out of 6 words
+    wer = jiwer.wer("my farm uses an nft system", "my farm uses an raft system")
+    assert abs(wer - 1/6) < 0.01
+
+
+def test_normalise_strips_punctuation_and_lowercases():
+    import re
+    def _normalise(text):
+        return re.sub(r"[^\w\s]", "", text.lower()).strip()
+    assert _normalise("My farm uses an NFT system.") == "my farm uses an nft system"
+    assert _normalise("Five lakh rupees!") == "five lakh rupees"
