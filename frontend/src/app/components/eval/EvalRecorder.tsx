@@ -206,6 +206,7 @@ export function EvalRecorder() {
               <p style={{ ...s.subtitle, color: "#22c55e" }}>Evaluation complete!</p>
               <a
                 href={`${API_BASE}/eval/results/csv`}
+                download="results.csv"
                 style={{ ...s.btn, ...s.btnPrimary, textDecoration: "none", display: "inline-block" }}
               >
                 Download results.csv
