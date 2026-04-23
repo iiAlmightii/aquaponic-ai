@@ -83,8 +83,8 @@ class Settings(BaseSettings):
     LOOKER_STUDIO_PAGE_ID: str = "p_page1"   # default first page ID
 
     # ── Evaluation ────────────────────────────────────────────────────────────
-    EVAL_MODE: bool = False
-    SARVAM_API_KEY: str = ""
+    EVAL_MODE: bool = False            # set true to enable /api/v1/eval/* endpoints
+    SARVAM_API_KEY: str = ""           # required only when EVAL_MODE=true; get key at sarvam.ai
 
     # ── Rate Limiting ─────────────────────────────────────────────────────────
     RATE_LIMIT_AUTH: str = "10/minute"
