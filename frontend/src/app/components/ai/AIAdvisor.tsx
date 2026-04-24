@@ -27,11 +27,10 @@ export function AIAdvisor() {
       const { data } = await api.post('/ai/chat', {
         message: text,
         session_id: sessionId || undefined,
-      });
+      }, { timeout: 90_000 });
       setMessages(prev => [...prev, { role: 'ai', text: data.reply }]);
     } catch (err: any) {
-      const detail =
-        err.response?.data?.detail || 'AI service unavailable. Please try again.';
+      const detail = (err as Error).message || 'AI service unavailable. Please try again.';
       setError(detail);
     } finally {
       setLoading(false);
@@ -46,7 +45,7 @@ export function AIAdvisor() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-3xl mx-auto px-4 py-6">
+    <div className="flex flex-col min-h-0 flex-1 max-w-3xl mx-auto px-4 py-6">
       <div className="mb-4">
         <h1 className="text-2xl font-bold text-gray-900">AI Advisor</h1>
         <p className="text-sm text-gray-500 mt-1">
