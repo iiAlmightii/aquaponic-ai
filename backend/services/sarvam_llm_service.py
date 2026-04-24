@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from models import FinancialPlan, Session
+from services.land_financial_service import compute_land_financials
 
 logger = logging.getLogger(__name__)
 
@@ -34,20 +35,23 @@ class SarvamLLMService:
         self,
         message: str,
         session_id: str | None,
+        user_id: str,
         db: AsyncSession,
     ) -> tuple[str, SessionType]:
         """Return (reply_text, session_type). Raises httpx errors on API failure."""
-        system_prompt, session_type = await self._build_prompt(session_id, db)
+        system_prompt, session_type = await self._build_prompt(session_id, user_id, db)
         reply = await self._call_sarvam(system_prompt, message)
         return reply, session_type
 
     async def _build_prompt(
-        self, session_id: str | None, db: AsyncSession
+        self, session_id: str | None, user_id: str, db: AsyncSession
     ) -> tuple[str, SessionType]:
         if not session_id:
             return _GENERIC_PROMPT, "generic"
 
-        result = await db.execute(select(Session).where(Session.id == session_id))
+        result = await db.execute(
+            select(Session).where(Session.id == session_id, Session.user_id == user_id)
+        )
         sess = result.scalars().first()
         if not sess or not sess.context_data:
             return _GENERIC_PROMPT, "generic"
@@ -70,7 +74,7 @@ class SarvamLLMService:
                 {"role": "user", "content": message},
             ],
         }
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=60) as client:
             response = await client.post(
                 _SARVAM_CHAT_URL,
                 json=payload,
@@ -131,8 +135,16 @@ def _build_aquaponic_prompt(ctx: dict, plan: FinancialPlan | None) -> str:
 def _build_land_prompt(ctx: dict) -> str:
     answers = ctx.get("answers", {})
     crops_list = ctx.get("crops", [])
-    crop_names = [c.get("name", "") for c in crops_list if c.get("name")]
-    crop_str = ", ".join(crop_names) if crop_names else "not specified"
+
+    crop_parts = []
+    for c in crops_list:
+        name = c.get("name", "")
+        if not name:
+            continue
+        cyc = c.get("cycles_per_year")
+        label = f"{name} ({cyc} cycle{'s' if cyc != 1 else ''}/yr)" if cyc else name
+        crop_parts.append(label)
+    crop_str = ", ".join(crop_parts) if crop_parts else "not specified"
 
     lines = [
         "You are an expert land farming advisor for Indian farmers. Answer in clear,",
@@ -142,19 +154,22 @@ def _build_land_prompt(ctx: dict) -> str:
         "User's farm profile:",
         f"- Land area: {answers.get('land_area_sqm', 'not specified')} m²",
         f"- Crops: {crop_str}",
+        f"- Irrigation: {answers.get('irrigation_type', 'not specified')}",
     ]
 
-    def _safe_float(val: object) -> float:
-        try:
-            return float(val or 0)
-        except (ValueError, TypeError):
-            return 0.0
-
-    total_monthly = sum(
-        _safe_float(c.get("price_per_kg")) * _safe_float(c.get("monthly_yield_kg"))
-        for c in crops_list
-    )
-    if total_monthly > 0:
-        lines.append(f"- Estimated monthly crop revenue: ₹{total_monthly:,.0f}")
+    try:
+        calc = compute_land_financials(ctx)
+        summary = calc.get("summary", {})
+        annual_revenue = float(summary.get("total_revenue", 0) or 0)
+        annual_cost = float(summary.get("total_cost", 0) or 0)
+        annual_profit = float(summary.get("profit", 0) or 0)
+        if annual_revenue > 0 or annual_cost > 0:
+            lines += [
+                f"- Monthly revenue: ₹{annual_revenue / 12:,.0f}"
+                f" | Monthly OPEX: ₹{annual_cost / 12:,.0f}",
+                f"- Annual profit: ₹{annual_profit:,.0f}",
+            ]
+    except Exception:
+        pass
 
     return "\n".join(lines)

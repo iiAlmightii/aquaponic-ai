@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 _BACKEND_DIR = Path(__file__).parent.parent
+_FAKE_USER_ID = "00000000-0000-0000-0000-000000000001"
 
 
 @pytest.fixture(autouse=True)
@@ -42,7 +43,7 @@ async def test_build_prompt_generic_when_no_session_id():
     from services.sarvam_llm_service import SarvamLLMService, _GENERIC_PROMPT
     svc = SarvamLLMService()
     db = _make_db_no_session()
-    prompt, session_type = await svc._build_prompt(None, db)
+    prompt, session_type = await svc._build_prompt(None, _FAKE_USER_ID, db)
     assert session_type == "generic"
     assert prompt == _GENERIC_PROMPT
 
@@ -52,7 +53,7 @@ async def test_build_prompt_generic_when_session_not_found():
     from services.sarvam_llm_service import SarvamLLMService, _GENERIC_PROMPT
     svc = SarvamLLMService()
     db = _make_db_no_session()
-    prompt, session_type = await svc._build_prompt("nonexistent-uuid", db)
+    prompt, session_type = await svc._build_prompt("nonexistent-uuid", _FAKE_USER_ID, db)
     assert session_type == "generic"
     assert prompt == _GENERIC_PROMPT
 
@@ -78,7 +79,7 @@ async def test_build_prompt_aquaponic_contains_farm_data():
         MagicMock(**{"scalars.return_value.first.return_value": MagicMock(context_data=ctx)}),
         no_plan_result,
     ])
-    prompt, session_type = await svc._build_prompt("some-uuid", mock_db)
+    prompt, session_type = await svc._build_prompt("some-uuid", _FAKE_USER_ID, mock_db)
     assert session_type == "aquaponic"
     assert "NFT" in prompt
     assert "Tilapia" in prompt
@@ -93,16 +94,20 @@ async def test_build_prompt_land_contains_farm_data():
     ctx = {
         "module": "land_farm_voice",
         "answers": {"land_area_sqm": "5000"},
-        "crops": [{"name": "Wheat"}, {"name": "Rice"}],
+        "crops": [
+            {"name": "Wheat", "cycles_per_year": 2},
+            {"name": "Rice", "cycles_per_year": 1},
+        ],
     }
     svc = SarvamLLMService()
     db = _make_db_with_session(ctx)
-    prompt, session_type = await svc._build_prompt("some-uuid", db)
+    prompt, session_type = await svc._build_prompt("some-uuid", _FAKE_USER_ID, db)
     assert session_type == "land"
     assert "5000" in prompt
     assert "Wheat" in prompt
     assert "Rice" in prompt
     assert "land farming advisor" in prompt
+    assert "cycles/yr" in prompt
 
 
 @pytest.mark.asyncio
@@ -140,7 +145,7 @@ async def test_build_prompt_aquaponic_with_null_roi_does_not_crash():
     mock_db = AsyncMock()
     mock_db.execute = AsyncMock(side_effect=[sess_result, plan_result])
 
-    prompt, session_type = await svc._build_prompt("some-uuid", mock_db)
+    prompt, session_type = await svc._build_prompt("some-uuid", _FAKE_USER_ID, mock_db)
     assert session_type == "aquaponic"
     assert "ROI: 0.0%" in prompt
 
@@ -148,7 +153,7 @@ async def test_build_prompt_aquaponic_with_null_roi_does_not_crash():
 # ── Endpoint tests ────────────────────────────────────────────────────────────
 
 class _FakeUser:
-    id = "00000000-0000-0000-0000-000000000001"
+    id = _FAKE_USER_ID
 
 
 @pytest.fixture
@@ -180,7 +185,7 @@ async def test_chat_returns_reply_generic(override_auth_and_db, monkeypatch):
     original_key = cfg.settings.SARVAM_API_KEY
     cfg.settings.SARVAM_API_KEY = "test-key"
 
-    async def mock_chat(self, message, session_id, db):
+    async def mock_chat(self, message, session_id, user_id, db):
         return "Aquaponics uses fish waste to fertilize plants.", "generic"
 
     monkeypatch.setattr(SarvamLLMService, "chat", mock_chat)
@@ -217,7 +222,6 @@ async def test_chat_no_api_key_returns_503(override_auth_and_db):
                 json={"message": "What is aquaponics?"},
             )
         assert response.status_code == 503
-        assert "SARVAM_API_KEY" in response.json()["detail"]
     finally:
         cfg.settings.SARVAM_API_KEY = original_key
 
@@ -233,7 +237,7 @@ async def test_chat_sarvam_error_returns_502(override_auth_and_db, monkeypatch):
     original_key = cfg.settings.SARVAM_API_KEY
     cfg.settings.SARVAM_API_KEY = "test-key"
 
-    async def mock_chat_raises(self, message, session_id, db):
+    async def mock_chat_raises(self, message, session_id, user_id, db):
         raise httpx.HTTPStatusError(
             "500",
             request=MagicMock(),
@@ -266,7 +270,7 @@ async def test_chat_timeout_returns_502(override_auth_and_db, monkeypatch):
     original_key = cfg.settings.SARVAM_API_KEY
     cfg.settings.SARVAM_API_KEY = "test-key"
 
-    async def mock_chat_timeout(self, message, session_id, db):
+    async def mock_chat_timeout(self, message, session_id, user_id, db):
         raise httpx.TimeoutException("timed out")
 
     monkeypatch.setattr(SarvamLLMService, "chat", mock_chat_timeout)
@@ -294,7 +298,7 @@ async def test_chat_parse_error_returns_502(override_auth_and_db, monkeypatch):
     original_key = cfg.settings.SARVAM_API_KEY
     cfg.settings.SARVAM_API_KEY = "test-key"
 
-    async def mock_chat_parse_error(self, message, session_id, db):
+    async def mock_chat_parse_error(self, message, session_id, user_id, db):
         raise ValueError("Unexpected Sarvam response format: 'choices'")
 
     monkeypatch.setattr(SarvamLLMService, "chat", mock_chat_parse_error)
@@ -339,7 +343,7 @@ async def test_chat_missing_session_falls_back_to_generic(override_auth_and_db, 
 
     received_session_type: list[str] = []
 
-    async def mock_chat(self, message, session_id, db):
+    async def mock_chat(self, message, session_id, user_id, db):
         reply, stype = "Some reply.", "generic"
         received_session_type.append(stype)
         return reply, stype

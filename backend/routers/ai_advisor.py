@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import settings
 from core.database import get_db
 from routers.auth import get_current_user
-from services.sarvam_llm_service import SarvamLLMService
+from services.sarvam_llm_service import SarvamLLMService, SessionType
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -31,7 +31,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
-    session_type: str
+    session_type: SessionType
 
 
 @router.post("/chat", response_model=ChatResponse)
@@ -43,11 +43,13 @@ async def ai_chat(
     if not settings.SARVAM_API_KEY:
         raise HTTPException(
             status_code=503,
-            detail="AI Advisor not configured — add SARVAM_API_KEY to .env",
+            detail="AI Advisor is not available at this time.",
         )
     svc = SarvamLLMService()
     try:
-        reply, session_type = await svc.chat(body.message, body.session_id, db)
+        reply, session_type = await svc.chat(
+            body.message, body.session_id, str(current_user.id), db
+        )
     except httpx.HTTPStatusError as exc:
         logger.error("Sarvam API error: %s", exc.response.status_code)
         raise HTTPException(status_code=502, detail="AI service temporarily unavailable")
