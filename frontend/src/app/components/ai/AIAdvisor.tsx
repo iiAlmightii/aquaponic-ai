@@ -45,7 +45,7 @@ export function AIAdvisor() {
   };
 
   return (
-    <div className="flex flex-col min-h-0 flex-1 max-w-3xl mx-auto px-4 py-6">
+    <div className="flex flex-col h-[calc(100vh-6rem)] sm:h-[calc(100vh-7rem)] lg:h-[calc(100vh-8rem)] max-w-3xl mx-auto px-4 py-6">
       <div className="mb-4">
         <h1 className="text-2xl font-bold text-gray-900">AI Advisor</h1>
         <p className="text-sm text-gray-500 mt-1">
