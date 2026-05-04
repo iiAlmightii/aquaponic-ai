@@ -11,7 +11,7 @@ import { AIAdvisor } from './components/ai/AIAdvisor';
 import { MainLayout } from './components/layout/MainLayout';
 import { useStore } from './store';
 
-type View = 'login' | 'register' | 'dashboard' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor';
+type View = 'login' | 'register' | 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor';
 
 interface User {
   id: string;
@@ -61,6 +61,7 @@ export default function App() {
       onLogout={logout}
     >
       {currentView === 'dashboard' && <Dashboard user={user} onNavigate={setCurrentView} />}
+      {currentView === 'surveys' && <div className="p-6 text-slate-500">Surveys coming soon...</div>}
       {currentView === 'ai-survey' && <AISurvey />}
       {currentView === 'land-survey' && <LandVoiceSurvey />}
       {currentView === 'farms' && <FarmManagement />}
