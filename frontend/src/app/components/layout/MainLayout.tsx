@@ -10,6 +10,7 @@ import {
   Menu,
   Leaf,
   MoreHorizontal,
+  LucideIcon,
 } from 'lucide-react';
 
 type View = 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor';
@@ -66,27 +67,44 @@ const PAGE_TITLES: Record<string, string> = {
   'ai-advisor': 'AI Advisor',
 };
 
-export function MainLayout({ children, user, currentView, onNavigate, onLogout }: MainLayoutProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+// Fix 1 & 4: Module-level NavItem with typed LucideIcon prop
+interface NavItemProps {
+  id: string;
+  name: string;
+  Icon: LucideIcon;
+  currentView: View;
+  onNavigate: (view: View) => void;
+  setMobileMenuOpen: (open: boolean) => void;
+}
 
-  const NavItem = ({ id, name, Icon }: { id: string; name: string; Icon: any }) => {
-    const active = currentView === id || (id === 'surveys' && ['ai-survey', 'land-survey'].includes(currentView));
-    return (
-      <button
-        onClick={() => { onNavigate(id as View); setMobileMenuOpen(false); }}
-        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-sm transition-colors ${
-          active
-            ? 'bg-green-50 text-green-800 font-semibold'
-            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-        }`}
-      >
-        <Icon className="w-4 h-4 flex-shrink-0" />
-        {name}
-      </button>
-    );
-  };
+function NavItem({ id, name, Icon, currentView, onNavigate, setMobileMenuOpen }: NavItemProps) {
+  const active = currentView === id || (id === 'surveys' && ['ai-survey', 'land-survey'].includes(currentView));
+  return (
+    <button
+      onClick={() => { onNavigate(id as View); setMobileMenuOpen(false); }}
+      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-sm transition-colors ${
+        active
+          ? 'bg-green-50 text-green-800 font-semibold'
+          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+      }`}
+    >
+      <Icon className="w-4 h-4 flex-shrink-0" />
+      {name}
+    </button>
+  );
+}
 
-  const Sidebar = () => (
+// Fix 1: Module-level SidebarContent (named to avoid conflict with <aside>)
+interface SidebarProps {
+  user: any;
+  currentView: View;
+  onNavigate: (view: View) => void;
+  onLogout: () => void;
+  setMobileMenuOpen: (open: boolean) => void;
+}
+
+function SidebarContent({ user, currentView, onNavigate, onLogout, setMobileMenuOpen }: SidebarProps) {
+  return (
     <aside className="flex flex-col h-full bg-white border-r border-slate-200">
       {/* Brand */}
       <div className="flex items-center gap-2.5 px-4 py-4 border-b border-slate-100">
@@ -107,7 +125,15 @@ export function MainLayout({ children, user, currentView, onNavigate, onLogout }
             </p>
             <div className="space-y-0.5">
               {group.items.map(({ id, name, icon: Icon }) => (
-                <NavItem key={id} id={id} name={name} Icon={Icon} />
+                <NavItem
+                  key={id}
+                  id={id}
+                  name={name}
+                  Icon={Icon}
+                  currentView={currentView}
+                  onNavigate={onNavigate}
+                  setMobileMenuOpen={setMobileMenuOpen}
+                />
               ))}
             </div>
           </div>
@@ -124,28 +150,53 @@ export function MainLayout({ children, user, currentView, onNavigate, onLogout }
             <p className="text-xs font-semibold text-slate-900 truncate">{user?.name || 'User'}</p>
             <p className="text-[10px] text-slate-400 truncate">{user?.email || ''}</p>
           </div>
-          <button onClick={onLogout} className="text-slate-400 hover:text-slate-600 transition-colors">
+          {/* Fix 2: aria-label on logout button */}
+          <button onClick={onLogout} aria-label="Log out" className="text-slate-400 hover:text-slate-600 transition-colors">
             <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
     </aside>
   );
+}
+
+export function MainLayout({ children, user, currentView, onNavigate, onLogout }: MainLayoutProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       {/* Desktop sidebar */}
       <div className="hidden md:flex w-[220px] flex-shrink-0 flex-col fixed h-full z-20">
-        <Sidebar />
+        <SidebarContent
+          user={user}
+          currentView={currentView}
+          onNavigate={onNavigate}
+          onLogout={onLogout}
+          setMobileMenuOpen={setMobileMenuOpen}
+        />
       </div>
 
       {/* Mobile slide-in menu */}
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40 flex">
           <div className="w-[220px] flex flex-col">
-            <Sidebar />
+            <SidebarContent
+              user={user}
+              currentView={currentView}
+              onNavigate={onNavigate}
+              onLogout={onLogout}
+              setMobileMenuOpen={setMobileMenuOpen}
+            />
           </div>
-          <div className="flex-1 bg-black/30" onClick={() => setMobileMenuOpen(false)} />
+          {/* Fix 3: keyboard dismissal on mobile overlay */}
+          <div
+            className="flex-1 bg-black/30"
+            onClick={() => setMobileMenuOpen(false)}
+            onKeyDown={(e) => e.key === 'Escape' && setMobileMenuOpen(false)}
+            role="button"
+            tabIndex={-1}
+            aria-label="Close menu"
+          />
         </div>
       )}
 
