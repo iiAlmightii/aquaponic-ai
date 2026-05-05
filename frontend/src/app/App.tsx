@@ -8,6 +8,7 @@ import { FarmManagement } from './components/farms/FarmManagement';
 import { Reports } from './components/reports/Reports';
 import { Analytics } from './components/analytics/Analytics';
 import { AIAdvisor } from './components/ai/AIAdvisor';
+import { SurveysHub } from './components/surveys/SurveysHub';
 import { MainLayout } from './components/layout/MainLayout';
 import { useStore } from './store';
 
@@ -61,7 +62,7 @@ export default function App() {
       onLogout={logout}
     >
       {currentView === 'dashboard' && <Dashboard user={user} onNavigate={setCurrentView} />}
-      {currentView === 'surveys' && <div className="p-6 text-slate-500">Surveys coming soon...</div>}
+      {currentView === 'surveys' && <SurveysHub onNavigate={setCurrentView} />}
       {currentView === 'ai-survey' && <AISurvey />}
       {currentView === 'land-survey' && <LandVoiceSurvey />}
       {currentView === 'farms' && <FarmManagement />}
