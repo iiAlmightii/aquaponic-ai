@@ -3,6 +3,8 @@ import { Button } from '../ui/button';
 import { Download, FileText, Calendar, TrendingUp } from 'lucide-react';
 import { PretextText } from '../ui/pretext-text';
 import { landSurveyAPI, reportAPI } from '../../utils/api';
+import { Skeleton } from '../ui/skeleton';
+import { EmptyState } from '../ui/EmptyState';
 
 interface Report {
   id: string;
@@ -185,18 +187,31 @@ export function Reports({ onNavigate }: ReportsProps) {
       )}
 
       {/* Reports List */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <div className="p-6 border-b border-gray-200">
           <h3 className="text-gray-900">Report History</h3>
         </div>
 
         <div className="divide-y divide-gray-200">
           {loading && (
-            <div className="p-6 text-sm text-gray-600">Loading reports...</div>
+            <div className="p-4 md:p-6 space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="flex items-center gap-4 bg-white border border-slate-100 rounded-xl p-4">
+                  <Skeleton className="h-4 flex-1 bg-slate-100" />
+                  <Skeleton className="h-4 w-20 bg-slate-100" />
+                  <Skeleton className="h-4 w-24 bg-slate-100" />
+                  <Skeleton className="h-8 w-24 rounded-lg bg-slate-100" />
+                </div>
+              ))}
+            </div>
           )}
 
           {!loading && reports.length === 0 && (
-            <div className="p-6 text-sm text-gray-600">No completed reports yet.</div>
+            <EmptyState
+              icon={FileText}
+              title="No reports yet"
+              description="Complete a survey to generate your first financial report."
+            />
           )}
 
           {!loading && reports.map((report) => (
@@ -205,11 +220,11 @@ export function Reports({ onNavigate }: ReportsProps) {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      className={
                         report.type === 'AI Survey'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-purple-100 text-purple-800'
-                      }`}
+                          ? 'bg-green-50 text-green-800 border border-green-200 text-[11px] font-semibold px-2 py-0.5 rounded-md'
+                          : 'bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-semibold px-2 py-0.5 rounded-md'
+                      }
                     >
                       {report.type}
                     </span>
