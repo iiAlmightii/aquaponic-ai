@@ -177,7 +177,7 @@ export function EvalRecorder() {
     return (
       <div style={s.page}>
         <div style={s.card}>
-          <h1 style={s.title}>AquaponicAI — Audio Recording</h1>
+          <h1 style={s.title}>AgriSense — Audio Recording</h1>
           <p style={s.subtitle}>
             You will record <strong>40 sentences</strong>, one at a time. Read each sentence
             exactly as shown. You can re-record any clip before moving on.

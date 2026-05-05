@@ -586,7 +586,7 @@ export function Analytics() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `AquaponicAI_CashFlow_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `AgriSense_CashFlow_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   }, [curr.flows]);
@@ -595,7 +595,7 @@ export function Analytics() {
     const workbook = XLSX.utils.book_new();
 
     const summaryRows = [
-      ['AquaponicAI - Financial Plan'],
+      ['AgriSense - Financial Plan'],
       ['Generated', new Date().toLocaleDateString('en-IN')],
       ['Scenario', SCENARIOS.find((s) => s.key === scenario)?.label || 'Base'],
       [],
@@ -647,7 +647,7 @@ export function Analytics() {
     recSheet['!cols'] = [{ wch: 10 }, { wch: 16 }, { wch: 45 }, { wch: 70 }];
     XLSX.utils.book_append_sheet(workbook, recSheet, 'AI Recommendations');
 
-    XLSX.writeFile(workbook, `AquaponicAI_Financial_Plan_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(workbook, `AgriSense_Financial_Plan_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }, [base.flows, curr, opti.flows, pess.flows, recommendations, scenario]);
 
   const activeLoading = bootstrapping || landBootstrapping || loading;

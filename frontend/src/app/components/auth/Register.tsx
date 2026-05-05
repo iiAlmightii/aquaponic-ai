@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Leaf, Droplet } from 'lucide-react';
+import { Leaf } from 'lucide-react';
 import { useStore } from '../../store';
 
 interface RegisterProps {
@@ -45,15 +45,17 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
         <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
           {/* Logo and Header */}
           <div className="text-center space-y-3">
-            <div className="flex justify-center items-center gap-2 mb-2">
-              <div className="relative">
-                <Leaf className="w-10 h-10 text-emerald-600" />
-                <Droplet className="w-5 h-5 text-cyan-500 absolute -bottom-1 -right-1" />
+            <div className="flex items-center gap-2.5 justify-center mb-2">
+              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                <Leaf className="w-4 h-4 text-white" />
               </div>
+              <span className="text-xl font-extrabold text-slate-900 tracking-tight">
+                Agri<span className="text-green-600">Sense</span>
+              </span>
             </div>
             <h1 className="text-gray-900">Create Account</h1>
             <p className="text-muted-foreground">
-              Join AquaponicsAI to start planning your farm
+              Join AgriSense to start planning your farm
             </p>
           </div>
 
