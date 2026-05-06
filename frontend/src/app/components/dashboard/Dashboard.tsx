@@ -34,7 +34,9 @@ const relativeTime = (iso: string | null) => {
 };
 
 export function Dashboard({ user, onNavigate }: DashboardProps) {
-  const [loading, setLoading] = useState(true);
+  // Split loading so the farms card and quick actions don't wait on the slow analytics call.
+  const [farmsLoading, setFarmsLoading] = useState(true);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [farmsCount, setFarmsCount] = useState(0);
   const [topSessions, setTopSessions] = useState<TopSession[]>([]);
   const [revenueData, setRevenueData] = useState<RevenueDataPoint[]>([]);
@@ -43,19 +45,16 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
   const [surveyStats, setSurveyStats] = useState({ aquaCount: 0, landCount: 0, aquaRoi: 0, landRoi: 0 });
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      const [farmsRes, analyticsRes] = await Promise.allSettled([
-        farmAPI.list(),
-        reportAPI.analytics(),
-      ]);
+    // Farms resolves independently — its card updates as soon as it arrives.
+    farmAPI.list()
+      .then((res: any) => setFarmsCount((res?.data ?? []).length))
+      .catch(() => {})
+      .finally(() => setFarmsLoading(false));
 
-      if (farmsRes.status === 'fulfilled') {
-        setFarmsCount((farmsRes.value?.data ?? []).length);
-      }
-
-      if (analyticsRes.status === 'fulfilled') {
-        const data = analyticsRes.value?.data ?? {};
+    // Analytics is the slow call — cached in api.js so Dashboard→Analytics navigation skips the network.
+    reportAPI.analytics()
+      .then((res: any) => {
+        const data = res?.data ?? {};
         const sessions: TopSession[] = data.top_sessions ?? [];
         setTopSessions(sessions.slice(0, 4));
 
@@ -85,17 +84,18 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
         setSurveyStats({
           aquaCount: data.ai_completed_count ?? aqua.length,
           landCount: data.land_completed_count ?? land.length,
-          aquaRoi: aqua.length ? aqua.reduce((s, r) => s + (r.roi_percent ?? 0), 0) / aqua.length : 0,
-          landRoi: land.length ? land.reduce((s, r) => s + (r.roi_percent ?? 0), 0) / land.length : 0,
+          aquaRoi: aqua.length ? aqua.reduce((sum, r) => sum + (r.roi_percent ?? 0), 0) / aqua.length : 0,
+          landRoi: land.length ? land.reduce((sum, r) => sum + (r.roi_percent ?? 0), 0) / land.length : 0,
         });
-      }
-      setLoading(false);
-    };
-    load();
+      })
+      .catch(() => {})
+      .finally(() => setAnalyticsLoading(false));
   }, []);
 
-  const allRevenue = topSessions.reduce((s, r) => s + (r.revenue ?? 0), 0);
-  const allRoi = topSessions.length ? topSessions.reduce((s, r) => s + (r.roi_percent ?? 0), 0) / topSessions.length : 0;
+  const allRevenue = topSessions.reduce((sum, r) => sum + (r.revenue ?? 0), 0);
+  const allRoi = topSessions.length
+    ? topSessions.reduce((sum, r) => sum + (r.roi_percent ?? 0), 0) / topSessions.length
+    : 0;
 
   return (
     <div className="p-4 md:p-6 space-y-5 max-w-7xl mx-auto">
@@ -113,7 +113,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
           trendUp
           icon={DollarSign}
           accentColor="green"
-          loading={loading}
+          loading={analyticsLoading}
         />
         <StatCard
           label="Average ROI"
@@ -122,16 +122,20 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
           trendUp={allRoi > 0}
           icon={TrendingUp}
           accentColor="blue"
-          loading={loading}
+          loading={analyticsLoading}
         />
         <StatCard
           label="Surveys Completed"
           value={`${surveyStats.aquaCount + surveyStats.landCount}`}
-          trend={surveyStats.aquaCount + surveyStats.landCount > 0 ? `${surveyStats.aquaCount} aqua · ${surveyStats.landCount} land` : undefined}
+          trend={
+            surveyStats.aquaCount + surveyStats.landCount > 0
+              ? `${surveyStats.aquaCount} aqua · ${surveyStats.landCount} land`
+              : undefined
+          }
           trendUp
           icon={ClipboardList}
           accentColor="amber"
-          loading={loading}
+          loading={analyticsLoading}
         />
         <StatCard
           label="Active Farms"
@@ -140,7 +144,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
           trendUp
           icon={Sprout}
           accentColor="purple"
-          loading={loading}
+          loading={farmsLoading}
         />
       </div>
 
@@ -150,7 +154,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
           roiData={roiData}
           cropData={cropData}
           surveyStats={surveyStats}
-          loading={loading}
+          loading={analyticsLoading}
         />
 
         <div className="bg-white rounded-xl border border-slate-200 p-5">
@@ -164,7 +168,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
             </button>
           </div>
 
-          {loading ? (
+          {analyticsLoading ? (
             <div className="space-y-3">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="flex items-center gap-3">
@@ -189,7 +193,11 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
             <div className="divide-y divide-slate-50">
               {topSessions.map((s) => (
                 <div key={s.session_id} className="flex items-center gap-3 py-2.5">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.survey_type === 'ai' ? 'bg-green-500' : 'bg-amber-500'}`} />
+                  <div
+                    className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                      s.survey_type === 'ai' ? 'bg-green-500' : 'bg-amber-500'
+                    }`}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-slate-900 truncate">{s.project_name}</p>
                     <p className="text-[10px] text-slate-400">
@@ -206,6 +214,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
         </div>
       </div>
 
+      {/* Quick actions never need data — render immediately */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
           { label: 'New Aquaponic Survey', sub: 'Voice-guided, ~5 min', view: 'ai-survey', icon: Sprout, bg: 'bg-green-50', iconColor: 'text-green-600' },

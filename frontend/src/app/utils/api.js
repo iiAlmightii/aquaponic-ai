@@ -3,9 +3,12 @@
  */
 import axios from 'axios'
 
-const BASE =
-  import.meta.env.VITE_API_URL ||
-  `${window.location.protocol}//${window.location.hostname}:8000/api/v1`
+const isProxyOrigin = ['80', '443', ''].includes(window.location.port)
+const fallbackBase = isProxyOrigin
+  ? `${window.location.origin}/api/v1`
+  : `${window.location.protocol}//${window.location.hostname}:8000/api/v1`
+
+const BASE = import.meta.env.VITE_API_URL || fallbackBase
 
 export const api = axios.create({
   baseURL: BASE,
@@ -67,9 +70,26 @@ export const analysisAPI = {
   get: (sessionId) => api.get(`/analysis/${sessionId}`),
 }
 
+// In-memory cache for the analytics endpoint — it's called on Dashboard mount AND
+// Analytics mount. A 60-second TTL means the second navigation skips the network
+// entirely. Invalidated when a survey completes (call reportAPI.invalidateAnalytics()).
+let _analyticsCache = null; // { promise, ts }
+const ANALYTICS_TTL = 60_000;
+
 export const reportAPI = {
   history:  ()          => api.get('/report/history'),
-  analytics: ()         => api.get('/report/analytics'),
+  analytics: () => {
+    const now = Date.now();
+    if (_analyticsCache && now - _analyticsCache.ts < ANALYTICS_TTL) {
+      return _analyticsCache.promise;
+    }
+    const promise = api.get('/report/analytics');
+    _analyticsCache = { promise, ts: now };
+    // On failure, clear cache so next call retries
+    promise.catch(() => { _analyticsCache = null; });
+    return promise;
+  },
+  invalidateAnalytics: () => { _analyticsCache = null; },
   get:      (sessionId) => api.get(`/report/${sessionId}`, { responseType: 'blob' }),
   download: async (sessionId, filename = 'aquaponic-report.pdf') => {
     const res = await api.get(`/report/${sessionId}`, { responseType: 'blob' })
@@ -130,4 +150,5 @@ export const landSurveyAPI = {
   refreshMarketPrices: (sessionId) => api.post(`/land-survey/${sessionId}/refresh-market-prices`),
   overrideCropPrice: (sessionId, body) => api.post(`/land-survey/${sessionId}/override-crop-price`, body),
   syncSheet: (sessionId) => api.post(`/land-survey/${sessionId}/sync-sheet`),
+  lookerUrl: (sessionId) => api.get(`/land-survey/${sessionId}/looker-url`),
 }
