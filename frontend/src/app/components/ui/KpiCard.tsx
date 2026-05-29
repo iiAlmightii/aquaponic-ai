@@ -6,12 +6,15 @@ import { cn } from './utils';
 interface KpiCardProps {
   label: string;
   value: string;
+  /** Formatted delta label, e.g. "+12%" or "from surveys". When deltaPositive is omitted, defaults to green/up styling. */
   delta?: string;
+  /** When false, renders red/down styling. Omit or pass true for green/up styling. */
   deltaPositive?: boolean;
   sparklineData?: number[];
   icon: LucideIcon;
   iconColor?: string;
   loading?: boolean;
+  className?: string;
 }
 
 export function KpiCard({
@@ -23,6 +26,7 @@ export function KpiCard({
   icon: Icon,
   iconColor = 'text-slate-400',
   loading,
+  className,
 }: KpiCardProps) {
   if (loading) {
     return (
@@ -37,7 +41,7 @@ export function KpiCard({
   const chartData = (sparklineData ?? []).map((v, i) => ({ i, v }));
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
+    <div className={cn('rounded-xl border border-slate-200 bg-white p-5', className)}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-medium text-slate-500">{label}</span>
         <Icon className={cn('w-4 h-4 flex-shrink-0', iconColor)} />
@@ -57,7 +61,7 @@ export function KpiCard({
           <span />
         )}
         {chartData.length > 1 && (
-          <div className="w-16 h-5 flex-shrink-0">
+          <div className="w-16 h-5 flex-shrink-0" role="img" aria-label={`${label} trend`}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <Line
