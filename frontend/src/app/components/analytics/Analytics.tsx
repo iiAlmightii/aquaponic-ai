@@ -1,4 +1,4 @@
-import { type ComponentType, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -17,13 +17,10 @@ import {
 } from 'recharts';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  AlertTriangle,
-  CheckCircle,
   ChevronDown,
   ChevronUp,
   Download,
   FileSpreadsheet,
-  Info,
   SlidersHorizontal,
   TrendingDown,
   TrendingUp,
@@ -35,52 +32,23 @@ import { EmptyState } from '../ui/EmptyState';
 import { BarChart3, ClipboardList } from 'lucide-react';
 import { useStore } from '../../store';
 import { landSurveyAPI, reportAPI } from '../../utils/api';
+import { InsightCard } from '../ui/InsightCard';
+import { BreakEvenProgress } from '../ui/BreakEvenProgress';
+import { cn } from '../ui/utils';
+import {
+  type Inputs,
+  type Metrics,
+  type Recommendation,
+  type Priority,
+  buildInputs,
+  buildLandInputs,
+  computeMetrics,
+  generateInsights,
+} from '../../utils/analysisUtils';
 
 type ScenarioKey = 'base' | 'pessimistic' | 'optimistic';
-type Priority = 'high' | 'medium' | 'low';
 type SurveyMode = 'aquaponics' | 'land';
 
-interface Inputs {
-  fishRev: number;
-  cropRev: number;
-  capex: number;
-  feed: number;
-  labor: number;
-  util: number;
-  maint: number;
-  other: number;
-  horizon: number;
-}
-
-interface Recommendation {
-  priority: Priority;
-  category: string;
-  title: string;
-  detail: string;
-}
-
-interface FlowRow {
-  month: number;
-  revenue: number;
-  opex: number;
-  net: number;
-  cumulative: number;
-}
-
-interface Metrics {
-  monthRev: number;
-  monthOpex: number;
-  monthNet: number;
-  annRev: number;
-  annOpex: number;
-  annProfit: number;
-  roi: number;
-  payback: number | null;
-  breakEvenMonth: number | null;
-  flows: FlowRow[];
-  npv: number;
-  capex: number;
-}
 
 const SCENARIOS: { key: ScenarioKey; label: string; factor: number }[] = [
   { key: 'base', label: 'Base', factor: 1.0 },
@@ -91,192 +59,11 @@ const SCENARIOS: { key: ScenarioKey; label: string; factor: number }[] = [
 const COST_COLORS = ['#22c55e', '#0ea5e9', '#f59e0b', '#f97316', '#6366f1'];
 const REV_COLORS = ['#059669', '#84cc16', '#0ea5e9'];
 
-const PRIORITY_CONFIG: Record<
-  Priority,
-  { badge: string; icon: ComponentType<{ size?: number; className?: string }>; iconCls: string }
-> = {
-  high: {
-    badge: 'bg-red-50 text-red-700 border-red-200',
-    icon: AlertTriangle,
-    iconCls: 'text-red-500',
-  },
-  medium: {
-    badge: 'bg-amber-50 text-amber-700 border-amber-200',
-    icon: Info,
-    iconCls: 'text-amber-500',
-  },
-  low: {
-    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    icon: CheckCircle,
-    iconCls: 'text-emerald-500',
-  },
-};
 
 const GRID_COLOR = '#eef2f7';
 const TICK_STYLE = { fill: '#64748b', fontSize: 11 };
 const LAND_SESSION_KEY = 'land_survey_session_id';
 
-function num(value: any, fallback = 0): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function buildInputs(analysis: any): Inputs {
-  const answers = analysis?.farm_answers || {};
-  const plan = analysis?.financial_plan || {};
-  const baseCashFlows = plan?.scenarios?.base?.cash_flows || [];
-  const horizonFromPlan = Array.isArray(baseCashFlows) && baseCashFlows.length > 0 ? baseCashFlows.length : 24;
-
-  return {
-    fishRev: num(answers.monthly_fish_revenue, 55000),
-    cropRev: num(answers.monthly_crop_revenue, 18000),
-    capex: num(
-      plan.total_capex,
-      num(answers.infrastructure_cost, 300000) +
-        num(answers.equipment_cost, 150000) +
-        num(answers.initial_stock_cost, 50000),
-    ),
-    feed: num(answers.monthly_feed_cost, 12000),
-    labor: num(answers.monthly_labor_cost, 20000),
-    util: num(answers.monthly_utilities_cost, 7000),
-    maint: num(answers.monthly_maintenance_cost, 3000),
-    other: num(answers.monthly_other_cost, 2000),
-    horizon: Math.max(6, Math.min(60, num(horizonFromPlan, 24))),
-  };
-}
-
-function buildLandInputs(landDashboard: any): Inputs {
-  const summary = landDashboard?.summary || {};
-  const costs = landDashboard?.cost_breakdown || {};
-
-  return {
-    fishRev: 0,
-    cropRev: num(summary.total_revenue, 0) / 12,
-    capex: Math.max(100000, num(summary.total_capex, 300000)),
-    feed: num(costs.seeds, 0) / 12,
-    labor: (num(costs.labor, 0) + num(costs.seasonal_labor, 0)) / 12,
-    util: (num(costs.electricity, 0) + num(costs.fuel, 0) + num(costs.transport, 0)) / 12,
-    maint: (num(costs.maintenance, 0) + num(costs.land_rent, 0) + num(costs.pesticide, 0)) / 12,
-    other: 0,
-    horizon: 12,
-  };
-}
-
-function computeMetrics(inp: Inputs, factor = 1): Metrics {
-  const monthRev = (inp.fishRev + inp.cropRev) * factor;
-  const monthOpex = inp.feed + inp.labor + inp.util + inp.maint + inp.other;
-  const monthNet = monthRev - monthOpex;
-  const annRev = monthRev * 12;
-  const annOpex = monthOpex * 12;
-  const annProfit = annRev - annOpex;
-  const roi = inp.capex > 0 ? (annProfit / inp.capex) * 100 : 0;
-  const payback = monthNet > 0 ? inp.capex / monthNet : null;
-
-  const flows: FlowRow[] = [];
-  let cumulative = -inp.capex;
-  let breakEvenMonth: number | null = null;
-
-  for (let m = 1; m <= inp.horizon; m += 1) {
-    cumulative += monthNet;
-    if (cumulative >= 0 && breakEvenMonth === null) {
-      breakEvenMonth = m;
-    }
-    flows.push({
-      month: m,
-      revenue: Math.round(monthRev),
-      opex: Math.round(monthOpex),
-      net: Math.round(monthNet),
-      cumulative: Math.round(cumulative),
-    });
-  }
-
-  const monthlyRate = Math.pow(1.08, 1 / 12) - 1;
-  const npv = -inp.capex +
-    flows.reduce((acc, _, i) => acc + monthNet / Math.pow(1 + monthlyRate, i + 1), 0);
-
-  return {
-    monthRev,
-    monthOpex,
-    monthNet,
-    annRev,
-    annOpex,
-    annProfit,
-    roi,
-    payback,
-    breakEvenMonth,
-    flows,
-    npv: Math.round(npv),
-    capex: inp.capex,
-  };
-}
-
-function generateRecommendations(inp: Inputs, base: Metrics): Recommendation[] {
-  const recs: Recommendation[] = [];
-  const totalOpex = inp.feed + inp.labor + inp.util + inp.maint + inp.other;
-  const feedRatio = totalOpex > 0 ? inp.feed / totalOpex : 0;
-  const totalRevenue = inp.fishRev + inp.cropRev;
-  const fishShare = totalRevenue > 0 ? inp.fishRev / totalRevenue : 0;
-
-  if (feedRatio > 0.38) {
-    recs.push({
-      priority: 'high',
-      category: 'Cost Reduction',
-      title: `Feed cost is ${Math.round(feedRatio * 100)}% of OPEX`,
-      detail: `Target below 35% by improving feed conversion and bulk purchasing. Estimated saving: ${fmtRs(
-        inp.feed * 0.1,
-      )}/month.`,
-    });
-  }
-
-  if (base.payback && base.payback > 24) {
-    recs.push({
-      priority: 'medium',
-      category: 'Revenue',
-      title: `Payback is ${Math.round(base.payback)} months`,
-      detail: `Introduce direct sales channels to improve margin. Potential uplift: ${fmtRs(
-        (inp.fishRev + inp.cropRev) * 0.15,
-      )}/month.`,
-    });
-  }
-
-  if (fishShare > 0.8) {
-    recs.push({
-      priority: 'medium',
-      category: 'Diversification',
-      title: `${Math.round(fishShare * 100)}% of revenue comes from fish`,
-      detail: `Reduce concentration risk by adding higher-value crops to the grow bed portfolio.`,
-    });
-  }
-
-  if (base.roi > 25 && base.payback && base.payback < 24) {
-    recs.push({
-      priority: 'low',
-      category: 'Growth',
-      title: `ROI is healthy at ${Math.round(base.roi)}%`,
-      detail: `Consider staged expansion funded from operating surplus to preserve cash-flow safety.`,
-    });
-  }
-
-  if (inp.util > inp.feed * 1.2) {
-    recs.push({
-      priority: 'high',
-      category: 'Energy',
-      title: 'Utilities exceed feed cost',
-      detail: 'Audit pumps and lighting schedules; efficient pumps and LED controls can materially reduce power cost.',
-    });
-  }
-
-  if (recs.length === 0) {
-    recs.push({
-      priority: 'low',
-      category: 'Performance',
-      title: 'Current assumptions are balanced',
-      detail: 'Cost and revenue mix are within healthy bounds. Focus on consistency and market stability.',
-    });
-  }
-
-  return recs;
-}
 
 function fmt(value: number): string {
   return Math.round(value).toLocaleString('en-IN');
@@ -368,6 +155,52 @@ function SliderRow({
   );
 }
 
+function ScenarioCard({
+  label,
+  metrics,
+  isActive,
+  onClick,
+}: {
+  label: string;
+  metrics: Metrics;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'rounded-xl border p-5 text-left transition-colors w-full',
+        isActive
+          ? 'border-green-500 bg-green-50'
+          : 'border-slate-200 bg-white hover:border-green-200',
+      )}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold text-slate-600">{label}</p>
+        {isActive && (
+          <span className="text-[10px] bg-green-100 text-green-700 rounded-full px-2 py-0.5 font-bold uppercase tracking-wide">
+            Active
+          </span>
+        )}
+      </div>
+      <div className="space-y-1.5">
+        {([
+          ['Annual Rev', fmtRs(metrics.annRev), false],
+          ['Profit', fmtRs(metrics.annProfit), metrics.annProfit < 0],
+          ['ROI', `${metrics.roi.toFixed(1)}%`, metrics.roi < 0],
+          ['Payback', metrics.payback ? `${Math.round(metrics.payback)}mo` : 'N/A', false],
+        ] as [string, string, boolean][]).map(([l, v, neg]) => (
+          <div key={l} className="flex items-center justify-between text-xs">
+            <span className="text-slate-500">{l}</span>
+            <span className={cn('font-semibold', neg ? 'text-red-600' : 'text-slate-900')}>{v}</span>
+          </div>
+        ))}
+      </div>
+    </button>
+  );
+}
+
 export function Analytics() {
   const analysis = useStore((state: any) => state.analysis);
   const session = useStore((state: any) => state.session);
@@ -379,7 +212,8 @@ export function Analytics() {
   const [scenario, setScenario] = useState<ScenarioKey>('base');
   const [showSliders, setShowSliders] = useState(false);
   const [bootstrapping, setBootstrapping] = useState(!analysis);
-  const [landBootstrapping, setLandBootstrapping] = useState(true);
+  const [landBootstrapping, setLandBootstrapping] = useState(false);
+  const [latestLandSessionId, setLatestLandSessionId] = useState<string | null>(null);
   const [landContext, setLandContext] = useState<any>(null);
   const [landDashboard, setLandDashboard] = useState<any>(null);
   const [inputs, setInputs] = useState<Inputs>(() => buildInputs(analysis));
@@ -388,7 +222,7 @@ export function Analytics() {
     let alive = true;
 
     const run = async () => {
-      // Fetch analytics and restore aquaponics state in parallel (single analytics call shared by both paths)
+      // Fetch analytics and restore aquaponics state in parallel.
       const [, analyticsResult] = await Promise.allSettled([
         analysis ? Promise.resolve() : restoreSurveyState().catch(() => {}),
         reportAPI.analytics().catch(() => null),
@@ -398,37 +232,17 @@ export function Analytics() {
 
       const analyticsData = analyticsResult.status === 'fulfilled' ? analyticsResult.value?.data : null;
       const topSessions: any[] = analyticsData?.top_sessions || [];
+      const latestAqua = topSessions.find((row: any) => row.survey_type === 'ai');
+      const latestLand = topSessions.find((row: any) => row.survey_type === 'land');
 
-      // Fallback: if localStorage had no session, use latest aquaponics session from server
+      setLatestLandSessionId(latestLand?.session_id ?? null);
+
+      // Fallback: if localStorage had no session, use latest aquaponics session from server.
       const currentAnalysis = useStore.getState().analysis;
-      if (!currentAnalysis) {
-        const latestAqua = topSessions.find((row: any) => row.survey_type === 'ai');
-        if (latestAqua?.session_id) {
-          try { await fetchAnalysis(latestAqua.session_id); } catch { /* ignore */ }
-        }
+      if (!currentAnalysis && latestAqua?.session_id) {
+        try { await fetchAnalysis(latestAqua.session_id); } catch { /* ignore */ }
       }
       if (alive) setBootstrapping(false);
-
-      // Land loading — reuse analyticsData already fetched above (no duplicate call)
-      const latestLand = topSessions.find((row: any) => row.survey_type === 'land');
-      if (!latestLand?.session_id) {
-        if (alive) { setLandContext(null); setLandDashboard(null); setLandBootstrapping(false); }
-        return;
-      }
-
-      try {
-        const [sessionRes, dashboardRes] = await Promise.all([
-          landSurveyAPI.get(latestLand.session_id),
-          landSurveyAPI.dashboard(latestLand.session_id),
-        ]);
-        if (!alive) return;
-        setLandContext(sessionRes?.data || null);
-        setLandDashboard(dashboardRes?.data || null);
-      } catch {
-        if (alive) { setLandContext(null); setLandDashboard(null); }
-      } finally {
-        if (alive) setLandBootstrapping(false);
-      }
     };
 
     run();
@@ -437,10 +251,47 @@ export function Analytics() {
   }, []);
 
   useEffect(() => {
-    if (surveyMode === 'aquaponics' && !analysis && landDashboard) {
-      setSurveyMode('land');
+    if (surveyMode === 'land') {
+      if (!latestLandSessionId) {
+        setLandContext(null);
+        setLandDashboard(null);
+        setLandBootstrapping(false);
+        return;
+      }
+
+      let alive = true;
+      setLandBootstrapping(true);
+
+      const loadLand = async () => {
+        try {
+          const [sessionRes, dashboardRes] = await Promise.all([
+            landSurveyAPI.get(latestLandSessionId),
+            landSurveyAPI.dashboard(latestLandSessionId),
+          ]);
+          if (!alive) return;
+          setLandContext(sessionRes?.data || null);
+          setLandDashboard(dashboardRes?.data || null);
+        } catch {
+          if (alive) {
+            setLandContext(null);
+            setLandDashboard(null);
+          }
+        } finally {
+          if (alive) setLandBootstrapping(false);
+        }
+      };
+
+      loadLand();
+      return () => {
+        alive = false;
+      };
     }
-  }, [surveyMode, analysis, landDashboard]);
+
+    setLandBootstrapping(false);
+    if (surveyMode === 'aquaponics' && !analysis && !latestLandSessionId) {
+      setSurveyMode('aquaponics');
+    }
+  }, [surveyMode, latestLandSessionId, analysis]);
 
   useEffect(() => {
     if (surveyMode === 'land') {
@@ -460,7 +311,7 @@ export function Analytics() {
   const pess = useMemo(() => computeMetrics(inputs, 0.75), [inputs]);
   const opti = useMemo(() => computeMetrics(inputs, 1.3), [inputs]);
   const curr = useMemo(() => computeMetrics(inputs, factor), [inputs, factor]);
-  const generatedRecs = useMemo(() => generateRecommendations(inputs, base), [inputs, base]);
+  const generatedRecs = useMemo(() => generateInsights(inputs, base), [inputs, base]);
 
   const apiRecommendations = useMemo(() => {
     const list = analysis?.financial_plan?.ai_recommendations;
@@ -586,7 +437,7 @@ export function Analytics() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `AgriSense_CashFlow_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `FarmConnect_CashFlow_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   }, [curr.flows]);
@@ -595,7 +446,7 @@ export function Analytics() {
     const workbook = XLSX.utils.book_new();
 
     const summaryRows = [
-      ['AgriSense - Financial Plan'],
+      ['FarmConnect - Financial Plan'],
       ['Generated', new Date().toLocaleDateString('en-IN')],
       ['Scenario', SCENARIOS.find((s) => s.key === scenario)?.label || 'Base'],
       [],
@@ -647,10 +498,10 @@ export function Analytics() {
     recSheet['!cols'] = [{ wch: 10 }, { wch: 16 }, { wch: 45 }, { wch: 70 }];
     XLSX.utils.book_append_sheet(workbook, recSheet, 'AI Recommendations');
 
-    XLSX.writeFile(workbook, `AgriSense_Financial_Plan_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(workbook, `FarmConnect_Financial_Plan_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }, [base.flows, curr, opti.flows, pess.flows, recommendations, scenario]);
 
-  const activeLoading = bootstrapping || landBootstrapping || loading;
+  const activeLoading = bootstrapping || loading || (surveyMode === 'land' && landBootstrapping);
   const hasActiveData = surveyMode === 'land' ? !!landDashboard : !!analysis;
   const activeAnswers = surveyMode === 'land' ? landContext?.context?.answers || {} : analysis?.farm_answers || {};
 
@@ -763,6 +614,24 @@ export function Analytics() {
           sub={curr.breakEvenMonth ? `Break-even month ${curr.breakEvenMonth}` : 'No break-even in horizon'}
           trend={curr.payback && curr.payback < 24 ? 'up' : 'down'}
         />
+      </div>
+
+      {/* Break-even progress and NPV callout */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 mb-3">
+          Break-even Progress
+        </p>
+        <BreakEvenProgress
+          breakEvenMonth={curr.breakEvenMonth}
+          horizon={inputs.horizon}
+        />
+        <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-2.5 flex items-center gap-3">
+          <span className="text-xs font-bold text-blue-600 uppercase tracking-wide">NPV</span>
+          <span className="text-sm font-semibold text-slate-900">{fmtRs(curr.npv)}</span>
+          <span className="text-xs text-slate-500">
+            at 8% discount rate · {inputs.horizon} months
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
@@ -878,6 +747,29 @@ export function Analytics() {
         </div>
       </div>
 
+      {/* Scenario comparison cards */}
+      <div className="space-y-4">
+        <div className="border-t border-slate-100 pt-2">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+            Scenario Forecasting
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {SCENARIOS.map((sc) => {
+            const m = sc.key === 'base' ? base : sc.key === 'pessimistic' ? pess : opti;
+            return (
+              <ScenarioCard
+                key={sc.key}
+                label={sc.label}
+                metrics={m}
+                isActive={scenario === sc.key}
+                onClick={() => setScenario(sc.key as ScenarioKey)}
+              />
+            );
+          })}
+        </div>
+      </div>
+
       <div className="rounded-xl border border-slate-200 bg-white p-5">
         <h2 className="mb-4 text-sm font-semibold text-gray-900">Scenario Analysis (Projected Annual Profit)</h2>
         <ResponsiveContainer width="100%" height={230}>
@@ -949,35 +841,18 @@ export function Analytics() {
 
       <div className="rounded-xl border border-slate-200 bg-white p-5">
         <h2 className="mb-4 text-sm font-semibold text-gray-900">AI Recommendations ({surveyMode === 'land' ? 'Land' : 'Aquaponics'})</h2>
-        <div className="space-y-3">
-          {recommendations.map((rec, idx) => {
-            const config = PRIORITY_CONFIG[rec.priority] || PRIORITY_CONFIG.low;
-            const Icon = config.icon;
-            return (
-              <motion.div
+          <div className="space-y-2">
+            {recommendations.map((rec, idx) => (
+              <InsightCard
                 key={`${rec.title}-${idx}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="rounded-xl border border-gray-100 bg-gray-50 p-4"
-              >
-                <div className="flex gap-3">
-                  <Icon size={16} className={config.iconCls} />
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                      <span className={`rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${config.badge}`}>
-                        {rec.priority}
-                      </span>
-                      <span className="text-[11px] text-gray-500">{rec.category}</span>
-                    </div>
-                    <p className="text-sm font-medium text-gray-800">{rec.title}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-gray-600">{rec.detail}</p>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+                priority={rec.priority}
+                category={rec.category}
+                title={rec.title}
+                detail={rec.detail}
+                index={idx}
+              />
+            ))}
+          </div>
       </div>
 
       {Object.keys(activeAnswers || {}).length > 0 ? (
