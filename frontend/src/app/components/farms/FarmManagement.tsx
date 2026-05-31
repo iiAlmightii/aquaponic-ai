@@ -3,12 +3,16 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Plus, Trash2, Droplets, Thermometer, Fish, Leaf, RefreshCw, AlertCircle, Sprout } from 'lucide-react';
-import { PretextText } from '../ui/pretext-text';
+import { motion } from 'motion/react';
 import { farmAPI, reportAPI } from '../../utils/api';
 import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/EmptyState';
+import { useStore } from '../../store';
+import { LangCode, createT } from '../../utils/i18n';
 
 export function FarmManagement() {
+  const lang: LangCode = (useStore((s: any) => s.globalLanguage) || 'en') as LangCode;
+  const tr = createT(lang);
   const [farms, setFarms] = useState<any[]>([]);
   const [selectedFarm, setSelectedFarm] = useState<any>(null);
   const [records, setRecords] = useState<any>(null);
@@ -99,16 +103,20 @@ export function FarmManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-6 space-y-6 max-w-7xl mx-auto"
+    >
       <div className="flex items-center justify-between">
         <div>
-          <PretextText text="Farm Records" font={'600 2rem Inter, "Noto Sans", "Segoe UI", sans-serif'} lineHeight={40} className="text-gray-900 mb-2" />
-          <PretextText text="Farms auto-created from surveys. Add water readings manually." font={'400 1rem Inter, "Noto Sans", "Segoe UI", sans-serif'} lineHeight={24} className="text-gray-600" />
+          <h1 className="text-2xl font-semibold text-slate-900">{tr('farm_records')}</h1>
+          <p className="text-sm text-slate-500 mt-0.5">{tr('farms_desc')}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={loadFarms}><RefreshCw className="w-4 h-4 mr-1" /> Refresh</Button>
+          <Button variant="outline" size="sm" onClick={loadFarms}><RefreshCw className="w-4 h-4 mr-1" /> {tr('btn_refresh')}</Button>
           <Button onClick={() => setShowAddFarm(true)} className="bg-emerald-600 hover:bg-emerald-700">
-            <Plus className="w-4 h-4 mr-2" /> Add Farm
+            <Plus className="w-4 h-4 mr-2" /> {tr('add_farm')}
           </Button>
         </div>
       </div>
@@ -123,9 +131,9 @@ export function FarmManagement() {
       {farms.length === 0 ? (
         <EmptyState
           icon={Sprout}
-          title="No farms yet"
-          description="Add your first farm to start tracking water quality and performance."
-          actionLabel="Add Farm"
+          title={tr('no_farms')}
+          description={tr('add_first_farm')}
+          actionLabel={tr('add_farm')}
           onAction={() => setShowAddFarm(true)}
         />
       ) : (
@@ -133,21 +141,30 @@ export function FarmManagement() {
           {/* Farm list */}
           <div className="lg:col-span-1">
             <div className="bg-white border border-slate-200 rounded-xl hover:border-green-200 hover:shadow-sm transition-all p-6">
-              <p className="font-semibold text-gray-900 mb-4">Your Farms</p>
+              <p className="font-semibold text-gray-900 mb-4">{tr('your_farms')}</p>
               <div className="space-y-2">
                 {farms.map((farm) => (
                   <div
                     key={farm.id}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedFarm?.id === farm.id ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'
+                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                      selectedFarm?.id === farm.id
+                        ? 'border-l-4 border-green-500 bg-green-50'
+                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                     onClick={() => setSelectedFarm(farm)}
                   >
                     <p className="font-medium text-gray-900">{farm.name}</p>
-                    <p className="text-sm text-gray-500">{farm.location || '—'}</p>
-                    <div className="flex gap-3 mt-1 text-xs text-gray-400">
-                      {farm.area_sqm && <span>{farm.area_sqm} m²</span>}
-                      <span>{farm.system_type}</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`text-[10px] font-semibold rounded-full px-2 py-0.5 ${
+                        farm.system_type === 'aquaponics'
+                          ? 'bg-green-50 text-green-700'
+                          : 'bg-amber-50 text-amber-700'
+                      }`}>
+                        {farm.system_type}
+                      </span>
+                      {farm.area_sqm && (
+                        <span className="text-xs text-slate-400">{farm.area_sqm} m²</span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -160,11 +177,26 @@ export function FarmManagement() {
             {selectedFarm ? (
               <>
                 {/* Farm info */}
-                <div className="bg-white border border-slate-200 rounded-xl hover:border-green-200 hover:shadow-sm transition-all p-6">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div><p className="text-sm text-gray-500 mb-1">Location</p><p className="font-medium text-gray-900">{selectedFarm.location || '—'}</p></div>
-                    <div><p className="text-sm text-gray-500 mb-1">Area</p><p className="font-medium text-gray-900">{selectedFarm.area_sqm ? `${selectedFarm.area_sqm} m²` : '—'}</p></div>
-                    <div><p className="text-sm text-gray-500 mb-1">Type</p><p className="font-medium text-gray-900 capitalize">{selectedFarm.system_type}</p></div>
+                <div className="bg-white border border-slate-200 rounded-xl p-5">
+                  <div className="flex items-start gap-4 mb-2">
+                    <div>
+                      <h2 className="text-xl font-semibold text-slate-900">{selectedFarm.name}</h2>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-[11px] font-semibold rounded-full px-2.5 py-0.5 ${
+                          selectedFarm.system_type === 'aquaponics'
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-amber-50 text-amber-700'
+                        }`}>
+                          {selectedFarm.system_type}
+                        </span>
+                        {selectedFarm.area_sqm && (
+                          <span className="text-xs text-slate-400">{selectedFarm.area_sqm} m²</span>
+                        )}
+                        {selectedFarm.location && (
+                          <span className="text-xs text-slate-400">· {selectedFarm.location}</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -224,9 +256,9 @@ export function FarmManagement() {
                     {/* Water readings */}
                     <div className="bg-white border border-slate-200 rounded-xl hover:border-green-200 hover:shadow-sm transition-all p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-gray-900">Water Quality Readings</h3>
+                        <h3 className="font-semibold text-gray-900">{tr('water_readings')}</h3>
                         <Button onClick={() => setShowAddReading(true)} size="sm" className="bg-cyan-600 hover:bg-cyan-700">
-                          <Plus className="w-4 h-4 mr-1" /> Add Reading
+                          <Plus className="w-4 h-4 mr-1" /> {tr('add_reading')}
                         </Button>
                       </div>
                       {records.water_readings?.length > 0 ? (
@@ -258,7 +290,7 @@ export function FarmManagement() {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-center text-gray-400 py-6">No water readings yet</p>
+                        <p className="text-center text-gray-400 py-6">{tr('no_readings')}</p>
                       )}
                     </div>
 
@@ -275,7 +307,7 @@ export function FarmManagement() {
                           } catch { alert('Could not fetch report.'); }
                         }}
                       >
-                        Download Latest Report
+                        {tr('download_report')}
                       </Button>
                     </div>
                   </>
@@ -294,14 +326,14 @@ export function FarmManagement() {
       {showAddFarm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Add New Farm</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{tr('add_farm')}</h3>
             <div className="space-y-4">
-              <div><Label>Farm Name *</Label><Input value={newFarm.name} onChange={e => setNewFarm({...newFarm, name: e.target.value})} placeholder="e.g. Green Valley Aquaponics" /></div>
-              <div><Label>Location</Label><Input value={newFarm.location} onChange={e => setNewFarm({...newFarm, location: e.target.value})} placeholder="e.g. Pune, Maharashtra" /></div>
-              <div><Label>Area (m²)</Label><Input type="number" value={newFarm.area_sqm} onChange={e => setNewFarm({...newFarm, area_sqm: e.target.value})} placeholder="e.g. 100" /></div>
+              <div><Label>{tr('farm_name_label')} *</Label><Input value={newFarm.name} onChange={e => setNewFarm({...newFarm, name: e.target.value})} placeholder="e.g. Green Valley Aquaponics" /></div>
+              <div><Label>{tr('location')}</Label><Input value={newFarm.location} onChange={e => setNewFarm({...newFarm, location: e.target.value})} placeholder="e.g. Pune, Maharashtra" /></div>
+              <div><Label>{tr('area')} (m²)</Label><Input type="number" value={newFarm.area_sqm} onChange={e => setNewFarm({...newFarm, area_sqm: e.target.value})} placeholder="e.g. 100" /></div>
               <div className="flex gap-2">
-                <Button onClick={handleAddFarm} className="flex-1 bg-emerald-600 hover:bg-emerald-700">Add Farm</Button>
-                <Button onClick={() => setShowAddFarm(false)} variant="outline" className="flex-1">Cancel</Button>
+                <Button onClick={handleAddFarm} className="flex-1 bg-emerald-600 hover:bg-emerald-700">{tr('add_farm')}</Button>
+                <Button onClick={() => setShowAddFarm(false)} variant="outline" className="flex-1">{tr('btn_cancel')}</Button>
               </div>
             </div>
           </div>
@@ -312,19 +344,19 @@ export function FarmManagement() {
       {showAddReading && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Add Water Reading</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{tr('add_reading')}</h3>
             <div className="space-y-4">
               <div><Label>pH Level</Label><Input type="number" step="0.01" value={newReading.ph} onChange={e => setNewReading({...newReading, ph: e.target.value})} placeholder="e.g. 7.2" /></div>
               <div><Label>Temperature (°C)</Label><Input type="number" step="0.1" value={newReading.temperature_c} onChange={e => setNewReading({...newReading, temperature_c: e.target.value})} placeholder="e.g. 24.5" /></div>
               <div><Label>Dissolved Oxygen (mg/L)</Label><Input type="number" step="0.1" value={newReading.dissolved_oxygen_mg_l} onChange={e => setNewReading({...newReading, dissolved_oxygen_mg_l: e.target.value})} placeholder="e.g. 6.8" /></div>
               <div className="flex gap-2">
-                <Button onClick={handleAddReading} className="flex-1 bg-cyan-600 hover:bg-cyan-700">Save Reading</Button>
-                <Button onClick={() => setShowAddReading(false)} variant="outline" className="flex-1">Cancel</Button>
+                <Button onClick={handleAddReading} className="flex-1 bg-cyan-600 hover:bg-cyan-700">{tr('btn_save')}</Button>
+                <Button onClick={() => setShowAddReading(false)} variant="outline" className="flex-1">{tr('btn_cancel')}</Button>
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
