@@ -9,9 +9,12 @@ import {
   LogOut,
   Menu,
   Leaf,
-  MoreHorizontal,
+  Globe,
   LucideIcon,
 } from 'lucide-react';
+import { useStore } from '../../store';
+import { SUPPORTED_LANGUAGES, LangCode, t, createT } from '../../utils/i18n';
+import { FloatingAdvisor } from '../ai/FloatingAdvisor';
 
 type View = 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor';
 
@@ -23,48 +26,47 @@ interface MainLayoutProps {
   onLogout: () => void;
 }
 
-const NAV_GROUPS = [
+const NAV_GROUP_DEFS = [
   {
-    label: 'OVERVIEW',
+    labelKey: 'nav_group_overview',
     items: [
-      { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-      { id: 'analytics', name: 'Analytics', icon: BarChart3 },
+      { id: 'dashboard',  nameKey: 'nav_dashboard',  icon: LayoutDashboard },
+      { id: 'analytics',  nameKey: 'nav_analytics',  icon: BarChart3 },
     ],
   },
   {
-    label: 'FARMING',
+    labelKey: 'nav_group_farming',
     items: [
-      { id: 'surveys', name: 'Surveys', icon: ClipboardList },
-      { id: 'farms', name: 'Farms', icon: Sprout },
-      { id: 'reports', name: 'Reports', icon: FileText },
+      { id: 'surveys',    nameKey: 'nav_surveys',    icon: ClipboardList },
+      { id: 'farms',      nameKey: 'nav_farms',      icon: Sprout },
+      { id: 'reports',    nameKey: 'nav_reports',    icon: FileText },
     ],
   },
   {
-    label: 'INTELLIGENCE',
+    labelKey: 'nav_group_intel',
     items: [
-      { id: 'ai-advisor', name: 'AI Advisor', icon: Bot },
+      { id: 'ai-advisor', nameKey: 'nav_ai_advisor', icon: Bot },
     ],
   },
 ];
 
-// Bottom nav shows 5 most important items on mobile
-const MOBILE_NAV = [
-  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-  { id: 'surveys', name: 'Surveys', icon: ClipboardList },
-  { id: 'analytics', name: 'Analytics', icon: BarChart3 },
-  { id: 'ai-advisor', name: 'AI', icon: Bot },
-  { id: 'farms', name: 'More', icon: MoreHorizontal },
+const MOBILE_NAV_DEFS = [
+  { id: 'dashboard',  nameKey: 'nav_dashboard', icon: LayoutDashboard },
+  { id: 'surveys',    nameKey: 'nav_surveys',   icon: ClipboardList },
+  { id: 'analytics',  nameKey: 'nav_analytics', icon: BarChart3 },
+  { id: 'ai-advisor', nameKey: 'nav_ai_advisor', icon: Bot },
+  { id: 'farms',      nameKey: 'nav_farms',     icon: Sprout },
 ];
 
-const PAGE_TITLES: Record<string, string> = {
-  dashboard: 'Dashboard',
-  surveys: 'Surveys',
-  'ai-survey': 'Aquaponic Survey',
-  'land-survey': 'Land Survey',
-  farms: 'Farms',
-  reports: 'Reports',
-  analytics: 'Analytics',
-  'ai-advisor': 'AI Advisor',
+const PAGE_TITLE_KEYS: Record<string, string> = {
+  dashboard:    'page_dashboard',
+  surveys:      'page_surveys',
+  'ai-survey':  'page_ai_survey',
+  'land-survey':'page_land_survey',
+  farms:        'page_farms',
+  reports:      'page_reports',
+  analytics:    'page_analytics',
+  'ai-advisor': 'page_ai_advisor',
 };
 
 // Fix 1 & 4: Module-level NavItem with typed LucideIcon prop
@@ -101,9 +103,11 @@ interface SidebarProps {
   onNavigate: (view: View) => void;
   onLogout: () => void;
   setMobileMenuOpen: (open: boolean) => void;
+  lang: LangCode;
 }
 
-function SidebarContent({ user, currentView, onNavigate, onLogout, setMobileMenuOpen }: SidebarProps) {
+function SidebarContent({ user, currentView, onNavigate, onLogout, setMobileMenuOpen, lang }: SidebarProps) {
+  const tr = createT(lang);
   return (
     <aside className="flex flex-col h-full bg-white border-r border-slate-200">
       {/* Brand */}
@@ -112,23 +116,23 @@ function SidebarContent({ user, currentView, onNavigate, onLogout, setMobileMenu
           <Leaf className="w-4 h-4 text-white" />
         </div>
         <span className="font-extrabold text-slate-900 tracking-tight">
-          Agri<span className="text-green-600">Sense</span>
+          Farm<span className="text-green-600">Connect</span>
         </span>
       </div>
 
       {/* Nav groups */}
       <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4">
-        {NAV_GROUPS.map((group) => (
-          <div key={group.label}>
+        {NAV_GROUP_DEFS.map((group) => (
+          <div key={group.labelKey}>
             <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              {group.label}
+              {tr(group.labelKey)}
             </p>
             <div className="space-y-0.5">
-              {group.items.map(({ id, name, icon: Icon }) => (
+              {group.items.map(({ id, nameKey, icon: Icon }) => (
                 <NavItem
                   key={id}
                   id={id}
-                  name={name}
+                  name={tr(nameKey)}
                   Icon={Icon}
                   currentView={currentView}
                   onNavigate={onNavigate}
@@ -160,8 +164,32 @@ function SidebarContent({ user, currentView, onNavigate, onLogout, setMobileMenu
   );
 }
 
+function LanguageSelector() {
+  const globalLanguage = useStore((s: any) => s.globalLanguage);
+  const setGlobalLanguage = useStore((s: any) => s.setGlobalLanguage);
+  const current = SUPPORTED_LANGUAGES.find(l => l.code === globalLanguage) ?? SUPPORTED_LANGUAGES[0];
+  return (
+    <div className="flex items-center gap-1.5">
+      <Globe className="w-4 h-4 text-slate-400 flex-shrink-0" />
+      <select
+        value={globalLanguage}
+        onChange={(e) => setGlobalLanguage(e.target.value as LangCode)}
+        className="text-sm text-slate-700 bg-transparent border-none outline-none cursor-pointer pr-1 font-medium"
+        title="Switch language"
+        aria-label="Select language"
+      >
+        {SUPPORTED_LANGUAGES.map(l => (
+          <option key={l.code} value={l.code}>{l.nativeLabel}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 export function MainLayout({ children, user, currentView, onNavigate, onLogout }: MainLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const lang: LangCode = (useStore((s: any) => s.globalLanguage) || 'en') as LangCode;
+  const tr = createT(lang);
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
@@ -173,6 +201,7 @@ export function MainLayout({ children, user, currentView, onNavigate, onLogout }
           onNavigate={onNavigate}
           onLogout={onLogout}
           setMobileMenuOpen={setMobileMenuOpen}
+          lang={lang}
         />
       </div>
 
@@ -186,6 +215,7 @@ export function MainLayout({ children, user, currentView, onNavigate, onLogout }
               onNavigate={onNavigate}
               onLogout={onLogout}
               setMobileMenuOpen={setMobileMenuOpen}
+              lang={lang}
             />
           </div>
           {/* Fix 3: keyboard dismissal on mobile overlay */}
@@ -211,19 +241,22 @@ export function MainLayout({ children, user, currentView, onNavigate, onLogout }
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="text-base font-bold text-slate-900">{PAGE_TITLES[currentView] ?? currentView}</h1>
+            <h1 className="text-base font-bold text-slate-900">{tr(PAGE_TITLE_KEYS[currentView] ?? currentView)}</h1>
           </div>
+          <LanguageSelector />
         </header>
 
         {/* Page content — scrollable */}
         <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
           {children}
         </main>
+
+        <FloatingAdvisor onOpenFullPage={() => onNavigate('ai-advisor' as View)} />
       </div>
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex z-30">
-        {MOBILE_NAV.map(({ id, name, icon: Icon }) => {
+        {MOBILE_NAV_DEFS.map(({ id, nameKey, icon: Icon }) => {
           const active = currentView === id || (id === 'surveys' && ['ai-survey', 'land-survey'].includes(currentView));
           return (
             <button
@@ -234,7 +267,7 @@ export function MainLayout({ children, user, currentView, onNavigate, onLogout }
               }`}
             >
               <Icon className={`w-5 h-5 ${active ? 'text-green-600' : ''}`} />
-              {name}
+              {tr(nameKey)}
             </button>
           );
         })}
