@@ -14,7 +14,7 @@ export function BreakEvenProgress({ breakEvenMonth, horizon }: BreakEvenProgress
     );
   }
 
-  const pct = Math.min(100, Math.round((breakEvenMonth / horizon) * 100));
+  const pct = horizon > 0 ? Math.min(100, Math.round((breakEvenMonth / horizon) * 100)) : 0;
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5">
