@@ -40,6 +40,7 @@ import {
   type Metrics,
   type Recommendation,
   type Priority,
+  num,
   buildInputs,
   buildLandInputs,
   computeMetrics,

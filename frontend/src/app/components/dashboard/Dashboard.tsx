@@ -26,12 +26,10 @@ import { KpiCard } from '../ui/KpiCard';
 import { BreakEvenProgress } from '../ui/BreakEvenProgress';
 import { InsightCard } from '../ui/InsightCard';
 import { SurveyPerformanceCard } from '../ui/SurveyPerformanceCard';
-import { PeriodSelector } from '../ui/PeriodSelector';
 import { EmptyState } from '../ui/EmptyState';
 import { Skeleton } from '../ui/skeleton';
 import { buildInputs, computeMetrics, generateInsights } from '../../utils/analysisUtils';
 import type { Recommendation } from '../../utils/analysisUtils';
-import type { Period } from '../ui/PeriodSelector';
 
 interface DashboardProps {
   user: any;
@@ -77,7 +75,6 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
     aquaRoi: 0,
     landRoi: 0,
   });
-  const [period, setPeriod] = useState<Period>('30d');
 
   const chartId = useId().replace(/:/g, '');
   const revGradId = `revGrad-${chartId}`;
@@ -183,7 +180,6 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
           </p>
           <h1 className="text-2xl font-semibold text-slate-900">{user?.name ?? 'Farmer'}</h1>
         </div>
-        <PeriodSelector value={period} onChange={setPeriod} />
       </div>
 
       {/* KPI strip */}
