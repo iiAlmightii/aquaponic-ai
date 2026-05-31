@@ -4,6 +4,8 @@ import { Sprout, Mic, FileText, ChevronRight } from 'lucide-react';
 import { reportAPI } from '../../utils/api';
 import { EmptyState } from '../ui/EmptyState';
 import { Skeleton } from '../ui/skeleton';
+import { useStore } from '../../store';
+import { LangCode, createT } from '../../utils/i18n';
 
 interface SurveysHubProps {
   onNavigate: (view: string) => void;
@@ -18,19 +20,15 @@ interface SurveyRow {
   revenue: number;
 }
 
-const relativeTime = (iso: string | null) => {
-  if (!iso) return '—';
-  const diff = Date.now() - new Date(iso).getTime();
-  const d = Math.floor(diff / 86400000);
-  if (d === 0) return 'Today';
-  if (d === 1) return 'Yesterday';
-  if (d < 7) return `${d} days ago`;
-  return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-};
-
 export function SurveysHub({ onNavigate }: SurveysHubProps) {
+  const lang: LangCode = (useStore((s: any) => s.globalLanguage) || 'en') as LangCode;
+  const tr = createT(lang);
+
   const [surveys, setSurveys] = useState<SurveyRow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const hasAquaSession = !!localStorage.getItem('aqua_session_id');
+  const hasLandSession = !!localStorage.getItem('land_survey_session_id');
 
   useEffect(() => {
     reportAPI.analytics()
@@ -38,6 +36,16 @@ export function SurveysHub({ onNavigate }: SurveysHubProps) {
       .catch(() => setSurveys([]))
       .finally(() => setLoading(false));
   }, []);
+
+  const relativeTime = (iso: string | null) => {
+    if (!iso) return '—';
+    const diff = Date.now() - new Date(iso).getTime();
+    const d = Math.floor(diff / 86400000);
+    if (d === 0) return tr('today');
+    if (d === 1) return tr('yesterday');
+    if (d < 7) return `${d} ${tr('days_ago')}`;
+    return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
@@ -50,11 +58,17 @@ export function SurveysHub({ onNavigate }: SurveysHubProps) {
             <Sprout className="w-6 h-6 text-green-600" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">Aquaponic Survey</h3>
-            <p className="text-sm text-slate-500 mt-1">Voice-guided financial planning for aquaponic farms. Takes ~5 minutes.</p>
+            <h3 className="text-base font-bold text-slate-900">{tr('aquaponic_survey_title')}</h3>
+            <p className="text-sm text-slate-500 mt-1">{tr('aquaponic_survey_desc')}</p>
+            <span className="text-[10px] text-slate-400 font-medium">⏱ ~5 min · Voice-guided</span>
           </div>
+          {hasAquaSession && (
+            <span className="inline-flex items-center text-[10px] font-bold bg-green-100 text-green-700 rounded-full px-2 py-0.5 mb-1">
+              Resume →
+            </span>
+          )}
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-green-600 group-hover:gap-2 transition-all">
-            Start survey <ChevronRight className="w-4 h-4" />
+            {tr('start_survey')} <ChevronRight className="w-4 h-4" />
           </span>
         </button>
 
@@ -66,19 +80,25 @@ export function SurveysHub({ onNavigate }: SurveysHubProps) {
             <Mic className="w-6 h-6 text-amber-600" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">Land Farm Survey</h3>
-            <p className="text-sm text-slate-500 mt-1">Capture land, crops, costs, and market prices to generate a financial plan.</p>
+            <h3 className="text-base font-bold text-slate-900">{tr('land_survey_title')}</h3>
+            <p className="text-sm text-slate-500 mt-1">{tr('land_survey_desc')}</p>
+            <span className="text-[10px] text-slate-400 font-medium">⏱ ~8 min · Crop & financial plan</span>
           </div>
+          {hasLandSession && (
+            <span className="inline-flex items-center text-[10px] font-bold bg-amber-100 text-amber-700 rounded-full px-2 py-0.5 mb-1">
+              Resume →
+            </span>
+          )}
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-amber-600 group-hover:gap-2 transition-all">
-            Start survey <ChevronRight className="w-4 h-4" />
+            {tr('start_survey')} <ChevronRight className="w-4 h-4" />
           </span>
         </button>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200">
         <div className="px-5 py-4 border-b border-slate-100">
-          <h3 className="text-sm font-bold text-slate-900">Survey History</h3>
-          <p className="text-xs text-slate-400 mt-0.5">All completed surveys, sorted by profit</p>
+          <h3 className="text-sm font-bold text-slate-900">{tr('survey_history')}</h3>
+          <p className="text-xs text-slate-400 mt-0.5">{tr('all_completed_surveys')}</p>
         </div>
 
         {loading ? (
@@ -96,18 +116,21 @@ export function SurveysHub({ onNavigate }: SurveysHubProps) {
         ) : surveys.length === 0 ? (
           <EmptyState
             icon={FileText}
-            title="No surveys completed yet"
-            description="Complete your first aquaponic or land survey to see history here"
+            title={tr('no_surveys_completed')}
+            description={tr('complete_first_survey')}
           />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-5 py-3">Name</th>
-                  <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-3 py-3">Type</th>
-                  <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-3 py-3">Date</th>
-                  <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-5 py-3">ROI</th>
+                  <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-5 py-3">{tr('col_name')}</th>
+                  <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-3 py-3">{tr('col_type')}</th>
+                  <th className="text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-3 py-3">{tr('col_date')}</th>
+                  <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-5 py-3">{tr('col_roi')}</th>
+                  <th className="text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide px-5 py-3">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -120,12 +143,17 @@ export function SurveysHub({ onNavigate }: SurveysHubProps) {
                           ? 'bg-green-50 text-green-800 border-green-200'
                           : 'bg-amber-50 text-amber-800 border-amber-200'
                       }`}>
-                        {s.survey_type === 'ai' ? 'Aquaponic' : 'Land'}
+                        {s.survey_type === 'ai' ? tr('type_aquaponic') : tr('type_land')}
                       </span>
                     </td>
                     <td className="px-3 py-3 text-xs text-slate-500">{relativeTime(s.completed_at)}</td>
                     <td className="px-5 py-3 text-right text-sm font-bold text-slate-900">
                       {s.roi_percent != null ? `${s.roi_percent.toFixed(0)}%` : '—'}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <span className="text-[11px] font-semibold bg-green-50 text-green-700 rounded-full px-2 py-0.5">
+                        ✓ Done
+                      </span>
                     </td>
                   </tr>
                 ))}
