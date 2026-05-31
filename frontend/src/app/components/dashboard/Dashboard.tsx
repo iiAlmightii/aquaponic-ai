@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useId } from 'react';
 import {
   BarChart,
   Bar,
@@ -79,6 +79,10 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
   });
   const [period, setPeriod] = useState<Period>('30d');
 
+  const chartId = useId().replace(/:/g, '');
+  const revGradId = `revGrad-${chartId}`;
+  const costGradId = `costGrad-${chartId}`;
+
   useEffect(() => {
     farmAPI
       .list()
@@ -146,28 +150,24 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
   const profitSparkline = revenueData.map((m) => m.revenue - m.cost);
   const roiSparkline = topSessions.slice(-6).map((s) => s.roi_percent ?? 0);
 
-  const breakEvenData = useMemo(() => {
-    if (!analysis) return null;
+  const analysisData = useMemo(() => {
+    if (!analysis) return { breakEvenData: null, insights: [] as Recommendation[] };
     const inputs = buildInputs(analysis);
     const metrics = computeMetrics(inputs, 1);
-    return { breakEvenMonth: metrics.breakEvenMonth, horizon: inputs.horizon };
+    const breakEvenData = { breakEvenMonth: metrics.breakEvenMonth, horizon: inputs.horizon };
+    const apiRecs = analysis?.financial_plan?.ai_recommendations;
+    const insights: Recommendation[] = Array.isArray(apiRecs) && apiRecs.length > 0
+      ? apiRecs.slice(0, 3).map((r: any) => ({
+          priority: (['high', 'medium', 'low'].includes(r.priority) ? r.priority : 'low') as any,
+          category: String(r.category || 'Insight'),
+          title: String(r.title || ''),
+          detail: String(r.detail || ''),
+        }))
+      : generateInsights(inputs, metrics).slice(0, 3);
+    return { breakEvenData, insights };
   }, [analysis]);
 
-  const insights: Recommendation[] = useMemo(() => {
-    if (!analysis) return [];
-    const apiRecs = analysis?.financial_plan?.ai_recommendations;
-    if (Array.isArray(apiRecs) && apiRecs.length > 0) {
-      return apiRecs.slice(0, 3).map((r: any) => ({
-        priority: (['high', 'medium', 'low'].includes(r.priority) ? r.priority : 'low') as any,
-        category: String(r.category || 'Insight'),
-        title: String(r.title || ''),
-        detail: String(r.detail || ''),
-      }));
-    }
-    const inputs = buildInputs(analysis);
-    const metrics = computeMetrics(inputs, 1);
-    return generateInsights(inputs, metrics).slice(0, 3);
-  }, [analysis]);
+  const { breakEvenData, insights } = analysisData;
 
   return (
     <motion.div
@@ -199,7 +199,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
             iconColor: 'text-green-500',
           },
           {
-            label: 'Net Profit',
+            label: tr('net_profit'),
             value: allProfit !== 0 ? `₹${(Math.abs(allProfit) / 100000).toFixed(1)}L` : '₹0',
             delta: allProfit !== 0 ? (allProfit > 0 ? 'profitable' : 'loss') : undefined,
             deltaPositive: allProfit >= 0,
@@ -330,11 +330,11 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
             <ResponsiveContainer width="100%" height={160}>
               <AreaChart data={revenueData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
                 <defs>
-                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id={revGradId} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#16a34a" stopOpacity={0.15} />
                     <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="costGrad" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id={costGradId} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#f97316" stopOpacity={0.15} />
                     <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                   </linearGradient>
@@ -364,7 +364,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
                   dataKey="revenue"
                   stroke="#16a34a"
                   strokeWidth={2}
-                  fill="url(#revGrad)"
+                  fill={`url(#${revGradId})`}
                   name="Revenue"
                 />
                 <Area
@@ -372,7 +372,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
                   dataKey="cost"
                   stroke="#f97316"
                   strokeWidth={2}
-                  fill="url(#costGrad)"
+                  fill={`url(#${costGradId})`}
                   name="Cost"
                 />
               </AreaChart>
@@ -464,7 +464,10 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
                   <tr
                     key={s.session_id}
                     onClick={() => onNavigate?.('analytics')}
-                    className="hover:bg-slate-50 cursor-pointer transition-colors"
+                    onKeyDown={(e) => e.key === 'Enter' && onNavigate?.('analytics')}
+                    role="button"
+                    tabIndex={0}
+                    className="hover:bg-slate-50 cursor-pointer transition-colors focus:outline-none focus:bg-slate-50"
                   >
                     <td className="py-2.5 font-medium text-slate-900 truncate max-w-[160px]">
                       {s.project_name}
