@@ -5,6 +5,8 @@ import { PretextText } from '../ui/pretext-text';
 import { landSurveyAPI, reportAPI } from '../../utils/api';
 import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/EmptyState';
+import { useStore } from '../../store';
+import { LangCode, createT } from '../../utils/i18n';
 
 interface Report {
   id: string;
@@ -15,10 +17,8 @@ interface Report {
   status: 'completed' | 'processing';
 }
 
-type ReportView = 'ai-survey' | 'land-survey';
-
 interface ReportsProps {
-  onNavigate?: (view: ReportView) => void;
+  onNavigate?: (view: string) => void;
 }
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -31,19 +31,27 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 export function Reports({ onNavigate }: ReportsProps) {
+  const lang: LangCode = (useStore((s: any) => s.globalLanguage) || 'en') as LangCode;
+  const tr = createT(lang);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloadsCount, setDownloadsCount] = useState(0);
+  const [totalReports, setTotalReports] = useState(0);
+  const [thisMonthCount, setThisMonthCount] = useState(0);
   const [busyKey, setBusyKey] = useState<string | null>(null);
+  const [sessionMetrics, setSessionMetrics] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const loadReports = async () => {
       setLoading(true);
       setError('');
       try {
-        const res = await reportAPI.history();
-        const rows = res?.data?.reports || [];
+        const res = await reportAPI.history(20);
+        const payload = res?.data || {};
+        const rows = payload.reports || [];
+        setTotalReports(Number(payload.total_count || rows.length));
+        setThisMonthCount(Number(payload.this_month_count || 0));
         const mapped: Report[] = rows.map((row: any) => {
           const sessionId = String(row.session_id || '');
           const projectName = String(row.project_name || 'Untitled Project');
@@ -58,6 +66,14 @@ export function Reports({ onNavigate }: ReportsProps) {
           };
         });
         setReports(mapped);
+        // Best-effort: load analytics to enrich report cards with financial metrics
+        try {
+          const analyticsRes = await reportAPI.analytics();
+          const topSessions: any[] = analyticsRes?.data?.top_sessions || [];
+          const map: Record<string, any> = {};
+          topSessions.forEach((s: any) => { map[s.session_id] = s; });
+          setSessionMetrics(map);
+        } catch { /* metrics preview is best-effort */ }
       } catch (e: any) {
         setError(e.message || 'Failed to load reports.');
       } finally {
@@ -68,13 +84,7 @@ export function Reports({ onNavigate }: ReportsProps) {
     loadReports();
   }, []);
 
-  const thisMonthCount = useMemo(() => {
-    const now = new Date();
-    return reports.filter((r) => {
-      const d = new Date(r.generatedDate);
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    }).length;
-  }, [reports]);
+  const visibleReports = useMemo(() => reports.length, [reports]);
 
   const handleDownloadReport = async (report: Report, format: 'pdf' | 'csv' | 'json') => {
     const actionKey = `${report.sessionId}:${format}`;
@@ -120,13 +130,13 @@ export function Reports({ onNavigate }: ReportsProps) {
         <div className="flex items-center justify-between">
           <div>
             <PretextText
-              text="Reports & History"
+              text={tr('reports_title')}
               font={'600 2rem Inter, "Noto Sans", "Segoe UI", sans-serif'}
               lineHeight={40}
               className="text-gray-900 mb-2"
             />
             <PretextText
-              text="Access and download reports from your completed surveys and analyses"
+              text={tr('reports_desc')}
               font={'400 1rem Inter, "Noto Sans", "Segoe UI", sans-serif'}
               lineHeight={24}
               className="text-gray-600"
@@ -135,7 +145,7 @@ export function Reports({ onNavigate }: ReportsProps) {
           <div className="flex gap-2">
             <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => onNavigate?.('ai-survey')}>
               <TrendingUp className="w-4 h-4 mr-2" />
-              Generate New Report
+              {tr('generate_report')}
             </Button>
           </div>
         </div>
@@ -149,8 +159,8 @@ export function Reports({ onNavigate }: ReportsProps) {
               <FileText className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Total Reports</p>
-              <p className="text-gray-900">{reports.length}</p>
+              <p className="text-sm text-gray-600">{tr('total_reports')}</p>
+              <p className="text-gray-900">{totalReports || visibleReports}</p>
             </div>
           </div>
         </div>
@@ -161,7 +171,7 @@ export function Reports({ onNavigate }: ReportsProps) {
               <Calendar className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">This Month</p>
+              <p className="text-sm text-gray-600">{tr('this_month')}</p>
               <p className="text-gray-900">{thisMonthCount}</p>
             </div>
           </div>
@@ -186,110 +196,118 @@ export function Reports({ onNavigate }: ReportsProps) {
         </div>
       )}
 
-      {/* Reports List */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-gray-900">Report History</h3>
-        </div>
-
-        <div className="divide-y divide-gray-200">
-          {loading && (
-            <div className="p-4 md:p-6 space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="flex items-center gap-4 bg-white border border-slate-100 rounded-xl p-4">
-                  <Skeleton className="h-4 flex-1 bg-slate-100" />
-                  <Skeleton className="h-4 w-20 bg-slate-100" />
-                  <Skeleton className="h-4 w-24 bg-slate-100" />
-                  <Skeleton className="h-8 w-24 rounded-lg bg-slate-100" />
-                </div>
-              ))}
+      {/* Reports Grid */}
+      {loading && (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="flex items-center gap-4 bg-white border border-slate-100 rounded-xl p-4">
+              <Skeleton className="h-4 flex-1 bg-slate-100" />
+              <Skeleton className="h-4 w-20 bg-slate-100" />
+              <Skeleton className="h-4 w-24 bg-slate-100" />
+              <Skeleton className="h-8 w-24 rounded-lg bg-slate-100" />
             </div>
-          )}
+          ))}
+        </div>
+      )}
 
-          {!loading && reports.length === 0 && (
-            <EmptyState
-              icon={FileText}
-              title="No reports yet"
-              description="Complete a survey to generate your first financial report."
-            />
-          )}
+      {!loading && reports.length === 0 && (
+        <EmptyState
+          icon={FileText}
+          title={tr('no_reports')}
+          description={tr('complete_survey_report')}
+        />
+      )}
 
-          {!loading && reports.map((report) => (
-            <div key={report.id} className="p-6 hover:bg-gray-50 transition-colors">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span
-                      className={
-                        report.type === 'AI Survey'
-                          ? 'bg-green-50 text-green-800 border border-green-200 text-[11px] font-semibold px-2 py-0.5 rounded-md'
-                          : 'bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-semibold px-2 py-0.5 rounded-md'
-                      }
-                    >
-                      {report.type}
-                    </span>
-                    <span className="text-sm text-gray-500">
+      {!loading && reports.length > 0 && (
+        <div>
+          <h3 className="text-gray-900 mb-4">{tr('report_history')}</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {reports.map((report) => {
+              const metrics = sessionMetrics[report.sessionId];
+              return (
+                <div
+                  key={report.id}
+                  className="rounded-xl border border-slate-200 bg-white p-5 flex flex-col gap-4"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <p className="text-base font-semibold text-slate-900 leading-tight">
+                        {report.title}
+                      </p>
+                      <span
+                        className={`text-[10px] font-bold rounded-full px-2 py-0.5 flex-shrink-0 ${
+                          report.type === 'AI Survey'
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-amber-50 text-amber-700'
+                        }`}
+                      >
+                        {report.type === 'AI Survey' ? 'Aquaponic' : 'Land'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400">
                       {new Date(report.generatedDate).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
                       })}
-                    </span>
+                    </p>
                   </div>
 
-                  <PretextText
-                    text={report.title}
-                    font={'600 1rem Inter, "Noto Sans", "Segoe UI", sans-serif'}
-                    lineHeight={24}
-                    className="text-gray-900 mb-1"
-                  />
-                  <p className="text-sm text-gray-600">Session ID: {report.sessionId}</p>
-                </div>
+                  {metrics && (
+                    <>
+                      <div className="border-t border-slate-100" />
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          ['Revenue', metrics.revenue > 0 ? `₹${(metrics.revenue / 100000).toFixed(1)}L` : '—'],
+                          ['ROI', metrics.roi_percent != null ? `${metrics.roi_percent.toFixed(0)}%` : '—'],
+                          ['Profit', metrics.profit != null ? `₹${(metrics.profit / 100000).toFixed(1)}L` : '—'],
+                          ['Payback', '—'],
+                        ].map(([label, val]) => (
+                          <div key={label}>
+                            <p className="text-[10px] text-slate-400 uppercase tracking-wide">{label}</p>
+                            <p className="text-sm font-semibold text-slate-900">{val}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
 
-                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-                  <div className="flex gap-2">
+                  <div className="border-t border-slate-100 pt-3 flex gap-2 mt-auto">
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleDownloadReport(report, 'pdf')}
-                      disabled={busyKey === `${report.sessionId}:pdf`}
+                      className="flex-1 text-xs"
+                      disabled={busyKey === report.sessionId}
+                      onClick={async () => {
+                        setBusyKey(report.sessionId);
+                        try {
+                          const blob = await reportAPI.get(report.sessionId);
+                          downloadBlob(blob.data, `${report.title}.pdf`);
+                          setDownloadsCount((c) => c + 1);
+                        } catch {
+                          /* ignore */
+                        } finally {
+                          setBusyKey(null);
+                        }
+                      }}
                     >
-                      <Download className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">PDF</span>
+                      <Download className="w-3.5 h-3.5 mr-1" />
+                      {busyKey === report.sessionId ? 'Downloading…' : 'PDF'}
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
-                      onClick={() => handleDownloadReport(report, 'csv')}
-                      disabled={busyKey === `${report.sessionId}:csv`}
+                      className="flex-1 text-xs bg-green-600 hover:bg-green-700"
+                      onClick={() => onNavigate?.('analytics')}
                     >
-                      <Download className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">CSV</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDownloadReport(report, 'json')}
-                      disabled={busyKey === `${report.sessionId}:json`}
-                    >
-                      <Download className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">JSON</span>
+                      Open Analytics
                     </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => handleExportToSpreadsheet(report)}
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                    disabled={busyKey === `${report.sessionId}:sheets`}
-                  >
-                    Export to Sheets
-                  </Button>
                 </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Export Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
