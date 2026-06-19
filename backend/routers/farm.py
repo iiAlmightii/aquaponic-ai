@@ -5,13 +5,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
-from models import Farm, Session, WaterReading
+from models import Farm, Session, WaterReading, FinancialPlan
 from routers.auth import get_current_user
-from services.financial_service import FinancialService, FinancialInputs
 from services.land_financial_service import compute_land_financials
 
 router = APIRouter()
@@ -288,7 +287,6 @@ async def farm_sessions(
             roi_val = summary.get("roi_percent")
             roi = float(roi_val) if roi_val is not None else None
         else:
-            from models import FinancialPlan
             plan_result = await db.execute(
                 select(FinancialPlan).where(FinancialPlan.session_id == sess.id)
             )
