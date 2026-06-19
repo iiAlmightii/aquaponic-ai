@@ -12,6 +12,7 @@ import { FarmSelector } from '../ui/FarmSelector';
 interface Report {
   id: string;
   sessionId: string;
+  farm_id?: string;
   type: 'AI Survey' | 'Land Voice';
   generatedDate: string;
   title: string;
@@ -61,6 +62,7 @@ export function Reports({ onNavigate }: ReportsProps) {
           return {
             id: sessionId,
             sessionId,
+            farm_id: row.farm_id ? String(row.farm_id) : undefined,
             type: projectName.toLowerCase().includes('land') ? 'Land Voice' : 'AI Survey',
             generatedDate: isoDate,
             title: `${projectName} Report`,
@@ -288,8 +290,10 @@ export function Reports({ onNavigate }: ReportsProps) {
                       onClick={async () => {
                         setBusyKey(report.sessionId);
                         try {
-                          const blob = await reportAPI.get(report.sessionId);
-                          downloadBlob(blob.data, `${report.title}.pdf`);
+                          await reportAPI.download(
+                            report.sessionId,
+                            `aquaponic-report-${report.sessionId.slice(0, 8)}.pdf`,
+                          );
                           setDownloadsCount((c) => c + 1);
                         } catch {
                           /* ignore */

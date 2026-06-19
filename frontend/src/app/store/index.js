@@ -186,7 +186,7 @@ const sessionSlice = (set, get) => ({
 const farmSlice = (set, get) => ({
   farms: [],
   selectedFarmId: localStorage.getItem(SELECTED_FARM_ID_KEY) || null,
-  farmSessions: [],
+  farmSessions: null,
 
   fetchFarms: async () => {
     try {
@@ -203,7 +203,7 @@ const farmSlice = (set, get) => ({
     } else {
       localStorage.removeItem(SELECTED_FARM_ID_KEY)
     }
-    set({ selectedFarmId: farmId, farmSessions: [] })
+    set({ selectedFarmId: farmId, farmSessions: null })
     if (farmId) {
       try {
         const { data } = await farmAPI.latestSession(farmId)
@@ -233,7 +233,7 @@ const farmSlice = (set, get) => ({
       const { data } = await farmAPI.sessions(farmId)
       set({ farmSessions: Array.isArray(data) ? data : [] })
     } catch {
-      set({ farmSessions: [] })
+      set({ farmSessions: [] }) // empty = error/no data, not loading
     }
   },
 })
