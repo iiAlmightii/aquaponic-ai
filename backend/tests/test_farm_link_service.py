@@ -87,3 +87,6 @@ async def test_uses_untitled_project_when_name_missing():
 
     # Verify the farm was created with "Untitled Project" name
     assert added_farm.name == "Untitled Project"
+
+    db.flush.assert_called()
+    assert sess.farm_id == added_farm.id
