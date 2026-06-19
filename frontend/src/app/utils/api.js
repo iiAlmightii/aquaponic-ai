@@ -59,11 +59,11 @@ export const authAPI = {
 }
 
 export const sessionAPI = {
-  start:   (body)      => api.post('/session/start', body),
-  answer:  (body)      => api.post('/session/answer', body),
-  back:    (body)      => api.post('/session/back', body),
-  get:     (id)        => api.get(`/session/${id}`),
-  abandon: (id)        => api.delete(`/session/${id}`),
+  start:   (body)               => api.post('/session/start', body),
+  answer:  (body)               => api.post('/session/answer', body),
+  back:    (body)               => api.post('/session/back', body),
+  get:     (id, language = '')  => api.get(`/session/${id}`, { params: language ? { language } : {} }),
+  abandon: (id)                 => api.delete(`/session/${id}`),
 }
 
 export const analysisAPI = {
@@ -77,20 +77,11 @@ let _analyticsCache = null; // { promise, ts }
 const ANALYTICS_TTL = 60_000;
 
 export const reportAPI = {
-  history:  ()          => api.get('/report/history'),
-  analytics: () => {
-    const now = Date.now();
-    if (_analyticsCache && now - _analyticsCache.ts < ANALYTICS_TTL) {
-      return _analyticsCache.promise;
-    }
-    const promise = api.get('/report/analytics');
-    _analyticsCache = { promise, ts: now };
-    // On failure, clear cache so next call retries
-    promise.catch(() => { _analyticsCache = null; });
-    return promise;
-  },
-  invalidateAnalytics: () => { _analyticsCache = null; },
-  get:      (sessionId) => api.get(`/report/${sessionId}`, { responseType: 'blob' }),
+  history:           (limit = 20, offset = 0) => api.get('/report/history', { params: { limit, offset } }),
+  analytics:         (farmId = null)           => api.get('/report/analytics', { params: farmId ? { farm_id: farmId } : {} }),
+  dashboard:         (farmId = null)           => api.get('/report/dashboard', { params: farmId ? { farm_id: farmId } : {} }),
+  invalidateAnalytics: ()                      => { _analyticsCache = null },
+  get:               (sessionId)               => api.get(`/report/${sessionId}`),
   download: async (sessionId, filename = 'aquaponic-report.pdf') => {
     const res = await api.get(`/report/${sessionId}`, { responseType: 'blob' })
     const url = URL.createObjectURL(res.data)
@@ -101,10 +92,11 @@ export const reportAPI = {
 }
 
 export const farmAPI = {
-  list:             ()               => api.get('/farm/'),
-  create:           (body)           => api.post('/farm/', body),
-  records:          (farmId)         => api.get(`/farm/${farmId}/records`),
-  createWaterReading: (farmId, body) => api.post(`/farm/${farmId}/water-readings`, body),
+  list:          ()                        => api.get('/farm/'),
+  get:           (id)                      => api.get(`/farm/${id}`),
+  latestSession: (farmId)                  => api.get(`/farm/${farmId}/latest-session`),
+  sessions:      (farmId)                  => api.get(`/farm/${farmId}/sessions`),
+  edit:          (farmId, body)            => api.post(`/farm/${farmId}/edit`, body),
 }
 
 export const iotAPI = {
@@ -117,11 +109,20 @@ export const audioAPI = {
     formData.append('file', blob, 'audio.webm')
     formData.append('language', language)
     if (questionContext) formData.append('question_context', questionContext)
-    
+
     return api.post('/audio/transcribe', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
+  correct: (auditId, originalTranscript, correctedTranscript, { language = 'en', questionId = null, sessionId = null } = {}) =>
+    api.post('/audio/correct', {
+      audit_id: auditId,
+      original_transcript: originalTranscript,
+      corrected_transcript: correctedTranscript,
+      language,
+      question_id: questionId,
+      session_id: sessionId,
+    }),
   health: () => api.get('/audio/health'),
 }
 
@@ -142,8 +143,9 @@ export const financeSheetsAPI = {
 
 export const landSurveyAPI = {
   start: (body = {}) => api.post('/land-survey/start', body),
-  get: (sessionId) => api.get(`/land-survey/${sessionId}`),
+  get: (sessionId, language = '') => api.get(`/land-survey/${sessionId}`, { params: language ? { language } : {} }),
   answer: (body) => api.post('/land-survey/answer', body),
+  back: (sessionId) => api.post(`/land-survey/${sessionId}/back`),
   dashboard: (sessionId) => api.get(`/land-survey/${sessionId}/dashboard`),
   exportJson: (sessionId) => api.get(`/land-survey/${sessionId}/export?format=json`),
   exportCsv: (sessionId) => api.get(`/land-survey/${sessionId}/export?format=csv`, { responseType: 'blob' }),

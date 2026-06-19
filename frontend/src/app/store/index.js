@@ -3,7 +3,7 @@
  * Manages: auth state, active questionnaire session, analysis results.
  */
 import { create } from 'zustand'
-import { authAPI, sessionAPI, analysisAPI } from '../utils/api'
+import { authAPI, sessionAPI, analysisAPI, farmAPI } from '../utils/api'
 
 const ACTIVE_SESSION_KEY = 'active_session_id'
 const LAST_COMPLETED_SESSION_KEY = 'last_completed_session_id'
@@ -21,8 +21,10 @@ const authSlice = (set, get) => ({
     const { data } = await authAPI.login({ email, password })
     localStorage.setItem('access_token',  data.access_token)
     localStorage.setItem('refresh_token', data.refresh_token)
-    const me = await authAPI.me()
-    set({ user: me.data, isAuth: true })
+    // Login now returns user profile — no second /me round trip needed
+    set({ user: data.user, isAuth: true })
+    // load farms immediately after login so FarmSelector is populated
+    try { await get().fetchFarms() } catch { /* non-fatal */ }
   },
 
   register: async (email, full_name, password) => {
@@ -58,13 +60,13 @@ const sessionSlice = (set, get) => ({
   error:    null,
   analysis: null,
 
-  startSession: async (farmId = null) => {
+  startSession: async (farmId = null, language = 'en') => {
     set({ loading: true, error: null })
     const effectiveFarmId = farmId
       ?? localStorage.getItem(SELECTED_FARM_ID_KEY)
       ?? localStorage.getItem(LAST_FARM_ID_KEY)
       ?? null
-    const { data } = await sessionAPI.start({ farm_id: effectiveFarmId })
+    const { data } = await sessionAPI.start({ farm_id: effectiveFarmId, language })
     if (effectiveFarmId) {
       localStorage.setItem(SELECTED_FARM_ID_KEY, effectiveFarmId)
     }
@@ -102,7 +104,7 @@ const sessionSlice = (set, get) => ({
     }
   },
 
-  submitAnswer: async (questionId, answerText, inputMethod = 'text', confidence = null, voiceMeta = null) => {
+  submitAnswer: async (questionId, answerText, inputMethod = 'text', confidence = null, voiceMeta = null, language = 'en') => {
     const { session } = get()
     if (!session) return
     set({ loading: true, error: null })
@@ -110,6 +112,7 @@ const sessionSlice = (set, get) => ({
       session_id:       session.session_id,
       question_id:      questionId,
       answer_text:      answerText,
+      language,
       input_method:     inputMethod,
       confidence_score: confidence,
       voice_meta:       voiceMeta,
@@ -179,6 +182,72 @@ const sessionSlice = (set, get) => ({
   },
 })
 
+// ── Farm Slice ────────────────────────────────────────────────────────────────
+const farmSlice = (set, get) => ({
+  farms: [],
+  selectedFarmId: localStorage.getItem(SELECTED_FARM_ID_KEY) || null,
+  farmSessions: [],
+
+  fetchFarms: async () => {
+    try {
+      const { data } = await farmAPI.list()
+      set({ farms: (data?.farms ?? data) || [] })
+    } catch {
+      // non-fatal
+    }
+  },
+
+  selectFarm: async (farmId) => {
+    if (farmId) {
+      localStorage.setItem(SELECTED_FARM_ID_KEY, farmId)
+    } else {
+      localStorage.removeItem(SELECTED_FARM_ID_KEY)
+    }
+    set({ selectedFarmId: farmId, farmSessions: [] })
+    if (farmId) {
+      try {
+        const { data } = await farmAPI.latestSession(farmId)
+        if (data?.session_id) {
+          await get().fetchAnalysis(data.session_id)
+        }
+      } catch {
+        // farm has no sessions yet — clear analysis
+        set({ analysis: null })
+      }
+    } else {
+      set({ analysis: null })
+    }
+  },
+
+  editFarm: async (farmId, answers, surveyType = 'ai') => {
+    const { data } = await farmAPI.edit(farmId, { answers, survey_type: surveyType })
+    if (data?.session_id) {
+      localStorage.setItem(LAST_COMPLETED_SESSION_KEY, data.session_id)
+      await get().fetchAnalysis(data.session_id)
+    }
+    return data
+  },
+
+  fetchFarmTimeline: async (farmId) => {
+    try {
+      const { data } = await farmAPI.sessions(farmId)
+      set({ farmSessions: Array.isArray(data) ? data : [] })
+    } catch {
+      set({ farmSessions: [] })
+    }
+  },
+})
+
+// ── Language Slice ────────────────────────────────────────────────────────────
+const GLOBAL_LANG_KEY = 'global_language'
+const langSlice = (set) => ({
+  globalLanguage: localStorage.getItem(GLOBAL_LANG_KEY) || 'en',
+  setGlobalLanguage: (lang) => {
+    localStorage.setItem(GLOBAL_LANG_KEY, lang)
+    set({ globalLanguage: lang })
+  },
+})
+
 // ── UI Slice ──────────────────────────────────────────────────────────────────
 const uiSlice = (set) => ({
   sidebarOpen:    true,
@@ -196,5 +265,7 @@ const uiSlice = (set) => ({
 export const useStore = create((...args) => ({
   ...authSlice(...args),
   ...sessionSlice(...args),
+  ...farmSlice(...args),
+  ...langSlice(...args),
   ...uiSlice(...args),
 }))
