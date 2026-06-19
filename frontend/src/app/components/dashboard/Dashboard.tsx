@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useId } from 'react';
 import {
   BarChart,
   Bar,
+  Cell,
   AreaChart,
   Area,
   XAxis,
@@ -9,6 +10,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from 'recharts';
 import {
   DollarSign,
@@ -28,6 +30,7 @@ import { InsightCard } from '../ui/InsightCard';
 import { SurveyPerformanceCard } from '../ui/SurveyPerformanceCard';
 import { EmptyState } from '../ui/EmptyState';
 import { Skeleton } from '../ui/skeleton';
+import { FarmSelector } from '../ui/FarmSelector';
 import { buildInputs, computeMetrics, generateInsights } from '../../utils/analysisUtils';
 import type { Recommendation } from '../../utils/analysisUtils';
 
@@ -62,6 +65,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
   const lang: LangCode = (useStore((s: any) => s.globalLanguage) || 'en') as LangCode;
   const tr = createT(lang);
   const analysis = useStore((s: any) => s.analysis);
+  const selectedFarmId = useStore((s: any) => s.selectedFarmId);
 
   const [farmsLoading, setFarmsLoading] = useState(true);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
@@ -88,7 +92,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
       .finally(() => setFarmsLoading(false));
 
     reportAPI
-      .dashboard()
+      .dashboard(selectedFarmId)
       .then((res: any) => {
         const data = res?.data ?? {};
         const sessions: TopSession[] = data.top_sessions ?? [];
@@ -135,7 +139,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
       })
       .catch(() => {})
       .finally(() => setAnalyticsLoading(false));
-  }, []);
+  }, [selectedFarmId]);
 
   const allRevenue = topSessions.reduce((sum, r) => sum + (r.revenue ?? 0), 0);
   const allProfit = revenueData.reduce((sum, m) => sum + (m.revenue - m.cost), 0);
@@ -178,8 +182,11 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
           <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">
             Welcome back
           </p>
-          <h1 className="text-2xl font-semibold text-slate-900">{user?.name ?? 'Farmer'}</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">
+            {user?.name && user.name !== 'Farmer' ? user.name : 'User'}
+          </h1>
         </div>
+        <FarmSelector className="mt-1" />
       </div>
 
       {/* KPI strip */}
@@ -310,12 +317,12 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
 
       {/* Revenue chart + AI Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 flex flex-col">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 mb-3">
             Revenue vs Cost
           </p>
           {analyticsLoading ? (
-            <Skeleton className="h-40 bg-slate-100 rounded-lg" />
+            <Skeleton className="h-40 bg-slate-100 rounded-lg flex-1" />
           ) : revenueData.length === 0 ? (
             <EmptyState
               icon={TrendingUp}
@@ -323,56 +330,150 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
               description="Complete a survey to see trends"
             />
           ) : (
-            <ResponsiveContainer width="100%" height={160}>
-              <AreaChart data={revenueData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                <defs>
-                  <linearGradient id={revGradId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#16a34a" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id={costGradId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontSize: 11, fill: '#94a3b8' }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: '#94a3b8' }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v) => `₹${Math.round(v / 1000)}k`}
-                  width={48}
-                />
-                <Tooltip
-                  formatter={(v: number, name: string) => [
-                    `₹${Math.round(v).toLocaleString('en-IN')}`,
-                    name,
-                  ]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#16a34a"
-                  strokeWidth={2}
-                  fill={`url(#${revGradId})`}
-                  name="Revenue"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="cost"
-                  stroke="#f97316"
-                  strokeWidth={2}
-                  fill={`url(#${costGradId})`}
-                  name="Cost"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <div className="flex flex-col gap-4">
+              {/* Legend */}
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span className="w-4 h-0.5 bg-green-500 rounded-full inline-block" />
+                  Revenue
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <span className="w-4 h-0.5 bg-orange-400 rounded-full inline-block" />
+                  Cost
+                </span>
+              </div>
+
+              <ResponsiveContainer width="100%" height={180}>
+                <AreaChart data={revenueData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                  <defs>
+                    <linearGradient id={revGradId} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#16a34a" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id={costGradId} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fontSize: 11, fill: '#94a3b8' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: '#94a3b8' }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => `₹${Math.round(v / 1000)}k`}
+                    width={48}
+                  />
+                  <Tooltip
+                    formatter={(v: number, name: string) => [
+                      `₹${Math.round(v).toLocaleString('en-IN')}`,
+                      name,
+                    ]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#16a34a"
+                    strokeWidth={2}
+                    fill={`url(#${revGradId})`}
+                    name="Revenue"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="cost"
+                    stroke="#f97316"
+                    strokeWidth={2}
+                    fill={`url(#${costGradId})`}
+                    name="Cost"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+
+              {/* Monthly Net Profit bar chart */}
+              <div className="pt-3 border-t border-slate-100">
+                <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider mb-2">
+                  Monthly Net Profit
+                </p>
+                <ResponsiveContainer width="100%" height={90}>
+                  <BarChart
+                    data={revenueData.map((m) => ({ month: m.month, net: m.revenue - m.cost }))}
+                    margin={{ top: 4, right: 4, bottom: 0, left: 0 }}
+                    barSize={22}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fontSize: 10, fill: '#94a3b8' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: '#94a3b8' }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v) => `₹${Math.round(v / 1000)}k`}
+                      width={44}
+                    />
+                    <Tooltip
+                      formatter={(v: number) => [
+                        `₹${Math.round(v).toLocaleString('en-IN')}`,
+                        'Net Profit',
+                      ]}
+                    />
+                    <ReferenceLine y={0} stroke="#e2e8f0" strokeWidth={1} />
+                    <Bar dataKey="net" radius={[3, 3, 0, 0]}>
+                      {revenueData.map((m, i) => (
+                        <Cell
+                          key={i}
+                          fill={m.revenue - m.cost >= 0 ? '#16a34a' : '#ef4444'}
+                          fillOpacity={0.85}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Summary row */}
+              <div className="grid grid-cols-3 gap-3 pt-3 border-t border-slate-100">
+                <div>
+                  <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider mb-1">
+                    Total Revenue
+                  </p>
+                  <p className="text-sm font-bold text-slate-800">
+                    ₹{(revenueData.reduce((s, m) => s + m.revenue, 0) / 100000).toFixed(1)}L
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider mb-1">
+                    Total Cost
+                  </p>
+                  <p className="text-sm font-bold text-slate-800">
+                    ₹{(revenueData.reduce((s, m) => s + m.cost, 0) / 100000).toFixed(1)}L
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider mb-1">
+                    Net Margin
+                  </p>
+                  {(() => {
+                    const totalRev = revenueData.reduce((s, m) => s + m.revenue, 0);
+                    const totalNet = revenueData.reduce((s, m) => s + (m.revenue - m.cost), 0);
+                    const margin = totalRev > 0 ? (totalNet / totalRev) * 100 : 0;
+                    return (
+                      <p className={`text-sm font-bold ${margin >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                        {margin >= 0 ? '+' : ''}{margin.toFixed(1)}%
+                      </p>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
           )}
         </div>
 

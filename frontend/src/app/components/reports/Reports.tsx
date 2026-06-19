@@ -7,6 +7,7 @@ import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/EmptyState';
 import { useStore } from '../../store';
 import { LangCode, createT } from '../../utils/i18n';
+import { FarmSelector } from '../ui/FarmSelector';
 
 interface Report {
   id: string;
@@ -33,6 +34,7 @@ function downloadBlob(blob: Blob, filename: string) {
 export function Reports({ onNavigate }: ReportsProps) {
   const lang: LangCode = (useStore((s: any) => s.globalLanguage) || 'en') as LangCode;
   const tr = createT(lang);
+  const selectedFarmId = useStore((s: any) => s.selectedFarmId);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -84,7 +86,11 @@ export function Reports({ onNavigate }: ReportsProps) {
     loadReports();
   }, []);
 
-  const visibleReports = useMemo(() => reports.length, [reports]);
+  const filtered = useMemo(
+    () => selectedFarmId ? reports.filter((r: any) => r.farm_id === selectedFarmId) : reports,
+    [reports, selectedFarmId],
+  );
+  const visibleReports = useMemo(() => filtered.length, [filtered]);
 
   const handleDownloadReport = async (report: Report, format: 'pdf' | 'csv' | 'json') => {
     const actionKey = `${report.sessionId}:${format}`;
@@ -142,7 +148,8 @@ export function Reports({ onNavigate }: ReportsProps) {
               className="text-gray-600"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <FarmSelector />
             <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => onNavigate?.('ai-survey')}>
               <TrendingUp className="w-4 h-4 mr-2" />
               {tr('generate_report')}
@@ -210,7 +217,7 @@ export function Reports({ onNavigate }: ReportsProps) {
         </div>
       )}
 
-      {!loading && reports.length === 0 && (
+      {!loading && filtered.length === 0 && (
         <EmptyState
           icon={FileText}
           title={tr('no_reports')}
@@ -218,11 +225,11 @@ export function Reports({ onNavigate }: ReportsProps) {
         />
       )}
 
-      {!loading && reports.length > 0 && (
+      {!loading && filtered.length > 0 && (
         <div>
           <h3 className="text-gray-900 mb-4">{tr('report_history')}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {reports.map((report) => {
+            {filtered.map((report) => {
               const metrics = sessionMetrics[report.sessionId];
               return (
                 <div

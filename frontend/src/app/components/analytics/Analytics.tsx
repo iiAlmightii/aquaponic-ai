@@ -32,6 +32,7 @@ import { EmptyState } from '../ui/EmptyState';
 import { BarChart3, ClipboardList } from 'lucide-react';
 import { useStore } from '../../store';
 import { landSurveyAPI, reportAPI } from '../../utils/api';
+import { FarmSelector } from '../ui/FarmSelector';
 import { InsightCard } from '../ui/InsightCard';
 import { BreakEvenProgress } from '../ui/BreakEvenProgress';
 import { cn } from '../ui/utils';
@@ -205,6 +206,7 @@ function ScenarioCard({
 export function Analytics() {
   const analysis = useStore((state: any) => state.analysis);
   const session = useStore((state: any) => state.session);
+  const selectedFarmId = useStore((state: any) => state.selectedFarmId);
   const loading = useStore((state: any) => state.loading);
   const restoreSurveyState = useStore((state: any) => state.restoreSurveyState);
   const fetchAnalysis = useStore((state: any) => state.fetchAnalysis);
@@ -226,7 +228,7 @@ export function Analytics() {
       // Fetch analytics and restore aquaponics state in parallel.
       const [, analyticsResult] = await Promise.allSettled([
         analysis ? Promise.resolve() : restoreSurveyState().catch(() => {}),
-        reportAPI.analytics().catch(() => null),
+        reportAPI.analytics(selectedFarmId).catch(() => null),
       ]);
 
       if (!alive) return;
@@ -249,7 +251,7 @@ export function Analytics() {
     run();
     return () => { alive = false; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedFarmId]);
 
   useEffect(() => {
     if (surveyMode === 'land') {
@@ -543,6 +545,7 @@ export function Analytics() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <FarmSelector />
             <div className="flex rounded-xl border border-emerald-200 bg-white p-1">
               <button
                 onClick={() => setSurveyMode('aquaponics')}
