@@ -92,11 +92,14 @@ export const reportAPI = {
 }
 
 export const farmAPI = {
-  list:          ()                        => api.get('/farm/'),
-  get:           (id)                      => api.get(`/farm/${id}`),
-  latestSession: (farmId)                  => api.get(`/farm/${farmId}/latest-session`),
-  sessions:      (farmId)                  => api.get(`/farm/${farmId}/sessions`),
-  edit:          (farmId, body)            => api.post(`/farm/${farmId}/edit`, body),
+  list:               ()                    => api.get('/farm/'),
+  get:                (id)                  => api.get(`/farm/${id}`),
+  create:             (body)                => api.post('/farm/', body),
+  records:            (farmId)              => api.get(`/farm/${farmId}/records`),
+  createWaterReading: (farmId, body)        => api.post(`/farm/${farmId}/water-readings`, body),
+  latestSession:      (farmId)              => api.get(`/farm/${farmId}/latest-session`),
+  sessions:           (farmId)              => api.get(`/farm/${farmId}/sessions`),
+  edit:               (farmId, body)        => api.post(`/farm/${farmId}/edit`, body),
 }
 
 export const iotAPI = {
