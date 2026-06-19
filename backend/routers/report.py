@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
+import asyncio
 import calendar
 from datetime import datetime, timezone
 from datetime import timedelta
 from collections import defaultdict
 from io import BytesIO
-from typing import Any
+from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -91,7 +92,7 @@ def _build_inputs_from_answers(answers: dict[str, Any]) -> FinancialInputs:
     )
 
 
-def _render_pdf(session_id: str, farm_name: str, answers: dict[str, Any], plan: FinancialPlan) -> bytes:
+def _render_pdf(session_id: str, farm_name: str, answers: dict[str, Any], plan: FinancialPlan, context: dict | None = None) -> bytes:
     from reportlab.lib.pagesizes import A4
     from reportlab.pdfgen import canvas
 
@@ -144,22 +145,95 @@ def _render_pdf(session_id: str, farm_name: str, answers: dict[str, Any], plan: 
             y = height - 50
             pdf.setFont("Helvetica", 9)
 
+    # Crop feasibility section (additive — skipped gracefully if data absent)
+    try:
+        crop_intel = (context or {}).get("crop_intelligence")
+        if crop_intel and crop_intel.get("evaluated") and crop_intel.get("evaluations"):
+            if y < 120:
+                pdf.showPage()
+                y = height - 50
+            y -= 10
+            pdf.setFont("Helvetica-Bold", 12)
+            pdf.drawString(50, y, "Crop Feasibility Analysis")
+            y -= 18
+            pdf.setFont("Helvetica", 9)
+            pdf.drawString(60, y, f"Growing area: {crop_intel.get('area_m2', '-')} m²")
+            y -= 12
+            for ev in crop_intel["evaluations"]:
+                if y < 80:
+                    pdf.showPage()
+                    y = height - 50
+                    pdf.setFont("Helvetica", 9)
+                feasibility = ev.get("feasibility", "unknown").upper()
+                pdf.setFont("Helvetica-Bold", 9)
+                pdf.drawString(60, y, f"{ev.get('crop', '')}  [{feasibility}]")
+                y -= 12
+                pdf.setFont("Helvetica", 9)
+                ye = ev.get("yield_estimate", {})
+                if ye:
+                    pdf.drawString(70, y, f"Est. annual yield: {ye.get('annual_yield_kg', '-')} kg  "
+                                          f"({ye.get('cycles_per_year', '-')} cycles × "
+                                          f"{ye.get('yield_per_m2_kg', '-')} kg/m²)")
+                    y -= 11
+                for reason in ev.get("reasons", []) + ev.get("warnings", []):
+                    text = f"• {reason}"
+                    if len(text) > 110:
+                        text = text[:107] + "..."
+                    pdf.drawString(70, y, text)
+                    y -= 11
+                    if y < 80:
+                        pdf.showPage()
+                        y = height - 50
+                        pdf.setFont("Helvetica", 9)
+                y -= 4
+    except Exception:
+        pass
+
     pdf.showPage()
     pdf.save()
     return buffer.getvalue()
 
 
 @router.get("/history")
-async def report_history(current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    sessions_result = await db.execute(
-        select(Session, Farm)
-        .outerjoin(Farm, Farm.id == Session.farm_id)
-        .where(Session.user_id == current_user.id, Session.status == "completed")
-        .order_by(Session.completed_at.desc(), Session.updated_at.desc())
+async def report_history(
+    current_user=Depends(get_current_user),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db),
+):
+    now = datetime.now(timezone.utc)
+    month_start = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+    if now.month == 12:
+        next_month_start = datetime(now.year + 1, 1, 1, tzinfo=timezone.utc)
+    else:
+        next_month_start = datetime(now.year, now.month + 1, 1, tzinfo=timezone.utc)
+
+    rows_result, total_count_result, month_count_result = await asyncio.gather(
+        db.execute(
+            select(Session, Farm)
+            .outerjoin(Farm, Farm.id == Session.farm_id)
+            .where(Session.user_id == current_user.id, Session.status == "completed")
+            .order_by(Session.completed_at.desc(), Session.updated_at.desc())
+            .limit(limit)
+            .offset(offset)
+        ),
+        db.execute(
+            select(func.count(Session.id)).where(Session.user_id == current_user.id, Session.status == "completed")
+        ),
+        db.execute(
+            select(func.count(Session.id)).where(
+                Session.user_id == current_user.id,
+                Session.status == "completed",
+                Session.completed_at >= month_start,
+                Session.completed_at < next_month_start,
+            )
+        ),
     )
-    rows = sessions_result.all()
+    rows = rows_result.all()
 
     return {
+        "total_count": int(total_count_result.scalar() or 0),
+        "this_month_count": int(month_count_result.scalar() or 0),
         "reports": [
             {
                 "session_id": s.id,
@@ -169,41 +243,57 @@ async def report_history(current_user=Depends(get_current_user), db: AsyncSessio
                 "status": "ready",
             }
             for s, f in rows
-        ]
+        ],
     }
 
 
 @router.get("/analytics")
-async def report_analytics(current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def report_analytics(
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    farm_id: Optional[str] = Query(None),
+):
     """Return chart-ready analytics across AI and Land Voice survey sessions."""
-    sessions_result = await db.execute(
-        select(Session, Farm)
-        .outerjoin(Farm, Farm.id == Session.farm_id)
-        .where(Session.user_id == current_user.id)
-    )
-    session_rows = sessions_result.all()
-
-    plans_result = await db.execute(
-        select(FinancialPlan, Session, Farm)
-        .join(Session, Session.id == FinancialPlan.session_id)
-        .outerjoin(Farm, Farm.id == FinancialPlan.farm_id)
-        .where(Session.user_id == current_user.id)
-    )
-    plan_rows = plans_result.all()
-
-    farms_count_result = await db.execute(
-        select(func.count(Farm.id)).where(Farm.owner_id == current_user.id)
-    )
-    farms_count = int(farms_count_result.scalar() or 0)
-
     now = datetime.now(timezone.utc)
     water_from = now - timedelta(days=30)
-    water_result = await db.execute(
-        select(WaterReading)
-        .join(Farm, Farm.id == WaterReading.farm_id)
-        .where(Farm.owner_id == current_user.id, WaterReading.timestamp >= water_from)
-        .order_by(WaterReading.timestamp.asc())
+
+    (
+        sessions_result,
+        plans_result,
+        farms_count_result,
+        water_result,
+    ) = await asyncio.gather(
+        db.execute(
+            select(Session, Farm)
+            .outerjoin(Farm, Farm.id == Session.farm_id)
+            .where(
+                Session.user_id == current_user.id,
+                *([Session.farm_id == farm_id] if farm_id else []),
+            )
+        ),
+        db.execute(
+            select(FinancialPlan, Session, Farm)
+            .join(Session, Session.id == FinancialPlan.session_id)
+            .outerjoin(Farm, Farm.id == FinancialPlan.farm_id)
+            .where(
+                Session.user_id == current_user.id,
+                *([Session.farm_id == farm_id] if farm_id else []),
+            )
+        ),
+        db.execute(
+            select(func.count(Farm.id)).where(Farm.owner_id == current_user.id)
+        ),
+        db.execute(
+            select(WaterReading)
+            .join(Farm, Farm.id == WaterReading.farm_id)
+            .where(Farm.owner_id == current_user.id, WaterReading.timestamp >= water_from)
+            .order_by(WaterReading.timestamp.asc())
+        ),
     )
+
+    session_rows = sessions_result.all()
+    plan_rows = plans_result.all()
+    farms_count = int(farms_count_result.scalar() or 0)
     water_rows = list(water_result.scalars().all())
 
     month_keys = _last_n_month_keys(12)
@@ -396,6 +486,7 @@ async def report_analytics(current_user=Depends(get_current_user), db: AsyncSess
 
     ai_financial_trend = []
     land_financial_trend = []
+    monthly_data = []
     for key in month_keys:
         ai_sums = ai_month_sums[key]
         ai_count = int(ai_sums["count"])
@@ -420,6 +511,18 @@ async def report_analytics(current_user=Depends(get_current_user), db: AsyncSess
             "avg_profit": round(land_sums["profit"] / land_count, 2) if land_count else 0.0,
             "avg_roi": round(land_sums["roi"] / land_count, 2) if land_count else 0.0,
         })
+        monthly_data.append({
+            "month": key,
+            "label": _month_label(key),
+            "ai_revenue": round(ai_sums["revenue"], 2),
+            "land_revenue": round(land_sums["revenue"], 2),
+            "ai_cost": round(ai_sums["cost"], 2),
+            "land_cost": round(land_sums["cost"], 2),
+            "ai_roi": round(ai_sums["roi"], 2),
+            "land_roi": round(land_sums["roi"], 2),
+            "ai_count": ai_count,
+            "land_count": land_count,
+        })
 
     top_land_crops = [
         {
@@ -433,7 +536,24 @@ async def report_analytics(current_user=Depends(get_current_user), db: AsyncSess
     ]
     top_land_crops.sort(key=lambda r: r["total_revenue"], reverse=True)
 
-    top_sessions.sort(key=lambda s: s.get("profit", 0), reverse=True)
+    top_crops = [
+        {
+            "crop": row["crop"],
+            "revenue": row["total_revenue"],
+            "profit": row["total_profit"],
+            "sessions": row["sessions"],
+            "avg_profit": row["avg_profit"],
+        }
+        for row in top_land_crops
+    ]
+
+    top_sessions.sort(
+        key=lambda s: (
+            s.get("completed_at") or datetime.min.replace(tzinfo=timezone.utc),
+            s.get("profit", 0),
+        ),
+        reverse=True,
+    )
 
     total_sessions = len(session_rows)
     completed_sessions = sum(1 for sess, _ in session_rows if sess.status == "completed")
@@ -457,16 +577,248 @@ async def report_analytics(current_user=Depends(get_current_user), db: AsyncSess
     return {
         "overview": overview,
         "surveys_by_month": surveys_by_month_rows,
+        "monthly_data": monthly_data,
         "completion_by_type": [
-            {"type": "AI Survey", **completion_by_type["ai"]},
-            {"type": "Land Voice", **completion_by_type["land"]},
+            {"type": "Aquaponics Survey", **completion_by_type["ai"]},
+            {"type": "Land Survey", **completion_by_type["land"]},
         ],
         "ai_financial_trend": ai_financial_trend,
         "land_financial_trend": land_financial_trend,
+        "ai_completed_count": ai_completed_count,
+        "land_completed_count": land_completed_count,
         "roi_distribution": [{"bucket": k, "count": v} for k, v in roi_buckets.items()],
         "top_land_crops": top_land_crops[:8],
+        "top_crops": top_crops[:8],
         "water_quality_trend": water_quality_trend,
         "top_sessions": top_sessions[:10],
+    }
+
+
+@router.get("/dashboard")
+async def report_dashboard(
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    farm_id: Optional[str] = Query(None),
+):
+    """Return a lighter analytics payload for the dashboard home screen."""
+    (
+        sessions_result,
+        plans_result,
+        farms_count_result,
+    ) = await asyncio.gather(
+        db.execute(
+            select(Session, Farm)
+            .outerjoin(Farm, Farm.id == Session.farm_id)
+            .where(
+                Session.user_id == current_user.id,
+                *([Session.farm_id == farm_id] if farm_id else []),
+            )
+        ),
+        db.execute(
+            select(FinancialPlan, Session, Farm)
+            .join(Session, Session.id == FinancialPlan.session_id)
+            .outerjoin(Farm, Farm.id == FinancialPlan.farm_id)
+            .where(
+                Session.user_id == current_user.id,
+                *([Session.farm_id == farm_id] if farm_id else []),
+            )
+        ),
+        db.execute(
+            select(func.count(Farm.id)).where(Farm.owner_id == current_user.id)
+        ),
+    )
+
+    session_rows = sessions_result.all()
+    plan_rows = plans_result.all()
+    farms_count = int(farms_count_result.scalar() or 0)
+
+    month_keys = _last_n_month_keys(6)
+    month_set = set(month_keys)
+
+    surveys_by_month: dict[str, dict[str, int]] = {
+        key: {"ai": 0, "land": 0, "total": 0} for key in month_keys
+    }
+
+    land_month_sums: dict[str, dict[str, float]] = {
+        key: {"revenue": 0.0, "cost": 0.0, "profit": 0.0, "roi": 0.0, "count": 0.0} for key in month_keys
+    }
+    ai_month_sums: dict[str, dict[str, float]] = {
+        key: {"revenue": 0.0, "cost": 0.0, "profit": 0.0, "roi": 0.0, "count": 0.0} for key in month_keys
+    }
+
+    top_crop_map: dict[str, dict[str, float]] = defaultdict(lambda: {
+        "revenue": 0.0,
+        "profit": 0.0,
+        "count": 0.0,
+    })
+
+    top_sessions: list[dict[str, Any]] = []
+    land_completed_count = 0
+    ai_completed_count = 0
+    land_profit_total = 0.0
+    land_roi_total = 0.0
+    ai_profit_total = 0.0
+    ai_roi_total = 0.0
+
+    for sess, farm in session_rows:
+        context = sess.context_data or {}
+        is_land = context.get("module") == "land_farm_voice"
+        survey_type = "land" if is_land else "ai"
+
+        if sess.status != "completed":
+            continue
+
+        month_key = _month_key(sess.completed_at or sess.updated_at or sess.created_at)
+        if month_key and month_key in month_set:
+            surveys_by_month[month_key][survey_type] += 1
+            surveys_by_month[month_key]["total"] += 1
+
+        if is_land:
+            calc = compute_land_financials(context)
+            summary = calc.get("summary") or {}
+            revenue = _safe_float(summary.get("total_revenue"))
+            cost = _safe_float(summary.get("total_cost"))
+            profit = _safe_float(summary.get("profit"))
+            roi_value = summary.get("roi_percent")
+            roi = _safe_float(roi_value) if roi_value is not None else 0.0
+
+            if month_key and month_key in month_set:
+                land_month_sums[month_key]["revenue"] += revenue
+                land_month_sums[month_key]["cost"] += cost
+                land_month_sums[month_key]["profit"] += profit
+                land_month_sums[month_key]["roi"] += roi
+                land_month_sums[month_key]["count"] += 1
+
+            land_completed_count += 1
+            land_profit_total += profit
+            land_roi_total += roi
+
+            project_name = (farm.name if farm else None) or str((context.get("answers") or {}).get("farm_name") or "Untitled Project")
+            top_sessions.append({
+                "session_id": sess.id,
+                "survey_type": "land",
+                "project_name": project_name,
+                "completed_at": sess.completed_at,
+                "revenue": round(revenue, 2),
+                "cost": round(cost, 2),
+                "profit": round(profit, 2),
+                "roi_percent": round(roi, 2),
+            })
+
+            for row in (calc.get("crop_performance") or []):
+                crop = str(row.get("crop") or "unknown").strip().lower()
+                if not crop:
+                    continue
+                top_crop_map[crop]["revenue"] += _safe_float(row.get("revenue_annual"))
+                top_crop_map[crop]["profit"] += _safe_float(row.get("profit_annual"))
+                top_crop_map[crop]["count"] += 1
+
+    for plan, sess, farm in plan_rows:
+        context = sess.context_data or {}
+        if context.get("module") == "land_farm_voice":
+            continue
+
+        month_key = _month_key(sess.completed_at or plan.created_at)
+        revenue = _safe_float(plan.total_revenue_annual)
+        cost = _safe_float(plan.total_opex_annual)
+        profit = _safe_float(plan.net_profit_annual)
+        roi_value = plan.roi_percent
+        roi = _safe_float(roi_value) if roi_value is not None else 0.0
+
+        if month_key and month_key in month_set:
+            ai_month_sums[month_key]["revenue"] += revenue
+            ai_month_sums[month_key]["cost"] += cost
+            ai_month_sums[month_key]["profit"] += profit
+            ai_month_sums[month_key]["roi"] += roi
+            ai_month_sums[month_key]["count"] += 1
+
+        ai_completed_count += 1
+        ai_profit_total += profit
+        ai_roi_total += roi
+
+        project_name = (farm.name if farm else None) or str((context.get("answers") or {}).get("farm_name") or "Untitled Project")
+        top_sessions.append({
+            "session_id": sess.id,
+            "survey_type": "ai",
+            "project_name": project_name,
+            "completed_at": sess.completed_at,
+            "revenue": round(revenue, 2),
+            "cost": round(cost, 2),
+            "profit": round(profit, 2),
+            "roi_percent": round(roi, 2),
+        })
+
+    surveys_by_month_rows = [
+        {
+            "month": key,
+            "label": _month_label(key),
+            "ai": surveys_by_month[key]["ai"],
+            "land": surveys_by_month[key]["land"],
+            "total": surveys_by_month[key]["total"],
+        }
+        for key in month_keys
+    ]
+
+    monthly_data = []
+    for key in month_keys:
+        ai_sums = ai_month_sums[key]
+        ai_count = int(ai_sums["count"])
+        land_sums = land_month_sums[key]
+        land_count = int(land_sums["count"])
+
+        monthly_data.append({
+            "month": key,
+            "label": _month_label(key),
+            "ai_revenue": round(ai_sums["revenue"], 2),
+            "land_revenue": round(land_sums["revenue"], 2),
+            "ai_cost": round(ai_sums["cost"], 2),
+            "land_cost": round(land_sums["cost"], 2),
+            "ai_roi": round(ai_sums["roi"], 2),
+            "land_roi": round(land_sums["roi"], 2),
+            "ai_count": ai_count,
+            "land_count": land_count,
+        })
+
+    top_crops = [
+        {
+            "crop": crop,
+            "revenue": round(vals["revenue"], 2),
+            "profit": round(vals["profit"], 2),
+            "sessions": int(vals["count"]),
+            "avg_profit": round(vals["profit"] / vals["count"], 2) if vals["count"] else 0.0,
+        }
+        for crop, vals in top_crop_map.items()
+    ]
+    top_crops.sort(key=lambda r: r["revenue"], reverse=True)
+    top_sessions.sort(key=lambda s: s.get("completed_at") or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+
+    total_sessions = len(session_rows)
+    completed_sessions = sum(1 for sess, _ in session_rows if sess.status == "completed")
+    ai_sessions = sum(1 for sess, _ in session_rows if (sess.context_data or {}).get("module") != "land_farm_voice")
+    land_sessions = total_sessions - ai_sessions
+
+    overview = {
+        "total_sessions": total_sessions,
+        "completed_sessions": completed_sessions,
+        "completion_rate": round((completed_sessions / total_sessions) * 100.0, 2) if total_sessions else 0.0,
+        "ai_sessions": ai_sessions,
+        "land_sessions": land_sessions,
+        "farms_count": farms_count,
+        "ai_financial_plans": len(plan_rows),
+        "avg_ai_profit": round(ai_profit_total / ai_completed_count, 2) if ai_completed_count else 0.0,
+        "avg_land_profit": round(land_profit_total / land_completed_count, 2) if land_completed_count else 0.0,
+        "avg_ai_roi": round(ai_roi_total / ai_completed_count, 2) if ai_completed_count else 0.0,
+        "avg_land_roi": round(land_roi_total / land_completed_count, 2) if land_completed_count else 0.0,
+    }
+
+    return {
+        "overview": overview,
+        "surveys_by_month": surveys_by_month_rows,
+        "monthly_data": monthly_data,
+        "ai_completed_count": ai_completed_count,
+        "land_completed_count": land_completed_count,
+        "top_crops": top_crops[:8],
+        "top_sessions": top_sessions[:8],
     }
 
 
@@ -526,7 +878,7 @@ async def get_report(
             inputs=_build_inputs_from_answers(answers),
         )
 
-    pdf_bytes = _render_pdf(sess.id, farm.name, answers, plan)
+    pdf_bytes = _render_pdf(sess.id, farm.name, answers, plan, sess.context_data)
     filename = f"aquaponic-report-{sess.id[:8]}.pdf"
     return StreamingResponse(
         BytesIO(pdf_bytes),
