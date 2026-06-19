@@ -5,12 +5,14 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
 from models import Farm, Session, WaterReading
 from routers.auth import get_current_user
+from services.financial_service import FinancialService, FinancialInputs
+from services.land_financial_service import compute_land_financials
 
 router = APIRouter()
 
@@ -251,4 +253,89 @@ async def create_water_reading(
         "turbidity_ntu": reading.turbidity_ntu,
         "tds_ppm": reading.tds_ppm,
         "source": reading.source,
+    }
+
+
+@router.get("/{farm_id}/sessions")
+async def farm_sessions(
+    farm_id: str,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return all completed sessions for a farm, newest first (timeline)."""
+    farm = await _get_user_farm_or_404(farm_id, current_user.id, db)
+
+    sessions_result = await db.execute(
+        select(Session)
+        .where(Session.farm_id == farm.id, Session.status == "completed")
+        .order_by(Session.completed_at.desc())
+    )
+    sessions = sessions_result.scalars().all()
+
+    rows = []
+    for sess in sessions:
+        context = sess.context_data or {}
+        is_land = context.get("module") == "land_farm_voice"
+        source = context.get("source", "survey")
+
+        revenue, cost, profit, roi = 0.0, 0.0, 0.0, None
+        if is_land:
+            calc = compute_land_financials(context)
+            summary = calc.get("summary") or {}
+            revenue = float(summary.get("total_revenue") or 0)
+            cost = float(summary.get("total_cost") or 0)
+            profit = float(summary.get("profit") or 0)
+            roi_val = summary.get("roi_percent")
+            roi = float(roi_val) if roi_val is not None else None
+        else:
+            from models import FinancialPlan
+            plan_result = await db.execute(
+                select(FinancialPlan).where(FinancialPlan.session_id == sess.id)
+            )
+            plan = plan_result.scalar_one_or_none()
+            if plan:
+                revenue = float(plan.total_revenue_annual or 0)
+                cost = float(plan.total_opex_annual or 0)
+                profit = float(plan.net_profit_annual or 0)
+                roi = float(plan.roi_percent) if plan.roi_percent is not None else None
+
+        rows.append({
+            "session_id": str(sess.id),
+            "completed_at": sess.completed_at,
+            "survey_type": "land" if is_land else "ai",
+            "source": source,
+            "roi_percent": round(roi, 2) if roi is not None else None,
+            "revenue": round(revenue, 2),
+            "cost": round(cost, 2),
+            "profit": round(profit, 2),
+        })
+
+    return rows
+
+
+@router.get("/{farm_id}/latest-session")
+async def farm_latest_session(
+    farm_id: str,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return the most recent completed session for a farm."""
+    farm = await _get_user_farm_or_404(farm_id, current_user.id, db)
+
+    result = await db.execute(
+        select(Session)
+        .where(Session.farm_id == farm.id, Session.status == "completed")
+        .order_by(Session.completed_at.desc())
+        .limit(1)
+    )
+    sess = result.scalar_one_or_none()
+    if not sess:
+        raise HTTPException(status_code=404, detail="No completed sessions for this farm.")
+
+    context = sess.context_data or {}
+    is_land = context.get("module") == "land_farm_voice"
+    return {
+        "session_id": str(sess.id),
+        "survey_type": "land" if is_land else "ai",
+        "completed_at": sess.completed_at,
     }
