@@ -2,17 +2,25 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Plus, Trash2, Droplets, Thermometer, Fish, Leaf, RefreshCw, AlertCircle, Sprout } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Plus, Trash2, Droplets, Thermometer, Fish, Leaf, RefreshCw, AlertCircle, Sprout, Edit2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { farmAPI, reportAPI } from '../../utils/api';
 import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/EmptyState';
 import { useStore } from '../../store';
 import { LangCode, createT } from '../../utils/i18n';
+import { FarmTimeline } from './FarmTimeline';
+import { FarmEditForm } from './FarmEditForm';
 
 export function FarmManagement() {
   const lang: LangCode = (useStore((s: any) => s.globalLanguage) || 'en') as LangCode;
   const tr = createT(lang);
+  const selectedFarmId = useStore((s: any) => s.selectedFarmId);
+  const fetchFarmTimeline = useStore((s: any) => s.fetchFarmTimeline);
+  const analysis = useStore((s: any) => s.analysis);
+  const surveyType: 'ai' | 'land' =
+    analysis?.context_data?.module === 'land_farm_voice' ? 'land' : 'ai';
+  const [editOpen, setEditOpen] = useState(false);
   const [farms, setFarms] = useState<any[]>([]);
   const [selectedFarm, setSelectedFarm] = useState<any>(null);
   const [records, setRecords] = useState<any>(null);
@@ -178,7 +186,7 @@ export function FarmManagement() {
               <>
                 {/* Farm info */}
                 <div className="bg-white border border-slate-200 rounded-xl p-5">
-                  <div className="flex items-start gap-4 mb-2">
+                  <div className="flex items-start justify-between gap-4 mb-2">
                     <div>
                       <h2 className="text-xl font-semibold text-slate-900">{selectedFarm.name}</h2>
                       <div className="flex items-center gap-2 mt-1">
@@ -197,8 +205,20 @@ export function FarmManagement() {
                         )}
                       </div>
                     </div>
+                    {selectedFarmId && (
+                      <button
+                        onClick={() => setEditOpen(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        Edit Farm Details
+                      </button>
+                    )}
                   </div>
                 </div>
+
+                {/* Timeline */}
+                {selectedFarmId && <FarmTimeline farmId={selectedFarmId} />}
 
                 {recordsLoading ? (
                   <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
@@ -357,6 +377,20 @@ export function FarmManagement() {
           </div>
         </div>
       )}
+
+      {/* Edit Farm panel */}
+      <AnimatePresence>
+        {editOpen && selectedFarmId && (
+          <FarmEditForm
+            farmId={selectedFarmId}
+            surveyType={surveyType}
+            onClose={() => setEditOpen(false)}
+            onSaved={() => {
+              if (selectedFarmId) fetchFarmTimeline(selectedFarmId);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
