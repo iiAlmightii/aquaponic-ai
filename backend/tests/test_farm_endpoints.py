@@ -71,3 +71,40 @@ async def test_latest_session_returns_most_recent():
     result = await farm_latest_session("farm-1", current_user=user, db=db)
     assert result["session_id"] == "s-latest"
     assert result["survey_type"] == "ai"
+
+
+@pytest.mark.asyncio
+async def test_farm_edit_creates_new_session():
+    """POST /farm/{id}/edit should create a new completed session."""
+    from unittest.mock import patch
+    from routers.farm import farm_edit
+
+    db = AsyncMock()
+    farm_result = MagicMock()
+    farm_result.scalar_one_or_none.return_value = _make_farm()
+
+    # Latest session for context base
+    latest_result = MagicMock()
+    latest_result.scalar_one_or_none.return_value = _make_session()
+
+    db.execute = AsyncMock(side_effect=[farm_result, latest_result])
+    db.add = MagicMock()
+    db.flush = AsyncMock()
+
+    user = MagicMock()
+    user.id = "user-1"
+
+    body = MagicMock()
+    body.answers = {"farm_name": "Test Farm", "monthly_fish_revenue": 60000}
+    body.survey_type = "ai"
+
+    with patch("routers.farm.FinancialService") as MockSvc:
+        plan_mock = MagicMock()
+        plan_mock.roi_percent = 42.0
+        MockSvc.return_value.create_plan = AsyncMock(return_value=plan_mock)
+
+        result = await farm_edit("farm-1", body=body, current_user=user, db=db)
+
+    db.add.assert_called()
+    assert "session_id" in result
+    assert result["farm_id"] == "farm-1"

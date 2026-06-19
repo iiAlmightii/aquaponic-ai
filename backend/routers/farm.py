@@ -1,6 +1,6 @@
 """routers/farm.py — Farm CRUD + operational records view."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from models import Farm, Session, WaterReading, FinancialPlan
 from routers.auth import get_current_user
+from services.financial_service import FinancialService, FinancialInputs
 from services.land_financial_service import compute_land_financials
 
 router = APIRouter()
@@ -22,6 +23,11 @@ class CreateFarmRequest(BaseModel):
     area_sqm: Optional[float] = None
     system_type: str = "aquaponics"
     description: Optional[str] = ""
+
+
+class FarmEditRequest(BaseModel):
+    answers: dict
+    survey_type: str = "ai"   # "ai" | "land"
 
 
 class WaterReadingCreateRequest(BaseModel):
@@ -337,3 +343,93 @@ async def farm_latest_session(
         "survey_type": "land" if is_land else "ai",
         "completed_at": sess.completed_at,
     }
+
+
+@router.post("/{farm_id}/edit", status_code=201)
+async def farm_edit(
+    farm_id: str,
+    body: FarmEditRequest,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Save an edit snapshot for a farm.
+
+    Creates a new completed session with the provided answers,
+    runs financial recalculation, and links it to the farm.
+    Returns the new session_id so the frontend can fetch analysis.
+    """
+    farm = await _get_user_farm_or_404(farm_id, current_user.id, db)
+
+    # Fetch latest session as the base context (preserves module, language, etc.)
+    latest_result = await db.execute(
+        select(Session)
+        .where(Session.farm_id == farm.id, Session.status == "completed")
+        .order_by(Session.completed_at.desc())
+        .limit(1)
+    )
+    latest = latest_result.scalar_one_or_none()
+    base_context = dict(latest.context_data) if latest and latest.context_data else {}
+
+    # Merge edited answers on top, mark source
+    merged_answers = dict(base_context.get("answers") or {})
+    merged_answers.update(body.answers)
+    new_context = {**base_context, "answers": merged_answers, "source": "edit"}
+
+    if body.survey_type == "land":
+        new_context["module"] = "land_farm_voice"
+    else:
+        new_context.pop("module", None)
+
+    # Create the edit session
+    new_sess = Session(
+        user_id=current_user.id,
+        farm_id=farm.id,
+        status="completed",
+        completed_at=datetime.now(timezone.utc),
+        context_data=new_context,
+        current_step=0,
+        total_steps=0,
+    )
+    db.add(new_sess)
+    await db.flush()
+
+    # Run financial recalculation
+    if body.survey_type != "land":
+        def _f(key, default=0.0):
+            val = merged_answers.get(key, default)
+            try:
+                return float(val)
+            except (TypeError, ValueError):
+                return default
+
+        horizon_map = {
+            "6 months": 6, "12 months": 12, "24 months": 24,
+            "36 months": 36, "60 months": 60,
+        }
+        horizon = horizon_map.get(str(merged_answers.get("planning_horizon") or "").strip(), 12)
+
+        inputs = FinancialInputs(
+            infrastructure_cost=_f("infrastructure_cost"),
+            equipment_cost=_f("equipment_cost"),
+            initial_stock_cost=_f("initial_stock_cost"),
+            monthly_feed_cost=_f("monthly_feed_cost"),
+            monthly_labor_cost=_f("monthly_labor_cost"),
+            monthly_utilities_cost=_f("monthly_utilities_cost"),
+            monthly_maintenance_cost=_f("monthly_maintenance_cost"),
+            monthly_other_cost=_f("monthly_other_cost"),
+            monthly_fish_revenue=_f("monthly_fish_revenue"),
+            monthly_crop_revenue=_f("monthly_crop_revenue"),
+            monthly_other_revenue=_f("monthly_other_revenue"),
+            land_area_sqm=_f("farm_area_sqm"),
+            horizon_months=horizon,
+        )
+        svc = FinancialService(db)
+        await svc.create_plan(
+            farm_id=farm.id,
+            session_id=new_sess.id,
+            inputs=inputs,
+        )
+
+    await db.flush()
+    return {"session_id": str(new_sess.id), "farm_id": str(farm.id)}
