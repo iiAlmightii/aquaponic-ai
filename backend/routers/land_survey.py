@@ -15,10 +15,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from models import Session, SessionAnswer
 from routers.auth import get_current_user
+from services.farm_link_service import link_session_to_farm
 from services.land_farm_survey_engine import engine, Prompt
 from services.land_market_price_service import market_price_service
 from services.land_financial_service import compute_land_financials, export_sheet_payload, export_csv_text
 from services.land_sheet_sync import land_sheet_sync
+from services.looker_studio_service import get_dashboard_url
+from services.question_translator import translate_question
+from services.answer_extractor import extract_answer
 
 
 router = APIRouter(tags=["Land Farm Voice Survey"])
@@ -26,6 +30,7 @@ router = APIRouter(tags=["Land Farm Voice Survey"])
 
 class LandStartRequest(BaseModel):
     farm_id: Optional[str] = None
+    language: str = "en"
     enable_validation_question: bool = True
 
 
@@ -33,6 +38,7 @@ class LandAnswerRequest(BaseModel):
     session_id: str
     question_id: str
     answer_text: str
+    language: str = "en"
     input_method: str = "voice"
     confidence_score: Optional[float] = None
     enable_validation_question: Optional[bool] = None
@@ -68,15 +74,17 @@ class ExportJsonResponse(BaseModel):
     Summary: list[list[Any]]
 
 
-def _prompt_payload(p: Prompt | None) -> Optional[LandQuestionPayload]:
+async def _prompt_payload(p: Prompt | None, language: str = "en") -> Optional[LandQuestionPayload]:
     if not p:
         return None
+    text = await translate_question(p.text, language)
+    example = await translate_question(p.example or "", language) if p.example else p.example
     return LandQuestionPayload(
         id=p.id,
-        text=p.text,
+        text=text,
         type=p.kind,
         options=p.options or [],
-        example=p.example,
+        example=example,
     )
 
 
@@ -93,10 +101,11 @@ def _is_land_module(sess: Session) -> bool:
     return ctx.get("module") == "land_farm_voice"
 
 
-def _state_response(sess: Session) -> LandSurveyState:
+async def _state_response(sess: Session, language: str = "") -> LandSurveyState:
     context = sess.context_data or {}
     if "validation_enabled" not in context:
         context["validation_enabled"] = True
+    lang = language or context.get("language", "en")
     prompt = engine.get_current_prompt(context) if sess.status == "in_progress" else None
     answered = len(context.get("answers", {})) + sum(
         1 for c in context.get("crops", [])
@@ -107,7 +116,7 @@ def _state_response(sess: Session) -> LandSurveyState:
     return LandSurveyState(
         session_id=sess.id,
         status=sess.status,
-        current_question=_prompt_payload(prompt),
+        current_question=await _prompt_payload(prompt, lang),
         requires_confirmation=bool(context.get("pending_confirmation")),
         progress_answered=answered,
         progress_total=total,
@@ -115,8 +124,21 @@ def _state_response(sess: Session) -> LandSurveyState:
     )
 
 
+def _push_history(context: dict[str, Any], max_depth: int = 20) -> None:
+    """Snapshot context (excluding history itself) for undo. Keeps last max_depth entries."""
+    import json
+    snap = {k: v for k, v in context.items() if k != "_history"}
+    history = context.setdefault("_history", [])
+    history.append(json.loads(json.dumps(snap)))
+    if len(history) > max_depth:
+        history.pop(0)
+
+
 def _maybe_attach_market_prices(context: dict[str, Any], force_refresh: bool = False) -> None:
-    if context.get("collecting_crops", True):
+    # Default to False so sessions that completed before this key was written still get prices.
+    if context.get("collecting_crops", False):
+        return
+    if not context.get("crops"):
         return
     answers = context.get("answers", {})
     state = answers.get("farm_state")
@@ -151,6 +173,7 @@ def _maybe_attach_market_prices(context: dict[str, Any], force_refresh: bool = F
         )
         if p:
             crop["price_per_kg"] = p.price_per_kg
+            is_fallback = "benchmark" in p.source
             sources[crop_name] = {
                 "source": p.source,
                 "price_per_kg": p.price_per_kg,
@@ -159,12 +182,20 @@ def _maybe_attach_market_prices(context: dict[str, Any], force_refresh: bool = F
                 "record_count": p.record_count,
                 "confidence": p.confidence,
                 "cache_hit": p.cache_hit,
-                "mode": "auto",
+                "mode": "fallback" if is_fallback else "auto",
             }
+            if is_fallback and not market_price_service.has_api_key:
+                warn = (
+                    f"Using benchmark price ₹{p.price_per_kg}/kg for {crop_name} "
+                    f"(set DATA_GOV_IN_API_KEY in .env for live mandi prices). "
+                    "You can override this manually."
+                )
+                if warn not in warnings:
+                    warnings.append(warn)
             continue
 
         if current_price is None:
-            warn = f"Could not auto-fetch market price for {crop_name}; using 0 until refreshed or manually overridden."
+            warn = f"No price data found for '{crop_name}'. Please enter the price manually."
             if warn not in warnings:
                 warnings.append(warn)
 
@@ -175,29 +206,33 @@ async def start_land_survey(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    lang = body.language or "en"
+    init_ctx = engine.init_context(validation_enabled=body.enable_validation_question)
+    init_ctx["language"] = lang
     sess = Session(
         user_id=current_user.id,
         farm_id=body.farm_id,
         status="in_progress",
         current_step=0,
         total_steps=0,
-        context_data=engine.init_context(validation_enabled=body.enable_validation_question),
+        context_data=init_ctx,
     )
     db.add(sess)
     await db.flush()
-    return _state_response(sess)
+    return await _state_response(sess, lang)
 
 
 @router.get("/{session_id}", response_model=LandSurveyState)
 async def get_land_survey_session(
     session_id: str,
+    language: str = Query(default=""),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     sess = await _get_session_or_404(session_id, current_user.id, db)
     if not _is_land_module(sess):
         raise HTTPException(status_code=400, detail="Not a land-farm survey session.")
-    return _state_response(sess)
+    return await _state_response(sess, language)
 
 
 @router.post("/answer", response_model=LandSurveyState)
@@ -213,6 +248,7 @@ async def submit_land_survey_answer(
         raise HTTPException(status_code=400, detail="Session is not active.")
 
     context = deepcopy(sess.context_data or engine.init_context())
+    lang = body.language or context.get("language", "en")
     if "validation_enabled" not in context:
         context["validation_enabled"] = True
     if body.enable_validation_question is not None:
@@ -222,9 +258,16 @@ async def submit_land_survey_answer(
     if not current_prompt:
         sess.status = "completed"
         sess.completed_at = datetime.now(timezone.utc)
+        try:
+            await link_session_to_farm(sess, context, str(current_user.id), db)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning(
+                "Farm linking failed for land survey; skipping.", exc_info=True
+            )
         sess.context_data = context
         await db.flush()
-        return _state_response(sess)
+        return await _state_response(sess)
 
     # Confirmation phase: user must answer yes/no when validation is enabled.
     if current_prompt.id == "confirm_current":
@@ -261,15 +304,17 @@ async def submit_land_survey_answer(
                     }
                     sess.context_data = context
                     await db.flush()
-                    return _state_response(sess)
+                    return await _state_response(sess)
 
             if confirmed is False:
                 context["pending_confirmation"] = None
                 # re-ask original question
                 sess.context_data = context
                 await db.flush()
-                return _state_response(sess)
+                return await _state_response(sess)
 
+        # Snapshot context before mutation so back can restore it
+        _push_history(context)
         context = engine.apply_confirmed_answer(context, original_prompt, pending["value"])
         context["pending_confirmation"] = None
 
@@ -290,21 +335,30 @@ async def submit_land_survey_answer(
         if not next_prompt:
             sess.status = "completed"
             sess.completed_at = datetime.now(timezone.utc)
+            try:
+                await link_session_to_farm(sess, context, str(current_user.id), db)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).warning(
+                    "Farm linking failed for land survey; skipping.", exc_info=True
+                )
         await db.flush()
-        return _state_response(sess)
+        return await _state_response(sess)
 
-    # Normal answer: parse and either store pending confirmation or commit directly.
+    # Normal answer: extract core value from conversational sentence, then parse.
     if body.question_id != current_prompt.id:
         raise HTTPException(status_code=400, detail=f"Expected answer for {current_prompt.id}, got {body.question_id}")
 
+    answer_text = await extract_answer(body.answer_text, current_prompt.kind, lang)
     try:
-        parsed = engine.parse_prompt_answer(current_prompt, body.answer_text)
+        parsed = engine.parse_prompt_answer(current_prompt, answer_text)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
 
     skip_confirmation_for_prompt = current_prompt.id == "add_another_crop"
 
     if validation_enabled and not skip_confirmation_for_prompt:
+        # No history push here — the answer isn't confirmed yet
         context["pending_confirmation"] = {
             "question_id": current_prompt.id,
             "question_text": current_prompt.text,
@@ -315,6 +369,8 @@ async def submit_land_survey_answer(
             "display": parsed,
         }
     else:
+        # Snapshot before mutation
+        _push_history(context)
         context = engine.apply_confirmed_answer(context, current_prompt, parsed)
         context["pending_confirmation"] = None
 
@@ -322,7 +378,7 @@ async def submit_land_survey_answer(
             session_id=sess.id,
             question_id=current_prompt.id,
             question_text=current_prompt.text,
-            answer_text=body.answer_text,
+            answer_text=body.answer_text,      # store original spoken text for audit
             answer_data={"parsed": parsed},
             input_method=body.input_method,
             confidence_score=body.confidence_score,
@@ -333,10 +389,53 @@ async def submit_land_survey_answer(
         if not next_prompt:
             sess.status = "completed"
             sess.completed_at = datetime.now(timezone.utc)
+            try:
+                await link_session_to_farm(sess, context, str(current_user.id), db)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).warning(
+                    "Farm linking failed for land survey; skipping.", exc_info=True
+                )
 
     sess.context_data = context
     await db.flush()
-    return _state_response(sess)
+    return await _state_response(sess)
+
+
+@router.post("/{session_id}/back", response_model=LandSurveyState)
+async def go_back_land_survey(
+    session_id: str,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Undo the last confirmed answer and return to the previous question."""
+    sess = await _get_session_or_404(session_id, current_user.id, db)
+    if not _is_land_module(sess):
+        raise HTTPException(status_code=400, detail="Not a land-farm survey session.")
+
+    context = deepcopy(sess.context_data or engine.init_context())
+    history: list = context.get("_history", [])
+
+    # If there's a pending confirmation (not yet confirmed), just clear it
+    if context.get("pending_confirmation"):
+        context["pending_confirmation"] = None
+        sess.context_data = context
+        sess.status = "in_progress"
+        sess.completed_at = None
+        await db.flush()
+        return await _state_response(sess)
+
+    if not history:
+        raise HTTPException(status_code=400, detail="No previous question to go back to.")
+
+    # Restore last snapshot
+    prev = history.pop()
+    prev["_history"] = history
+    sess.context_data = prev
+    sess.status = "in_progress"
+    sess.completed_at = None
+    await db.flush()
+    return await _state_response(sess)
 
 
 @router.get("/{session_id}/dashboard")
@@ -365,7 +464,7 @@ async def land_survey_dashboard(
 @router.get("/{session_id}/export")
 async def land_survey_export(
     session_id: str,
-    format: str = Query("json", pattern="^(json|csv)$"),
+    format: str = Query(default="json", pattern="^(json|csv)$"),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -437,6 +536,24 @@ async def refresh_market_prices(
             for c in context.get("crops", [])
         ],
     }
+
+
+@router.get("/{session_id}/looker-url")
+async def land_survey_looker_url(
+    session_id: str,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return a Looker Studio dashboard URL pre-filtered to this session.
+
+    If LOOKER_STUDIO_REPORT_ID is not configured, returns setup instructions
+    so users know how to connect their Supabase PostgreSQL to Looker Studio.
+    """
+    sess = await _get_session_or_404(session_id, current_user.id, db)
+    if not _is_land_module(sess):
+        raise HTTPException(status_code=400, detail="Not a land-farm survey session.")
+
+    return get_dashboard_url(session_id)
 
 
 @router.post("/{session_id}/override-crop-price")
