@@ -11,7 +11,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,6 +20,9 @@ from core.database import get_db
 from models import Session, SessionAnswer
 from routers.auth import get_current_user
 from services.questionnaire_engine import engine as qe, QUESTION_INDEX
+from services.question_translator import translate_question
+from services.answer_extractor import extract_answer
+from services.farm_link_service import link_session_to_farm
 
 router = APIRouter()
 
@@ -28,12 +31,14 @@ router = APIRouter()
 
 class StartSessionRequest(BaseModel):
     farm_id: Optional[str] = None
+    language: str = "en"
 
 
 class AnswerRequest(BaseModel):
     session_id: str
     question_id: str
     answer_text: str
+    language: str = "en"
     input_method: str = "text"          # text | voice | select
     confidence_score: Optional[float] = None
     # Optional voice-side audit metadata for debugging and UX confidence confirmation.
@@ -65,11 +70,23 @@ class SessionState(BaseModel):
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _question_to_payload(q) -> QuestionPayload:
+def _question_to_payload(q, translated_text: str = "", translated_hint: str = "") -> QuestionPayload:
     return QuestionPayload(
-        id=q.id, text=q.text, type=q.type.value,
-        options=q.options, unit=q.unit, hint=q.hint, category=q.category,
+        id=q.id,
+        text=translated_text or q.text,
+        type=q.type.value,
+        options=q.options,
+        unit=q.unit,
+        hint=translated_hint or q.hint,
+        category=q.category,
     )
+
+
+async def _translate_and_build(q, language: str) -> QuestionPayload:
+    if language == "en" or not q:
+        return _question_to_payload(q)
+    text, hint = await translate_question(q.text, language), await translate_question(q.hint, language)
+    return _question_to_payload(q, text, hint)
 
 
 async def _get_session_or_404(session_id: str, user_id: str, db: AsyncSession) -> Session:
@@ -91,10 +108,11 @@ async def start_session(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new questionnaire session and return the first question."""
+    lang = body.language or "en"
     sess = Session(
         user_id=current_user.id,
         farm_id=body.farm_id,
-        context_data={"answered": [], "answers": {}},
+        context_data={"answered": [], "answers": {}, "language": lang},
         total_steps=len(qe.questions),
     )
     db.add(sess)
@@ -107,7 +125,7 @@ async def start_session(
     return SessionState(
         session_id=sess.id,
         status=sess.status,
-        current_question=_question_to_payload(next_q) if next_q else None,
+        current_question=await _translate_and_build(next_q, lang) if next_q else None,
         progress_answered=answered,
         progress_total=total,
         context=context,
@@ -130,9 +148,13 @@ async def submit_answer(
     if not question:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown question: {body.question_id}")
 
+    # For non-English voice answers, extract the core answer value from the sentence
+    lang = body.language or sess.context_data.get("language", "en")
+    answer_text = await extract_answer(body.answer_text, question.type.value, lang)
+
     # Parse answer
     try:
-        parsed = qe.parse_answer(question, body.answer_text)
+        parsed = qe.parse_answer(question, answer_text)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
 
@@ -149,7 +171,7 @@ async def submit_answer(
         session_id=sess.id,
         question_id=body.question_id,
         question_text=question.text,
-        answer_text=body.answer_text,
+        answer_text=body.answer_text,      # store original spoken text for audit
         answer_data=answer_data,
         input_method=body.input_method,
         confidence_score=body.confidence_score,
@@ -172,13 +194,32 @@ async def submit_answer(
     if qe.is_complete(context):
         sess.status = "completed"
         sess.completed_at = datetime.now(timezone.utc)
+        try:
+            from services.crop_intelligence_service import CropIntelligenceService
+            crop_result = CropIntelligenceService().evaluate_session(context)
+            if crop_result.get("evaluated"):
+                context["crop_intelligence"] = crop_result
+                sess.context_data = context
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning(
+                "Crop intelligence evaluation failed; skipping.", exc_info=True
+            )
+        # Link session to farm (deduplication by name)
+        try:
+            await link_session_to_farm(sess, context, str(current_user.id), db)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning(
+                "Farm linking failed; skipping.", exc_info=True
+            )
 
     await db.flush()
 
     return SessionState(
         session_id=sess.id,
         status=sess.status,
-        current_question=_question_to_payload(next_q) if next_q else None,
+        current_question=await _translate_and_build(next_q, lang) if next_q else None,
         progress_answered=answered,
         progress_total=total,
         context=context,
@@ -241,19 +282,22 @@ async def go_back_one_question(
 @router.get("/{session_id}", response_model=SessionState)
 async def get_session(
     session_id: str,
+    language: str = Query(""),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return the current state of a session."""
+    """Return the current state of a session. Pass ?language=hi to get question in that language."""
     sess = await _get_session_or_404(session_id, current_user.id, db)
     context = sess.context_data or {"answered": [], "answers": {}, "draft_answers": {}}
+    # Query param overrides stored language (for mid-survey language switch)
+    lang = language or context.get("language", "en")
     next_q = qe.get_next_question(context) if sess.status == "in_progress" else None
     answered, total = qe.progress(context)
 
     return SessionState(
         session_id=sess.id,
         status=sess.status,
-        current_question=_question_to_payload(next_q) if next_q else None,
+        current_question=await _translate_and_build(next_q, lang) if next_q else None,
         progress_answered=answered,
         progress_total=total,
         context=context,
