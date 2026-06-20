@@ -60,7 +60,7 @@ function EditableField({
             autoFocus
           />
           <span className="text-xs text-slate-400">{unit}</span>
-          <button onClick={() => { onOverride(parseFloat(draft) || null); setEditing(false); }}
+          <button onClick={() => { onOverride(draft === '' ? null : parseFloat(draft)); setEditing(false); }}
             className="text-green-600 hover:text-green-700">
             <Check className="w-3.5 h-3.5" />
           </button>
@@ -99,11 +99,17 @@ export function EnvironmentPanel({ farmId, onChange }: EnvironmentPanelProps) {
         setWeatherSource(data.current.source);
         setCurrent({ temp: data.current.temperature_c, humidity: data.current.humidity_pct });
         setLongTerm(data.long_term);
-        const next = {
-          ...env,
+        const next: EnvironmentData = {
           temperature_c: data.current.temperature_c,
           humidity_pct: data.current.humidity_pct,
           rainfall_mm_annual: data.long_term?.avg_rainfall_mm_annual ?? null,
+          soil_type: '',
+          soil_ph: null,
+          irrigation_method: '',
+          water_source: '',
+          use_current_weather: true,
+          temperature_override: null,
+          humidity_override: null,
         };
         setEnv(next);
         onChange(next);
@@ -184,7 +190,7 @@ export function EnvironmentPanel({ farmId, onChange }: EnvironmentPanelProps) {
         <div>
           <label className="text-xs font-medium text-slate-600 mb-1 block">Soil pH</label>
           <input type="number" min={0} max={14} step={0.1}
-            value={env.soil_ph ?? ''} onChange={e => update({ soil_ph: parseFloat(e.target.value) || null })}
+            value={env.soil_ph ?? ''} onChange={e => update({ soil_ph: e.target.value === '' ? null : parseFloat(e.target.value) })}
             placeholder="e.g. 6.5"
             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none" />
         </div>

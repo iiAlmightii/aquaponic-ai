@@ -70,7 +70,7 @@ export function CropFeasibility({ onNavigate }: { onNavigate?: (v: string) => vo
         farm_id: selectedFarmId,
         crops: mode === 'choose' ? selectedCrops : [],
         soil_type: envData?.soil_type || null,
-        soil_ph: envData?.soil_ph || null,
+        soil_ph: envData?.soil_ph ?? null,
         irrigation_method: envData?.irrigation_method || null,
         water_source: envData?.water_source || null,
         use_current_weather: true,

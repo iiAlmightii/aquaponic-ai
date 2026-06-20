@@ -1,8 +1,6 @@
 """routers/crop.py — Crop feasibility and intelligence endpoints."""
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -14,15 +12,9 @@ from core.database import get_db
 from models import Farm
 from routers.auth import get_current_user
 from services.crop_intelligence_service import CropIntelligenceService
-from services.weather_service import fetch_farm_weather
+from services.weather_service import fetch_farm_weather, _load_imd
 
 router = APIRouter()
-
-_IMD_PATH = Path(__file__).parent.parent / "data" / "imd_climate_normals.json"
-
-
-def _imd_data() -> dict:
-    return json.loads(_IMD_PATH.read_text())
 
 
 @router.get("/evaluate")
@@ -87,7 +79,7 @@ async def crop_weather(
         )
 
     weather = await fetch_farm_weather(farm.location)
-    imd = _imd_data()
+    imd = _load_imd()
     imd_state = imd.get(weather.state, {}) if weather.state else {}
 
     return {
@@ -163,6 +155,9 @@ async def analyze_farm(
     # Load market prices (fallback benchmark)
     from services.land_market_price_service import INDIA_FALLBACK_PRICES
 
+    # Hoist suggest_crops() out of the per-crop loop to avoid redundant calls
+    all_suggestions = svc.suggest_crops(area_m2, temp, body.soil_ph, str(farm.system_type or ""))
+
     results: list[dict[str, Any]] = []
     for crop_name in crops_to_analyze:
         scored = svc.score_crop(
@@ -215,15 +210,17 @@ async def analyze_farm(
         suggested_regions: list[str] = []
         if scored["score"] < 50:
             suggested_regions = svc.suggest_regions(crop_name)
-            alt_suggestions = svc.suggest_crops(area_m2, temp, body.soil_ph,
-                                                str(farm.system_type or ""))
             alternatives = [
-                {"crop": s["crop"], "score": svc.score_crop(
-                    s["crop"], area_m2, temp, body.soil_ph, humidity, rainfall_annual,
-                    body.soil_type)["score"],
-                 "feasibility": s["feasibility"]}
-                for s in alt_suggestions
-                if s["crop"] != crop_name and s["feasibility"] in ("feasible", "Excellent", "Good")
+                {
+                    "crop": s["crop"],
+                    "score": svc.score_crop(
+                        s["crop"], area_m2, temp, body.soil_ph, humidity, rainfall_annual,
+                        body.soil_type, system_type=str(farm.system_type or "")
+                    )["score"],
+                    "feasibility": s["feasibility"],
+                }
+                for s in all_suggestions
+                if s["crop"] != crop_name and s["feasibility"] in ("feasible", "challenging")
             ][:3]
 
         results.append({
