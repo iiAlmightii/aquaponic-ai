@@ -77,7 +77,7 @@ export function CropFeasibility({ onNavigate }: { onNavigate?: (v: string) => vo
         temperature_override: envData?.temperature_override ?? null,
         humidity_override: envData?.humidity_override ?? null,
       });
-      setResults(data.results || []);
+      setResults((data.results || []).sort((a: any, b: any) => b.score - a.score));
     } catch (e: any) {
       setError(e?.message || 'Analysis failed. Please try again.');
     } finally {
