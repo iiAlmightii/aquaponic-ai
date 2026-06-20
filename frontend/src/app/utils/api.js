@@ -91,6 +91,12 @@ export const reportAPI = {
   },
 }
 
+export const cropAPI = {
+  list:        ()      => api.get('/crop/list'),
+  weather:     (farmId) => api.get(`/crop/weather/${farmId}`),
+  analyzeFarm: (body)  => api.post('/crop/analyze-farm', body),
+}
+
 export const farmAPI = {
   list:               ()                    => api.get('/farm/'),
   get:                (id)                  => api.get(`/farm/${id}`),
