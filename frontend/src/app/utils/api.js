@@ -121,6 +121,7 @@ export const audioAPI = {
 
     return api.post('/audio/transcribe', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 90000, // Whisper on CPU can take 40-60s; override global 30s timeout
     })
   },
   correct: (auditId, originalTranscript, correctedTranscript, { language = 'en', questionId = null, sessionId = null } = {}) =>

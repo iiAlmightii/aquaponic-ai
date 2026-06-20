@@ -13,6 +13,36 @@ GENERIC_NON_ANSWERS = {
     "can you repeat", "repeat", "sorry", "pardon", "what", "yes", "no",
 }
 
+# Phrases that are clearly NOT crop names (STT noise, filler phrases)
+_NON_CROP_PHRASES = {
+    "thank you for watching", "thanks for watching", "thank you for listening",
+    "please subscribe", "like and subscribe", "see you next time",
+    "have a nice day", "have a good day", "goodbye", "bye bye",
+    "i don't know", "i do not know", "not sure", "no idea",
+    "none of the above", "that is all", "that's all",
+}
+
+# Words that strongly indicate this is NOT a crop name
+_NON_CROP_WORDS = {
+    "watching", "subscribe", "channel", "video", "please", "goodbye",
+    "listening", "podcast", "episode", "tutorial", "lesson",
+}
+
+
+def _is_valid_crop_name(name: str) -> bool:
+    """Return False if the name looks like STT noise rather than a real crop."""
+    lower = name.lower().strip()
+    if lower in _NON_CROP_PHRASES:
+        return False
+    words = lower.split()
+    # Reject if any word is a known non-crop indicator
+    if any(w in _NON_CROP_WORDS for w in words):
+        return False
+    # Reject names longer than 3 words (most crop names are 1-3 words)
+    if len(words) > 3:
+        return False
+    return True
+
 
 @dataclass
 class Prompt:
@@ -27,6 +57,25 @@ def _word_count(text: str) -> int:
     return len(re.findall(r"\S+", text or ""))
 
 
+def _clean_crop_name(raw: str) -> str:
+    """
+    Strip STT punctuation artifacts from a crop name and deduplicate repeated words.
+    E.g. "beans! beans!" → "beans", "toma-to, tomato" → "tomato".
+    """
+    # Keep only letters, digits, spaces, and hyphens (for names like "bitter-gourd")
+    cleaned = re.sub(r"[^a-z0-9\s\-]", " ", raw.lower())
+    cleaned = re.sub(r"\s+", " ", cleaned).strip(" -")
+    if not cleaned:
+        return ""
+    # Deduplicate consecutive repeated words: "beans beans" → "beans"
+    words = cleaned.split()
+    deduped: list[str] = []
+    for w in words:
+        if not deduped or w != deduped[-1]:
+            deduped.append(w)
+    return " ".join(deduped)
+
+
 def _is_generic_non_answer(text: str) -> bool:
     t = re.sub(r"[^a-z\s]", "", str(text or "").lower()).strip()
     return t in GENERIC_NON_ANSWERS
@@ -37,7 +86,7 @@ def _extract_number(raw: str) -> float | None:
     m = re.search(r"[-+]?\d*\.?\d+", cleaned)
     if not m:
         # Fallback for spoken numbers and common STT homophones.
-        token_map = {
+        units = {
             "zero": 0, "oh": 0,
             "one": 1, "won": 1,
             "two": 2, "to": 2, "too": 2, "cool": 2,
@@ -51,8 +100,15 @@ def _extract_number(raw: str) -> float | None:
             "ten": 10,
             "eleven": 11,
             "twelve": 12,
+            "thirteen": 13,
+            "fourteen": 14,
+            "fifteen": 15,
+            "sixteen": 16,
+            "seventeen": 17,
+            "eighteen": 18,
+            "nineteen": 19,
         }
-        tens_map = {
+        tens = {
             "twenty": 20,
             "thirty": 30,
             "forty": 40,
@@ -62,34 +118,45 @@ def _extract_number(raw: str) -> float | None:
             "eighty": 80,
             "ninety": 90,
         }
+        scales = {
+            "hundred": 100,
+            "thousand": 1000,
+            "lakh": 100000,
+            "million": 1000000,
+            "crore": 10000000,
+        }
 
         words = re.findall(r"[a-z]+", cleaned)
         if not words:
             return None
 
-        # Single-token quick match.
-        if len(words) == 1 and words[0] in token_map:
-            return float(token_map[words[0]])
-
-        # Basic composed number phrase support: e.g., "twenty three".
+        current = 0
         total = 0
-        used = False
-        i = 0
-        while i < len(words):
-            w = words[i]
-            if w in tens_map:
-                total += tens_map[w]
-                used = True
-                if i + 1 < len(words) and words[i + 1] in token_map and token_map[words[i + 1]] < 10:
-                    total += token_map[words[i + 1]]
-                    i += 1
-            elif w in token_map:
-                total += token_map[w]
-                used = True
-            i += 1
+        seen_number_word = False
 
-        if used:
-            return float(total)
+        for w in words:
+            if w in units:
+                current += units[w]
+                seen_number_word = True
+            elif w in tens:
+                current += tens[w]
+                seen_number_word = True
+            elif w in scales:
+                scale = scales[w]
+                if current == 0:
+                    # Allow standalone phrases like "thousand" to resolve to 1000.
+                    current = 1
+                if scale == 100:
+                    current *= scale
+                else:
+                    total += current * scale
+                    current = 0
+                seen_number_word = True
+            elif w in {"and", "point"}:
+                continue
+
+        if seen_number_word:
+            return float(total + current)
         return None
     try:
         return float(m.group())
@@ -126,10 +193,12 @@ class LandFarmSurveyEngine:
     """State-machine based guided survey for land-based farming financial planning."""
 
     linear_questions: list[Prompt] = [
+        Prompt("farm_name", "What is the name of your farm or project?", "text", example="Green Valley Farm"),
+        Prompt("farm_location", "Where is your farm located? Please mention city and state.", "text", example="Tumkur, Karnataka"),
         Prompt("land_area_sqm", "Enter total land area in square meters.", "number", example="5000"),
-        Prompt("water_liters_per_day", "Water usage per day in liters.", "number", example="1200"),
-        Prompt("electricity_units_per_month", "Electricity usage per month in units.", "number", example="350"),
-        Prompt("fertilizer_kg_per_month", "Fertilizer usage per month in kilograms.", "number", example="45"),
+        Prompt("water_cost_month", "Monthly water cost in rupees (borewell/tanker/canal charges).", "number", example="1500"),
+        Prompt("electricity_units_per_month", "Electricity usage per month in units (for pumps, motors, lighting).", "number", example="350"),
+        Prompt("fertilizer_cost_month", "Monthly fertilizer cost in rupees (all types: urea, DAP, organic, etc.).", "number", example="3500"),
         Prompt("worker_count", "Number of workers.", "number", example="4"),
         Prompt("salary_per_worker_month", "Monthly salary per worker in rupees.", "number", example="12000"),
         Prompt("land_rent_month", "Monthly land rent in rupees. Say zero if owned.", "number", example="0"),
@@ -180,7 +249,7 @@ class LandFarmSurveyEngine:
         collecting = bool(context.get("collecting_crops", True))
         crops: list[dict[str, Any]] = context.get("crops", [])
 
-        if "land_area_sqm" not in context.get("answers", {}):
+        if "farm_name" not in context.get("answers", {}):
             return self.linear_questions[0]
 
         if collecting:
@@ -233,31 +302,44 @@ class LandFarmSurveyEngine:
     def parse_prompt_answer(self, prompt: Prompt, raw_answer: str) -> Any:
         raw = str(raw_answer or "").strip()
         if not raw:
-            raise ValueError("Please provide an answer.")
+            raise ValueError("I didn't catch that. Please say your answer clearly.")
 
         if prompt.kind == "confirm":
             yn = _is_yes(raw)
             if yn is None:
-                raise ValueError("Please answer yes or no.")
+                raise ValueError("Please say 'yes' to confirm or 'no' to re-answer.")
             return yn
 
         if prompt.kind == "number":
             num = _extract_number(raw)
             if num is None:
-                raise ValueError("Please provide a number only.")
+                raise ValueError(
+                    f"I heard '{raw}' but could not find a number. "
+                    f"Please say just the number{' (e.g. ' + prompt.example + ')' if prompt.example else ''}."
+                )
+            if num < 0:
+                raise ValueError("Please provide a non-negative number.")
             return num
 
         if prompt.kind == "select":
             matched = _normalize_choice(raw, prompt.options or [])
             if not matched:
-                raise ValueError(f"Please answer with one of: {', '.join(prompt.options or [])}")
+                opts = ", ".join(prompt.options or [])
+                raise ValueError(f"I heard '{raw}'. Please choose one of: {opts}.")
             return matched
+
+        if prompt.id == "crop_name":
+            # Validate that the cleaned name is meaningful
+            cleaned = _clean_crop_name(raw)
+            if not cleaned or len(cleaned) < 2:
+                raise ValueError("I didn't catch the crop name. Please say a clear crop name like 'tomato' or 'wheat'.")
+            return raw  # return raw; apply_confirmed_answer will clean it
 
         if _is_generic_non_answer(raw):
             raise ValueError("I could not capture a valid answer. Please say the value clearly.")
 
         if _word_count(raw) > SHORT_ANSWER_MAX_WORDS:
-            raise ValueError("Please keep the answer short (single word, number, or short phrase).")
+            raise ValueError("Please keep the answer short — a single word or short phrase.")
         return raw
 
     def apply_confirmed_answer(self, context: dict[str, Any], prompt: Prompt, parsed_value: Any) -> dict[str, Any]:
@@ -281,13 +363,22 @@ class LandFarmSurveyEngine:
             # Open-ended crop capture: accept multiple crops in one short phrase.
             raw = str(parsed_value).strip().lower()
             chunks = re.split(r",|\band\b|\b&\b|/", raw)
+            _STOPWORDS = {"crop", "crops", "and", "or", "done", "finish", "finished", "stop", "nothing", "none"}
+            _seen_names: set[str] = set()
             parsed_names: list[str] = []
             for chunk in chunks:
-                c = re.sub(r"\s+", " ", chunk).strip(" .,-")
+                c = _clean_crop_name(chunk)
                 if not c:
                     continue
-                if c in {"crop", "crops", "and", "or", "done", "finish", "finished", "stop"}:
+                if c in _STOPWORDS:
                     continue
+                # Reject implausibly long crop names and known non-crop phrases
+                if len(c) > 40 or not _is_valid_crop_name(c):
+                    continue
+                # Deduplicate within this call
+                if c in _seen_names:
+                    continue
+                _seen_names.add(c)
                 parsed_names.append(c)
 
             if not parsed_names:
