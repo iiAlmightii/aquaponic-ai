@@ -1,0 +1,1500 @@
+[
+  {
+    "name": "Lettuce",
+    "category": "both",
+    "min_area_m2": 2,
+    "optimal_area_m2": 10,
+    "growth_days": 45,
+    "germination_days": 7,
+    "harvest_days": 38,
+    "cycles_per_year": 7,
+    "yield_per_m2_kg": 3.0,
+    "temperature_range": {
+      "min": 15,
+      "max": 25,
+      "optimal": 20,
+      "optimal_min": 17.5,
+      "optimal_max": 22.5
+    },
+    "ph_range": {
+      "min": 6.0,
+      "max": 8.0,
+      "optimal": 7.0
+    },
+    "difficulty": "easy",
+    "water_requirement_l_per_m2_day": 3.0,
+    "plant_density_per_m2": 16,
+    "system_types": [
+      "aquaponic",
+      "nft",
+      "dwc",
+      "raft",
+      "raised_bed",
+      "open_field"
+    ],
+    "notes": "Spacing 25x25 cm. Tolerates pH up to 7.99 in aquaponic systems. Fast-cycling; ideal for commercial aquaponic operations.",
+    "source": "Lettuce_production_in_aquaponic_and_hydroponic_sys.pdf (pH 7.99, temp 20.5\u00b0C, 25x25cm); FAO Technical Paper 589 Somerville 2014 (i4021e.pdf); UVI crop valuation (1-s2.0-S2352513416301533-main.pdf)",
+    "season": "perennial",
+    "humidity_range": {
+      "min": 50,
+      "max": 80
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 2500
+    },
+    "soil_types": [
+      "aquaponic_media",
+      "growing_medium"
+    ],
+    "suitable_indian_states": [
+      "Karnataka",
+      "Kerala",
+      "Maharashtra",
+      "Tamil Nadu",
+      "Andhra Pradesh",
+      "Goa"
+    ],
+    "water_requirement": "high"
+  },
+  {
+    "name": "Spinach",
+    "category": "both",
+    "min_area_m2": 2,
+    "optimal_area_m2": 8,
+    "growth_days": 45,
+    "germination_days": 6,
+    "harvest_days": 39,
+    "cycles_per_year": 4,
+    "yield_per_m2_kg": 2.5,
+    "temperature_range": {
+      "min": 10,
+      "max": 24,
+      "optimal": 18,
+      "optimal_min": 13.5,
+      "optimal_max": 20.5
+    },
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.5,
+      "optimal": 6.8
+    },
+    "difficulty": "easy",
+    "water_requirement_l_per_m2_day": 2.5,
+    "plant_density_per_m2": 25,
+    "system_types": [
+      "aquaponic",
+      "dwc",
+      "raft",
+      "raised_bed",
+      "open_field"
+    ],
+    "notes": "Cool-season crop. Bolts in high heat. Well-suited for Indian winter season. Compatible with Indian aquaponic systems with mint and coriander.",
+    "source": "Vegetable-and-Floriculture BC-Mohapatra-21-.pdf (ICAR-CIFA Indian context); A-Comparative-Study-Spinach.pdf; indian_horticulture_2021.pdf (NHB benchmarks); 12_156339.pdf (Indian aquaponics)",
+    "season": "perennial",
+    "humidity_range": {
+      "min": 50,
+      "max": 80
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 2500
+    },
+    "soil_types": [
+      "aquaponic_media",
+      "growing_medium"
+    ],
+    "suitable_indian_states": [
+      "Karnataka",
+      "Kerala",
+      "Maharashtra",
+      "Tamil Nadu",
+      "Andhra Pradesh",
+      "Goa"
+    ],
+    "water_requirement": "high"
+  },
+  {
+    "name": "Tomato",
+    "category": "both",
+    "min_area_m2": 5,
+    "optimal_area_m2": 20,
+    "growth_days": 110,
+    "germination_days": 10,
+    "harvest_days": 100,
+    "cycles_per_year": 2,
+    "yield_per_m2_kg": 8.0,
+    "temperature_range": {
+      "min": 18,
+      "max": 32,
+      "optimal": 25,
+      "optimal_min": 21.5,
+      "optimal_max": 28.5
+    },
+    "ph_range": {
+      "min": 5.5,
+      "max": 7.0,
+      "optimal": 6.3
+    },
+    "difficulty": "hard",
+    "water_requirement_l_per_m2_day": 6.0,
+    "plant_density_per_m2": 4,
+    "system_types": [
+      "aquaponic",
+      "media_bed",
+      "raised_bed",
+      "open_field"
+    ],
+    "notes": "Heavy feeder; needs media-bed system for aquaponics due to root support. High CAPEX. Rewarding yield if properly managed. Good for Indian summer season.",
+    "source": "pops_of_tomato.pdf; Vegetable-and-Floriculture BC-Mohapatra-21-.pdf (ICAR-CIFA); indian_horticulture_2021.pdf",
+    "season": "perennial",
+    "humidity_range": {
+      "min": 50,
+      "max": 80
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 2500
+    },
+    "soil_types": [
+      "aquaponic_media",
+      "growing_medium"
+    ],
+    "suitable_indian_states": [
+      "Karnataka",
+      "Kerala",
+      "Maharashtra",
+      "Tamil Nadu",
+      "Andhra Pradesh",
+      "Goa"
+    ],
+    "water_requirement": "high"
+  },
+  {
+    "name": "Basil",
+    "category": "both",
+    "min_area_m2": 1,
+    "optimal_area_m2": 5,
+    "growth_days": 28,
+    "germination_days": 7,
+    "harvest_days": 21,
+    "cycles_per_year": 10,
+    "yield_per_m2_kg": 2.0,
+    "temperature_range": {
+      "min": 18,
+      "max": 32,
+      "optimal": 26,
+      "optimal_min": 21.5,
+      "optimal_max": 28.5
+    },
+    "ph_range": {
+      "min": 5.5,
+      "max": 7.5,
+      "optimal": 6.5
+    },
+    "difficulty": "easy",
+    "water_requirement_l_per_m2_day": 2.0,
+    "plant_density_per_m2": 8,
+    "system_types": [
+      "aquaponic",
+      "nft",
+      "dwc",
+      "raft",
+      "media_bed",
+      "raised_bed"
+    ],
+    "notes": "8 plants/m\u00b2 measured yield 2.0 kg/m\u00b2 per 28-day batch in aquaponic tilapia system. Highly profitable herb. Multiple harvests per batch via cut-and-come-again.",
+    "source": "Tilapia_and_Basil.pdf (2.0 kg/m\u00b2 per 28-day cycle, 8 plants/m\u00b2); Evaluation_of_mint_and_sweet_basil_herbs_productio.pdf (6-8 plants/m\u00b2 aquaponic); 15.+78353.pdf (ICAR basil density)",
+    "season": "perennial",
+    "humidity_range": {
+      "min": 50,
+      "max": 80
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 2500
+    },
+    "soil_types": [
+      "aquaponic_media",
+      "growing_medium"
+    ],
+    "suitable_indian_states": [
+      "Karnataka",
+      "Kerala",
+      "Maharashtra",
+      "Tamil Nadu",
+      "Andhra Pradesh",
+      "Goa"
+    ],
+    "water_requirement": "high"
+  },
+  {
+    "name": "Mint",
+    "category": "both",
+    "min_area_m2": 1,
+    "optimal_area_m2": 4,
+    "growth_days": 35,
+    "germination_days": 10,
+    "harvest_days": 25,
+    "cycles_per_year": 8,
+    "yield_per_m2_kg": 1.6,
+    "temperature_range": {
+      "min": 15,
+      "max": 30,
+      "optimal": 22,
+      "optimal_min": 18.8,
+      "optimal_max": 26.2
+    },
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.5,
+      "optimal": 6.8
+    },
+    "difficulty": "easy",
+    "water_requirement_l_per_m2_day": 2.5,
+    "plant_density_per_m2": 8,
+    "system_types": [
+      "aquaponic",
+      "nft",
+      "dwc",
+      "raft",
+      "raised_bed"
+    ],
+    "notes": "6-8 plants/m\u00b2 in aquaponic tilapia system. Spreads aggressively in soil \u2014 containment recommended. High demand in Indian culinary market.",
+    "source": "Evaluation_of_mint_and_sweet_basil_herbs_productio.pdf (mint+basil aquaponic with tilapia, 6-8 plants/m\u00b2); 12_156339.pdf (Indian aquaponics with mint)",
+    "season": "perennial",
+    "humidity_range": {
+      "min": 50,
+      "max": 80
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 2500
+    },
+    "soil_types": [
+      "aquaponic_media",
+      "growing_medium"
+    ],
+    "suitable_indian_states": [
+      "Karnataka",
+      "Kerala",
+      "Maharashtra",
+      "Tamil Nadu",
+      "Andhra Pradesh",
+      "Goa"
+    ],
+    "water_requirement": "high"
+  },
+  {
+    "name": "Okra",
+    "category": "both",
+    "min_area_m2": 4,
+    "optimal_area_m2": 15,
+    "growth_days": 157,
+    "germination_days": 7,
+    "harvest_days": 150,
+    "cycles_per_year": 2,
+    "yield_per_m2_kg": 4.5,
+    "temperature_range": {
+      "min": 22,
+      "max": 38,
+      "optimal": 30,
+      "optimal_min": 26.0,
+      "optimal_max": 34.0
+    },
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.5,
+      "optimal": 6.5
+    },
+    "difficulty": "medium",
+    "water_requirement_l_per_m2_day": 4.5,
+    "plant_density_per_m2": 4,
+    "system_types": [
+      "aquaponic",
+      "media_bed",
+      "raised_bed",
+      "open_field"
+    ],
+    "notes": "Measured aquaponic yield 9.08 kg/m\u00b2 over 157 days in media-bed system. Heat-loving; ideal for tropical Indian climate. Conservative 4.5 kg/m\u00b2 used to account for land system variance.",
+    "source": "Performanceevaluationofdifferentbeddingmediainaquaponic...pdf (9.08 kg/m\u00b2/157 days media-bed); 1-s2.0-S2352513416301533-main.pdf (UVI crop valuation); indian_horticulture_2021.pdf",
+    "season": "perennial",
+    "humidity_range": {
+      "min": 50,
+      "max": 80
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 2500
+    },
+    "soil_types": [
+      "aquaponic_media",
+      "growing_medium"
+    ],
+    "suitable_indian_states": [
+      "Karnataka",
+      "Kerala",
+      "Maharashtra",
+      "Tamil Nadu",
+      "Andhra Pradesh",
+      "Goa"
+    ],
+    "water_requirement": "high"
+  },
+  {
+    "name": "Rice",
+    "category": "Cereal",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 20,
+      "max": 38,
+      "optimal_min": 22,
+      "optimal_max": 32
+    },
+    "humidity_range": {
+      "min": 60,
+      "max": 90
+    },
+    "rainfall_mm_annual": {
+      "min": 1000,
+      "max": 2500
+    },
+    "soil_types": [
+      "Alluvial",
+      "Clay",
+      "Clay Loam"
+    ],
+    "suitable_indian_states": [
+      "West Bengal",
+      "Uttar Pradesh",
+      "Punjab",
+      "Andhra Pradesh",
+      "Tamil Nadu",
+      "Odisha",
+      "Bihar",
+      "Chhattisgarh"
+    ],
+    "water_requirement": "high",
+    "ph_range": {
+      "min": 5.5,
+      "max": 6.5
+    },
+    "yield_per_m2_kg": 0.45,
+    "cycles_per_year": 2,
+    "growth_days": 120,
+    "min_area_m2": 500,
+    "optimal_area_m2": 2000,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field",
+      "paddy_field"
+    ],
+    "notes": "Kharif dominant. Requires standing water. Source: ICAR Rice Production Manual."
+  },
+  {
+    "name": "Wheat",
+    "category": "Cereal",
+    "season": "rabi",
+    "temperature_range": {
+      "min": 7,
+      "max": 25,
+      "optimal_min": 12,
+      "optimal_max": 18
+    },
+    "humidity_range": {
+      "min": 35,
+      "max": 70
+    },
+    "rainfall_mm_annual": {
+      "min": 400,
+      "max": 900
+    },
+    "soil_types": [
+      "Alluvial",
+      "Loamy",
+      "Clay Loam",
+      "Sandy Loam"
+    ],
+    "suitable_indian_states": [
+      "Punjab",
+      "Haryana",
+      "Uttar Pradesh",
+      "Madhya Pradesh",
+      "Rajasthan",
+      "Bihar"
+    ],
+    "water_requirement": "medium",
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 0.38,
+    "cycles_per_year": 1,
+    "growth_days": 125,
+    "min_area_m2": 500,
+    "optimal_area_m2": 2000,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Cool season. Indo-Gangetic Plains staple. Source: ICAR-IIWBR."
+  },
+  {
+    "name": "Maize",
+    "category": "Cereal",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 15,
+      "max": 38,
+      "optimal_min": 21,
+      "optimal_max": 27
+    },
+    "humidity_range": {
+      "min": 50,
+      "max": 80
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 1000
+    },
+    "soil_types": [
+      "Loamy",
+      "Sandy Loam",
+      "Red",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Karnataka",
+      "Andhra Pradesh",
+      "Rajasthan",
+      "Madhya Pradesh",
+      "Maharashtra",
+      "Uttar Pradesh",
+      "Bihar"
+    ],
+    "water_requirement": "medium",
+    "ph_range": {
+      "min": 5.8,
+      "max": 7.0
+    },
+    "yield_per_m2_kg": 0.52,
+    "cycles_per_year": 2,
+    "growth_days": 100,
+    "min_area_m2": 200,
+    "optimal_area_m2": 1000,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field",
+      "raised_bed"
+    ],
+    "notes": "Versatile cereal. Source: ICAR Directorate of Maize Research."
+  },
+  {
+    "name": "Groundnut",
+    "category": "Oilseed",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 20,
+      "max": 38,
+      "optimal_min": 25,
+      "optimal_max": 30
+    },
+    "humidity_range": {
+      "min": 40,
+      "max": 70
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 1200
+    },
+    "soil_types": [
+      "Sandy Loam",
+      "Red",
+      "Loamy",
+      "Laterite"
+    ],
+    "suitable_indian_states": [
+      "Gujarat",
+      "Andhra Pradesh",
+      "Tamil Nadu",
+      "Karnataka",
+      "Rajasthan",
+      "Maharashtra"
+    ],
+    "water_requirement": "low",
+    "ph_range": {
+      "min": 5.5,
+      "max": 7.0
+    },
+    "yield_per_m2_kg": 0.28,
+    "cycles_per_year": 1,
+    "growth_days": 110,
+    "min_area_m2": 300,
+    "optimal_area_m2": 1500,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Leguminous oilseed. Fixes nitrogen. Source: ICAR-NRCG."
+  },
+  {
+    "name": "Soybean",
+    "category": "Legume",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 15,
+      "max": 35,
+      "optimal_min": 23,
+      "optimal_max": 28
+    },
+    "humidity_range": {
+      "min": 60,
+      "max": 80
+    },
+    "rainfall_mm_annual": {
+      "min": 600,
+      "max": 1000
+    },
+    "soil_types": [
+      "Loamy",
+      "Clay Loam",
+      "Black Cotton",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Madhya Pradesh",
+      "Maharashtra",
+      "Rajasthan",
+      "Karnataka",
+      "Chhattisgarh"
+    ],
+    "water_requirement": "medium",
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.0
+    },
+    "yield_per_m2_kg": 0.22,
+    "cycles_per_year": 1,
+    "growth_days": 95,
+    "min_area_m2": 300,
+    "optimal_area_m2": 1000,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "MP produces 60%+ of national output. Source: ICAR-IISR."
+  },
+  {
+    "name": "Bajra",
+    "category": "Cereal",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 25,
+      "max": 45,
+      "optimal_min": 27,
+      "optimal_max": 35
+    },
+    "humidity_range": {
+      "min": 25,
+      "max": 60
+    },
+    "rainfall_mm_annual": {
+      "min": 300,
+      "max": 600
+    },
+    "soil_types": [
+      "Sandy",
+      "Sandy Loam",
+      "Red"
+    ],
+    "suitable_indian_states": [
+      "Rajasthan",
+      "Maharashtra",
+      "Gujarat",
+      "Uttar Pradesh",
+      "Haryana",
+      "Andhra Pradesh"
+    ],
+    "water_requirement": "low",
+    "ph_range": {
+      "min": 5.5,
+      "max": 8.0
+    },
+    "yield_per_m2_kg": 0.32,
+    "cycles_per_year": 1,
+    "growth_days": 85,
+    "min_area_m2": 200,
+    "optimal_area_m2": 1000,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Pearl millet. Highly drought-tolerant. Source: ICAR-AICPMIP."
+  },
+  {
+    "name": "Jowar",
+    "category": "Cereal",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 18,
+      "max": 40,
+      "optimal_min": 25,
+      "optimal_max": 35
+    },
+    "humidity_range": {
+      "min": 30,
+      "max": 70
+    },
+    "rainfall_mm_annual": {
+      "min": 400,
+      "max": 1000
+    },
+    "soil_types": [
+      "Clay",
+      "Loamy",
+      "Red",
+      "Black Cotton"
+    ],
+    "suitable_indian_states": [
+      "Maharashtra",
+      "Karnataka",
+      "Andhra Pradesh",
+      "Madhya Pradesh",
+      "Rajasthan"
+    ],
+    "water_requirement": "low",
+    "ph_range": {
+      "min": 5.5,
+      "max": 8.5
+    },
+    "yield_per_m2_kg": 0.3,
+    "cycles_per_year": 2,
+    "growth_days": 105,
+    "min_area_m2": 200,
+    "optimal_area_m2": 1000,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Sorghum. Drought-resistant. Source: ICAR-ICRISAT."
+  },
+  {
+    "name": "Arhar",
+    "category": "Legume",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 18,
+      "max": 38,
+      "optimal_min": 20,
+      "optimal_max": 30
+    },
+    "humidity_range": {
+      "min": 40,
+      "max": 75
+    },
+    "rainfall_mm_annual": {
+      "min": 600,
+      "max": 1000
+    },
+    "soil_types": [
+      "Sandy Loam",
+      "Loamy",
+      "Red",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Maharashtra",
+      "Madhya Pradesh",
+      "Karnataka",
+      "Uttar Pradesh",
+      "Andhra Pradesh"
+    ],
+    "water_requirement": "low",
+    "ph_range": {
+      "min": 5.5,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 0.2,
+    "cycles_per_year": 1,
+    "growth_days": 160,
+    "min_area_m2": 200,
+    "optimal_area_m2": 1000,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Pigeon Pea / Tur Dal. Fixes nitrogen. Source: ICAR-ICRISAT."
+  },
+  {
+    "name": "Moong",
+    "category": "Legume",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 25,
+      "max": 38,
+      "optimal_min": 28,
+      "optimal_max": 32
+    },
+    "humidity_range": {
+      "min": 40,
+      "max": 70
+    },
+    "rainfall_mm_annual": {
+      "min": 400,
+      "max": 750
+    },
+    "soil_types": [
+      "Sandy Loam",
+      "Loamy",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Rajasthan",
+      "Uttar Pradesh",
+      "Andhra Pradesh",
+      "Maharashtra",
+      "Tamil Nadu"
+    ],
+    "water_requirement": "low",
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 0.12,
+    "cycles_per_year": 2,
+    "growth_days": 72,
+    "min_area_m2": 200,
+    "optimal_area_m2": 800,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field",
+      "raised_bed"
+    ],
+    "notes": "Green Gram. Short-duration. Source: ICAR-AICPMIP."
+  },
+  {
+    "name": "Ragi",
+    "category": "Cereal",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 15,
+      "max": 35,
+      "optimal_min": 20,
+      "optimal_max": 30
+    },
+    "humidity_range": {
+      "min": 40,
+      "max": 80
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 1500
+    },
+    "soil_types": [
+      "Red",
+      "Sandy Loam",
+      "Laterite",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Karnataka",
+      "Andhra Pradesh",
+      "Tamil Nadu",
+      "Uttarakhand",
+      "Odisha",
+      "Maharashtra"
+    ],
+    "water_requirement": "low",
+    "ph_range": {
+      "min": 5.5,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 0.35,
+    "cycles_per_year": 1,
+    "growth_days": 120,
+    "min_area_m2": 200,
+    "optimal_area_m2": 1000,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Finger Millet. Karnataka grows 58% of India's Ragi. Source: ICAR Millet Research."
+  },
+  {
+    "name": "Sunflower",
+    "category": "Oilseed",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 18,
+      "max": 35,
+      "optimal_min": 23,
+      "optimal_max": 28
+    },
+    "humidity_range": {
+      "min": 40,
+      "max": 70
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 1000
+    },
+    "soil_types": [
+      "Loamy",
+      "Sandy Loam",
+      "Black Cotton",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Karnataka",
+      "Andhra Pradesh",
+      "Maharashtra",
+      "Tamil Nadu",
+      "Odisha"
+    ],
+    "water_requirement": "medium",
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 0.22,
+    "cycles_per_year": 2,
+    "growth_days": 95,
+    "min_area_m2": 200,
+    "optimal_area_m2": 1000,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Kharif and Rabi both possible. Source: ICAR-DRMR."
+  },
+  {
+    "name": "Cotton",
+    "category": "Fiber",
+    "season": "kharif",
+    "temperature_range": {
+      "min": 18,
+      "max": 38,
+      "optimal_min": 22,
+      "optimal_max": 32
+    },
+    "humidity_range": {
+      "min": 40,
+      "max": 65
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 1000
+    },
+    "soil_types": [
+      "Black Cotton",
+      "Loamy",
+      "Red",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Gujarat",
+      "Maharashtra",
+      "Telangana",
+      "Andhra Pradesh",
+      "Punjab",
+      "Haryana",
+      "Madhya Pradesh"
+    ],
+    "water_requirement": "medium",
+    "ph_range": {
+      "min": 5.8,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 0.15,
+    "cycles_per_year": 1,
+    "growth_days": 165,
+    "min_area_m2": 500,
+    "optimal_area_m2": 2000,
+    "difficulty": "hard",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Fiber crop. Deep black soils in Deccan ideal. Source: ICAR-CICR."
+  },
+  {
+    "name": "Barley",
+    "category": "Cereal",
+    "season": "rabi",
+    "temperature_range": {
+      "min": 5,
+      "max": 25,
+      "optimal_min": 12,
+      "optimal_max": 20
+    },
+    "humidity_range": {
+      "min": 35,
+      "max": 60
+    },
+    "rainfall_mm_annual": {
+      "min": 300,
+      "max": 700
+    },
+    "soil_types": [
+      "Loamy",
+      "Sandy Loam",
+      "Clay Loam",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Uttar Pradesh",
+      "Rajasthan",
+      "Haryana",
+      "Madhya Pradesh",
+      "Himachal Pradesh"
+    ],
+    "water_requirement": "low",
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 0.3,
+    "cycles_per_year": 1,
+    "growth_days": 110,
+    "min_area_m2": 300,
+    "optimal_area_m2": 1000,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Tolerates salinity. Source: ICAR-IIWBR."
+  },
+  {
+    "name": "Gram",
+    "category": "Legume",
+    "season": "rabi",
+    "temperature_range": {
+      "min": 8,
+      "max": 28,
+      "optimal_min": 15,
+      "optimal_max": 22
+    },
+    "humidity_range": {
+      "min": 30,
+      "max": 60
+    },
+    "rainfall_mm_annual": {
+      "min": 400,
+      "max": 700
+    },
+    "soil_types": [
+      "Sandy Loam",
+      "Loamy",
+      "Clay",
+      "Black Cotton"
+    ],
+    "suitable_indian_states": [
+      "Madhya Pradesh",
+      "Rajasthan",
+      "Maharashtra",
+      "Uttar Pradesh",
+      "Andhra Pradesh",
+      "Karnataka"
+    ],
+    "water_requirement": "low",
+    "ph_range": {
+      "min": 6.0,
+      "max": 8.0
+    },
+    "yield_per_m2_kg": 0.2,
+    "cycles_per_year": 1,
+    "growth_days": 105,
+    "min_area_m2": 200,
+    "optimal_area_m2": 1000,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Chickpea/Chana. MP produces 40% national output. Source: ICAR-IIPR."
+  },
+  {
+    "name": "Mustard",
+    "category": "Oilseed",
+    "season": "rabi",
+    "temperature_range": {
+      "min": 8,
+      "max": 25,
+      "optimal_min": 12,
+      "optimal_max": 20
+    },
+    "humidity_range": {
+      "min": 30,
+      "max": 60
+    },
+    "rainfall_mm_annual": {
+      "min": 300,
+      "max": 600
+    },
+    "soil_types": [
+      "Sandy Loam",
+      "Loamy",
+      "Alluvial",
+      "Clay Loam"
+    ],
+    "suitable_indian_states": [
+      "Rajasthan",
+      "Uttar Pradesh",
+      "Haryana",
+      "Madhya Pradesh",
+      "West Bengal",
+      "Gujarat"
+    ],
+    "water_requirement": "low",
+    "ph_range": {
+      "min": 5.8,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 0.15,
+    "cycles_per_year": 1,
+    "growth_days": 120,
+    "min_area_m2": 200,
+    "optimal_area_m2": 800,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Rajasthan produces 46% of India's mustard. Source: ICAR-DRMR."
+  },
+  {
+    "name": "Lentil",
+    "category": "Legume",
+    "season": "rabi",
+    "temperature_range": {
+      "min": 7,
+      "max": 25,
+      "optimal_min": 10,
+      "optimal_max": 18
+    },
+    "humidity_range": {
+      "min": 30,
+      "max": 55
+    },
+    "rainfall_mm_annual": {
+      "min": 300,
+      "max": 600
+    },
+    "soil_types": [
+      "Loamy",
+      "Sandy Loam",
+      "Clay Loam",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Madhya Pradesh",
+      "Uttar Pradesh",
+      "Bihar",
+      "West Bengal",
+      "Rajasthan"
+    ],
+    "water_requirement": "low",
+    "ph_range": {
+      "min": 5.5,
+      "max": 7.0
+    },
+    "yield_per_m2_kg": 0.15,
+    "cycles_per_year": 1,
+    "growth_days": 100,
+    "min_area_m2": 100,
+    "optimal_area_m2": 500,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "Masur Dal. Sensitive to waterlogging. Source: ICAR-IIPR."
+  },
+  {
+    "name": "Peas",
+    "category": "Legume",
+    "season": "rabi",
+    "temperature_range": {
+      "min": 7,
+      "max": 22,
+      "optimal_min": 10,
+      "optimal_max": 18
+    },
+    "humidity_range": {
+      "min": 40,
+      "max": 65
+    },
+    "rainfall_mm_annual": {
+      "min": 400,
+      "max": 700
+    },
+    "soil_types": [
+      "Loamy",
+      "Sandy Loam",
+      "Clay",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Uttar Pradesh",
+      "Madhya Pradesh",
+      "Himachal Pradesh",
+      "Punjab",
+      "Haryana",
+      "Uttarakhand"
+    ],
+    "water_requirement": "medium",
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 0.55,
+    "cycles_per_year": 1,
+    "growth_days": 80,
+    "min_area_m2": 100,
+    "optimal_area_m2": 500,
+    "difficulty": "easy",
+    "system_types": [
+      "open_field",
+      "raised_bed"
+    ],
+    "notes": "Garden peas. Cool season. UP produces 35% of India's peas. Source: ICAR-IIVR."
+  },
+  {
+    "name": "Potato",
+    "category": "Vegetable",
+    "season": "rabi",
+    "temperature_range": {
+      "min": 8,
+      "max": 25,
+      "optimal_min": 15,
+      "optimal_max": 20
+    },
+    "humidity_range": {
+      "min": 50,
+      "max": 80
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 1000
+    },
+    "soil_types": [
+      "Sandy Loam",
+      "Loamy",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Uttar Pradesh",
+      "West Bengal",
+      "Madhya Pradesh",
+      "Punjab",
+      "Bihar",
+      "Gujarat",
+      "Assam"
+    ],
+    "water_requirement": "high",
+    "ph_range": {
+      "min": 5.0,
+      "max": 6.5
+    },
+    "yield_per_m2_kg": 3.5,
+    "cycles_per_year": 1,
+    "growth_days": 90,
+    "min_area_m2": 100,
+    "optimal_area_m2": 500,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field",
+      "raised_bed"
+    ],
+    "notes": "UP produces 30% national output. Source: ICAR-CPRI."
+  },
+  {
+    "name": "Banana",
+    "category": "Fruit",
+    "season": "perennial",
+    "temperature_range": {
+      "min": 15,
+      "max": 40,
+      "optimal_min": 20,
+      "optimal_max": 30
+    },
+    "humidity_range": {
+      "min": 60,
+      "max": 90
+    },
+    "rainfall_mm_annual": {
+      "min": 1000,
+      "max": 2500
+    },
+    "soil_types": [
+      "Alluvial",
+      "Loamy",
+      "Red Laterite",
+      "Sandy Loam"
+    ],
+    "suitable_indian_states": [
+      "Andhra Pradesh",
+      "Maharashtra",
+      "Gujarat",
+      "Tamil Nadu",
+      "Kerala",
+      "Karnataka",
+      "Madhya Pradesh"
+    ],
+    "water_requirement": "high",
+    "ph_range": {
+      "min": 5.5,
+      "max": 7.0
+    },
+    "yield_per_m2_kg": 4.5,
+    "cycles_per_year": 1,
+    "growth_days": 450,
+    "min_area_m2": 100,
+    "optimal_area_m2": 1000,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "India is world's largest producer. Source: NHB & ICAR-NRCB."
+  },
+  {
+    "name": "Sugarcane",
+    "category": "Cash Crop",
+    "season": "perennial",
+    "temperature_range": {
+      "min": 20,
+      "max": 40,
+      "optimal_min": 25,
+      "optimal_max": 35
+    },
+    "humidity_range": {
+      "min": 60,
+      "max": 90
+    },
+    "rainfall_mm_annual": {
+      "min": 1000,
+      "max": 2500
+    },
+    "soil_types": [
+      "Loamy",
+      "Alluvial",
+      "Clay Loam",
+      "Sandy Loam"
+    ],
+    "suitable_indian_states": [
+      "Uttar Pradesh",
+      "Maharashtra",
+      "Karnataka",
+      "Tamil Nadu",
+      "Andhra Pradesh",
+      "Bihar",
+      "Gujarat"
+    ],
+    "water_requirement": "high",
+    "ph_range": {
+      "min": 6.0,
+      "max": 8.0
+    },
+    "yield_per_m2_kg": 12.0,
+    "cycles_per_year": 1,
+    "growth_days": 365,
+    "min_area_m2": 1000,
+    "optimal_area_m2": 5000,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field"
+    ],
+    "notes": "UP contributes 38% national production. Ratoon crop possible. Source: ICAR-IISR."
+  },
+  {
+    "name": "Turmeric",
+    "category": "Spice",
+    "season": "perennial",
+    "temperature_range": {
+      "min": 18,
+      "max": 35,
+      "optimal_min": 22,
+      "optimal_max": 28
+    },
+    "humidity_range": {
+      "min": 60,
+      "max": 90
+    },
+    "rainfall_mm_annual": {
+      "min": 1500,
+      "max": 2200
+    },
+    "soil_types": [
+      "Sandy Loam",
+      "Loamy",
+      "Red Laterite",
+      "Clay Loam"
+    ],
+    "suitable_indian_states": [
+      "Andhra Pradesh",
+      "Odisha",
+      "Karnataka",
+      "Tamil Nadu",
+      "West Bengal",
+      "Maharashtra",
+      "Assam"
+    ],
+    "water_requirement": "high",
+    "ph_range": {
+      "min": 4.5,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 3.2,
+    "cycles_per_year": 1,
+    "growth_days": 270,
+    "min_area_m2": 50,
+    "optimal_area_m2": 500,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field",
+      "raised_bed"
+    ],
+    "notes": "India produces 80%+ of world turmeric. AP's Nizamabad is the hub. Source: ICAR-IISR Spices."
+  },
+  {
+    "name": "Ginger",
+    "category": "Spice",
+    "season": "perennial",
+    "temperature_range": {
+      "min": 18,
+      "max": 32,
+      "optimal_min": 22,
+      "optimal_max": 28
+    },
+    "humidity_range": {
+      "min": 70,
+      "max": 90
+    },
+    "rainfall_mm_annual": {
+      "min": 1500,
+      "max": 2500
+    },
+    "soil_types": [
+      "Sandy Loam",
+      "Loamy",
+      "Red Laterite"
+    ],
+    "suitable_indian_states": [
+      "Kerala",
+      "Meghalaya",
+      "Andhra Pradesh",
+      "Odisha",
+      "West Bengal",
+      "Assam",
+      "Karnataka"
+    ],
+    "water_requirement": "high",
+    "ph_range": {
+      "min": 5.5,
+      "max": 6.5
+    },
+    "yield_per_m2_kg": 2.2,
+    "cycles_per_year": 1,
+    "growth_days": 210,
+    "min_area_m2": 50,
+    "optimal_area_m2": 300,
+    "difficulty": "hard",
+    "system_types": [
+      "open_field",
+      "raised_bed"
+    ],
+    "notes": "Shade-tolerant. Sensitive to waterlogging. Source: ICAR-IISR Spices."
+  },
+  {
+    "name": "Onion",
+    "category": "Vegetable",
+    "season": "rabi",
+    "temperature_range": {
+      "min": 12,
+      "max": 35,
+      "optimal_min": 20,
+      "optimal_max": 25
+    },
+    "humidity_range": {
+      "min": 40,
+      "max": 70
+    },
+    "rainfall_mm_annual": {
+      "min": 600,
+      "max": 800
+    },
+    "soil_types": [
+      "Sandy Loam",
+      "Loamy",
+      "Alluvial"
+    ],
+    "suitable_indian_states": [
+      "Maharashtra",
+      "Karnataka",
+      "Gujarat",
+      "Madhya Pradesh",
+      "Bihar",
+      "Andhra Pradesh"
+    ],
+    "water_requirement": "medium",
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 4.2,
+    "cycles_per_year": 2,
+    "growth_days": 105,
+    "min_area_m2": 50,
+    "optimal_area_m2": 500,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field",
+      "raised_bed"
+    ],
+    "notes": "Maharashtra produces 35% national output. Nashik is the onion capital. Source: NHB India."
+  },
+  {
+    "name": "Garlic",
+    "category": "Vegetable",
+    "season": "rabi",
+    "temperature_range": {
+      "min": 8,
+      "max": 22,
+      "optimal_min": 14,
+      "optimal_max": 18
+    },
+    "humidity_range": {
+      "min": 40,
+      "max": 70
+    },
+    "rainfall_mm_annual": {
+      "min": 500,
+      "max": 800
+    },
+    "soil_types": [
+      "Sandy Loam",
+      "Loamy",
+      "Clay Loam"
+    ],
+    "suitable_indian_states": [
+      "Madhya Pradesh",
+      "Gujarat",
+      "Rajasthan",
+      "Uttar Pradesh",
+      "Odisha",
+      "Maharashtra"
+    ],
+    "water_requirement": "medium",
+    "ph_range": {
+      "min": 6.0,
+      "max": 7.5
+    },
+    "yield_per_m2_kg": 2.8,
+    "cycles_per_year": 1,
+    "growth_days": 130,
+    "min_area_m2": 30,
+    "optimal_area_m2": 300,
+    "difficulty": "medium",
+    "system_types": [
+      "open_field",
+      "raised_bed"
+    ],
+    "notes": "MP produces 50% of India's garlic. Source: NHB Garlic Cultivation Guide."
+  }
+]
