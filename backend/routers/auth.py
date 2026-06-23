@@ -1,14 +1,18 @@
 """
-routers/auth.py — Authentication endpoints: register, login, refresh, me.
+routers/auth.py — Authentication endpoints: register, login, refresh, me, google.
 """
 
+from typing import Optional
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr, field_validator
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
-from services.auth_service import AuthService, decode_token
+from models import User
+from services.auth_service import AuthService, decode_token, create_access_token, create_refresh_token
 
 router = APIRouter()
 bearer = HTTPBearer()
@@ -45,6 +49,7 @@ class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+    user: Optional["UserResponse"] = None
 
 
 class UserResponse(BaseModel):
@@ -76,10 +81,11 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
-    """Authenticate and receive JWT tokens."""
+    """Authenticate and receive JWT tokens plus user profile in one round trip."""
     svc = AuthService(db)
-    access, refresh = await svc.authenticate(body.email, body.password)
-    return TokenResponse(access_token=access, refresh_token=refresh)
+    access, refresh, user = await svc.authenticate(body.email, body.password)
+    user_data = UserResponse(id=str(user.id), email=user.email, full_name=user.full_name, role=user.role)
+    return TokenResponse(access_token=access, refresh_token=refresh, user=user_data)
 
 
 @router.post("/refresh", response_model=TokenResponse)
@@ -104,3 +110,51 @@ async def get_me(current_user=Depends(get_current_user)):
         full_name=current_user.full_name,
         role=current_user.role,
     )
+
+
+class GoogleAuthRequest(BaseModel):
+    credential: str  # Google ID token from frontend
+
+
+@router.post("/google", response_model=TokenResponse)
+async def google_auth(body: GoogleAuthRequest, db: AsyncSession = Depends(get_db)):
+    """Sign in / register with Google OAuth. Verifies Google ID token, creates user if needed."""
+    # Verify token with Google
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                "https://www.googleapis.com/oauth2/v3/tokeninfo",
+                params={"id_token": body.credential},
+            )
+        if not resp.is_success:
+            raise HTTPException(status_code=401, detail="Invalid Google token.")
+        info = resp.json()
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=502, detail="Could not verify Google token.")
+
+    email = info.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Google token missing email.")
+
+    name = info.get("name") or info.get("given_name") or email.split("@")[0]
+
+    # Find or create user
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
+    if not user:
+        user = User(
+            email=email,
+            full_name=name,
+            hashed_password="",   # Google users have no password
+            is_verified=True,
+            role="farmer",
+        )
+        db.add(user)
+        await db.flush()
+
+    access = create_access_token(str(user.id), user.role)
+    refresh = create_refresh_token(str(user.id))
+    user_data = UserResponse(id=str(user.id), email=user.email, full_name=user.full_name, role=user.role)
+    return TokenResponse(access_token=access, refresh_token=refresh, user=user_data)

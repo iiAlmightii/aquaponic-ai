@@ -3,9 +3,11 @@ core/config.py — Application settings loaded from environment variables.
 Uses pydantic-settings for type-safe, validated configuration.
 """
 
+import json
 from functools import lru_cache
 from typing import List
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -40,6 +42,23 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3001",
         "https://app.aquaponic.ai",
     ]
+
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            v = v.strip()
+            if v == "*":
+                return ["*"]
+            if v.startswith("["):
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [o.strip() for o in v.split(",") if o.strip()]
+        return v
 
     # ── AI / LLM ─────────────────────────────────────────────────────────────
     OPENAI_API_KEY: str = ""

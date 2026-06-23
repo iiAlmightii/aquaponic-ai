@@ -53,9 +53,10 @@ api.interceptors.response.use(
 
 // ── Typed helpers ─────────────────────────────────────────────────────────────
 export const authAPI = {
-  register: (body)  => api.post('/auth/register', body),
-  login:    (body)  => api.post('/auth/login', body),
-  me:       ()      => api.get('/auth/me'),
+  register:   (body)       => api.post('/auth/register', body),
+  login:      (body)       => api.post('/auth/login', body),
+  me:         ()           => api.get('/auth/me'),
+  googleAuth: (credential) => api.post('/auth/google', { credential }),
 }
 
 export const sessionAPI = {

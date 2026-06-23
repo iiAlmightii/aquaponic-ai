@@ -33,6 +33,15 @@ const authSlice = (set, get) => ({
     await get().login(email, password)
   },
 
+  googleLogin: async (credential) => {
+    set({ authErr: null })
+    const { data } = await authAPI.googleAuth(credential)
+    localStorage.setItem('access_token',  data.access_token)
+    localStorage.setItem('refresh_token', data.refresh_token)
+    set({ user: data.user, isAuth: true })
+    try { await get().fetchFarms() } catch { /* non-fatal */ }
+  },
+
   logout: () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')

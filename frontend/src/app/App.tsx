@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth/Register';
 import { Dashboard } from './components/dashboard/Dashboard';
@@ -8,11 +9,12 @@ import { FarmManagement } from './components/farms/FarmManagement';
 import { Reports } from './components/reports/Reports';
 import { Analytics } from './components/analytics/Analytics';
 import { AIAdvisor } from './components/ai/AIAdvisor';
+import { CropFeasibility } from './components/crop/CropFeasibility';
 import { SurveysHub } from './components/surveys/SurveysHub';
 import { MainLayout } from './components/layout/MainLayout';
 import { useStore } from './store';
 
-type View = 'login' | 'register' | 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor';
+type View = 'login' | 'register' | 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor' | 'crop-feasibility';
 
 interface User {
   id: string;
@@ -21,7 +23,7 @@ interface User {
   role: string;
 }
 
-export default function App() {
+function App() {
   const [currentView, setCurrentView] = useState<View>('login');
   
   const isAuth = useStore((state: any) => state.isAuth);
@@ -69,6 +71,17 @@ export default function App() {
       {currentView === 'reports' && <Reports onNavigate={setCurrentView} />}
       {currentView === 'analytics' && <Analytics />}
       {currentView === 'ai-advisor' && <AIAdvisor />}
+      {currentView === 'crop-feasibility' && <CropFeasibility onNavigate={setCurrentView} />}
     </MainLayout>
+  );
+}
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
+export default function AppWithGoogle() {
+  return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <App />
+    </GoogleOAuthProvider>
   );
 }
