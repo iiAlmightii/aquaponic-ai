@@ -13,7 +13,7 @@ const BASE = import.meta.env.VITE_API_URL || fallbackBase
 export const api = axios.create({
   baseURL: BASE,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 30_000,
+  timeout: 70_000, // 70s — Render free tier cold start takes up to 60s
 })
 
 // ── Request: inject Bearer token ─────────────────────────────────────────────
