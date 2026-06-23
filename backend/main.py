@@ -99,6 +99,10 @@ async def lifespan(app: FastAPI):
     await _init_db()
     await init_redis()
     asyncio.create_task(_preload_whisper_in_background())
+    # Seed the corrections cache immediately, then keep it warm in the background
+    from routers.audio import _refresh_corrections_cache, _corrections_cache_loop
+    asyncio.create_task(_refresh_corrections_cache())
+    asyncio.create_task(_corrections_cache_loop())
     logger.info("✅ Startup complete | Redis connected")
     yield
     await close_redis()
@@ -121,7 +125,7 @@ app.state.limiter = limiter
 # ── Middleware ────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

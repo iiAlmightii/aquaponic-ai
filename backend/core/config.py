@@ -34,31 +34,29 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # ── CORS ─────────────────────────────────────────────────────────────────
-    ALLOWED_ORIGINS: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",
-        "https://app.aquaponic.ai",
-    ]
+    # Stored as a plain comma-separated string so Render/Heroku env vars never
+    # need JSON quoting. Parsed into a list in main.py via settings.allowed_origins_list.
+    ALLOWED_ORIGINS_STR: str = (
+        "http://localhost:3000,http://localhost:3001,http://localhost,"
+        "http://127.0.0.1:3000,http://127.0.0.1:3001,"
+        "https://aquaponic-ai.vercel.app"
+    )
 
-    @field_validator("ALLOWED_ORIGINS", mode="before")
-    @classmethod
-    def parse_allowed_origins(cls, v):
-        if isinstance(v, list):
-            return v
-        if isinstance(v, str):
-            v = v.strip()
-            if v == "*":
-                return ["*"]
-            if v.startswith("["):
-                try:
-                    return json.loads(v)
-                except Exception:
-                    pass
-            return [o.strip() for o in v.split(",") if o.strip()]
-        return v
+    @property
+    def allowed_origins_list(self) -> List[str]:
+        """Parse ALLOWED_ORIGINS_STR into a list for FastAPI CORSMiddleware."""
+        raw = self.ALLOWED_ORIGINS_STR.strip()
+        if not raw:
+            return ["*"]
+        if raw == "*":
+            return ["*"]
+        # Handle JSON array format ["a","b"] as well as comma-separated
+        if raw.startswith("["):
+            try:
+                return json.loads(raw)
+            except Exception:
+                pass
+        return [o.strip() for o in raw.split(",") if o.strip()]
 
     # ── AI / LLM ─────────────────────────────────────────────────────────────
     OPENAI_API_KEY: str = ""
