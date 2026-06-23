@@ -1,0 +1,55 @@
+# Lightweight requirements for Render free tier (no GPU, no Whisper)
+# Strips faster-whisper and all NVIDIA CUDA packages to stay under 512MB RAM.
+# STT is handled by Sarvam API (STT_PROVIDER=sarvam in Render env vars).
+
+setuptools==70.3.0
+wheel
+
+# Web Framework
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+python-multipart==0.0.9
+
+# Database
+sqlalchemy[asyncio]==2.0.31
+asyncpg==0.29.0
+alembic==1.13.2
+
+# Cache
+redis[asyncio]==5.0.7
+
+# Auth
+python-jose[cryptography]==3.3.0
+bcrypt==4.1.3
+pydantic-settings==2.3.4
+
+# Rate Limiting
+slowapi==0.1.9
+
+# AI / LLM
+anthropic==0.30.0
+openai==1.35.9
+
+# HTTP Client
+httpx==0.27.0
+requests==2.32.3
+
+# PDF Generation
+reportlab==4.2.2
+
+# Data
+numpy==1.26.4
+pandas==2.2.2
+
+# Google Sheets Sync
+google-api-python-client
+google-auth
+google-auth-httplib2
+
+# Utilities
+python-dotenv==1.0.1
+structlog==24.2.0
+
+# Testing
+pytest==8.2.2
+pytest-asyncio==0.23.7

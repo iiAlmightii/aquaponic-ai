@@ -7,17 +7,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Ensure ctranslate2/faster-whisper can find CUDA runtime libs installed via pip.
-ENV LD_LIBRARY_PATH="/usr/local/lib/python3.12/site-packages/nvidia/cublas/lib:/usr/local/lib/python3.12/site-packages/nvidia/cudnn/lib:/usr/local/lib/python3.12/site-packages/nvidia/cuda_runtime/lib:/usr/local/lib/python3.12/site-packages/nvidia/cuda_nvrtc/lib"
-
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir --retries 10 --timeout 600 -r requirements.txt
-
-# Optional large dependency - disabled for now (causes network timeouts)
-# To enable Whisper: change INSTALL_WHISPER=false to true and rebuild
+# INSTALL_WHISPER=true  → full requirements (faster-whisper + NVIDIA CUDA libs, needs GPU)
+# INSTALL_WHISPER=false → light requirements (Sarvam STT via API, no GPU needed, <512MB RAM)
 ARG INSTALL_WHISPER=false
-RUN if [ "$INSTALL_WHISPER" = "true" ]; then pip install --no-cache-dir --retries 10 --timeout 600 openai-whisper==20231117; fi
+
+COPY requirements.txt requirements-render.txt ./
+
+RUN if [ "$INSTALL_WHISPER" = "true" ]; then \
+      pip install --no-cache-dir --retries 10 --timeout 600 -r requirements.txt; \
+    else \
+      pip install --no-cache-dir --retries 10 --timeout 600 -r requirements-render.txt; \
+    fi
+
+# Only set CUDA paths when Whisper is installed
+RUN if [ "$INSTALL_WHISPER" = "true" ]; then \
+      echo 'export LD_LIBRARY_PATH="/usr/local/lib/python3.12/site-packages/nvidia/cublas/lib:/usr/local/lib/python3.12/site-packages/nvidia/cudnn/lib"' >> /etc/environment; \
+    fi
 
 # Copy application
 COPY . .
