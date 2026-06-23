@@ -18,6 +18,125 @@ FILLER_NOISE_RE = re.compile(
     flags=re.IGNORECASE,
 )
 
+# Phrases Whisper hallucinates on near-silent audio or when it picks up TTS echo.
+# Compared case-insensitively after stripping punctuation/whitespace.
+_WHISPER_HALLUCINATIONS: frozenset[str] = frozenset({
+    # English
+    "thank you very much",
+    "thank you",
+    "thanks for watching",
+    "thank you for watching",
+    "please subscribe",
+    "subscribe to our channel",
+    "like and subscribe",
+    "play it back",
+    "play it",
+    "subtitles by",
+    "transcribed by",
+    "www.mooji.org",
+    "you",
+    "i",
+    # Hindi — common Whisper hallucinations on near-silent Hindi audio
+    "धन्यवाद",           # dhanyavaad — "thank you"
+    "शुक्रिया",           # shukriya — "thanks"
+    "नमस्ते",             # namaste
+    "सब्सक्राइब करें",   # "please subscribe"
+    # Kannada
+    "ಧನ್ಯವಾದಗಳು",        # dhanyavadagalu — "thank you"
+    "ನಮಸ್ಕಾರ",            # namaskara
+    # Tamil
+    "நன்றி",              # nandri — "thank you"
+    "வணக்கம்",            # vanakkam — greeting
+    # Telugu
+    "ధన్యవాదాలు",         # dhanyavaadaalu — "thank you"
+    "నమస్కారం",           # namaskaram
+    # Marathi
+    "धन्यवाद",            # dhanyavaad (same script as Hindi)
+    "नमस्कार",             # namaskar
+})
+
+# Spoken number words including STT homophones → integer value
+_SPOKEN_UNITS: dict[str, int] = {
+    "zero": 0, "oh": 0,
+    "one": 1, "won": 1,
+    "two": 2, "to": 2, "too": 2,
+    "three": 3, "tree": 3, "free": 3,
+    "four": 4, "for": 4, "fore": 4,
+    "five": 5, "fife": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8, "ate": 8,
+    "nine": 9, "nein": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13, "fourteen": 14, "fifteen": 15,
+    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
+    "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50,
+    "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90,
+}
+_SPOKEN_SCALES: dict[str, int] = {
+    "hundred": 100,
+    "thousand": 1_000,
+    "lakh": 100_000,
+    "million": 1_000_000,
+    "crore": 10_000_000,
+}
+
+
+def extract_spoken_number(text: str) -> Optional[float]:
+    """Extract numeric value from speech text, resolving homophones and word-numbers."""
+    cleaned = re.sub(r"[,\s]+", " ", str(text or "").strip().lower())
+
+    # Direct digit match first
+    m = re.search(r"[-+]?\d*\.?\d+", cleaned)
+    if m:
+        try:
+            return float(m.group())
+        except ValueError:
+            pass
+
+    # Word-based number building
+    tokens = re.findall(r"[a-z]+", cleaned)
+    current = 0
+    total = 0
+    found = False
+    for token in tokens:
+        if token in _SPOKEN_UNITS:
+            current += _SPOKEN_UNITS[token]
+            found = True
+        elif token in _SPOKEN_SCALES:
+            scale = _SPOKEN_SCALES[token]
+            if current == 0:
+                current = 1
+            if scale >= 1_000:
+                total += current * scale
+                current = 0
+            else:
+                current *= scale
+            found = True
+        elif token in ("and", "point"):
+            continue
+        # ignore other words
+    if found:
+        return float(total + current)
+    return None
+
+
+def normalize_number_transcript(text: str) -> str:
+    """
+    For number-type questions, convert the raw STT transcript to a clean digit string.
+    E.g. "for" → "4", "two hundred fifty" → "250", "twenty thousand" → "20000".
+    Falls back to the original text if no number can be extracted.
+    """
+    val = extract_spoken_number(text)
+    if val is None:
+        return text
+    # Format as integer when possible, otherwise use general float format
+    if val == int(val) and val < 1e12:
+        return str(int(val))
+    return f"{val:g}"
+
 logger = logging.getLogger("aquaponic_ai.voice_interpretation")
 
 
@@ -70,22 +189,31 @@ def clamp01(v: float) -> float:
     return max(0.0, min(1.0, float(v)))
 
 
-def post_process_transcript(text: str) -> str:
+def post_process_transcript(text: str, language: str = "en") -> str:
     """
     General STT transcript cleanup:
+      - reject known Whisper hallucinations (near-silent audio / TTS echo)
       - remove filler tokens
-      - apply aquaponics vocabulary normalization
+      - apply aquaponics vocabulary normalization (English only)
       - normalize whitespace (keep casing as much as possible)
     """
     t = str(text or "").strip()
     if not t:
         return ""
 
+    # Reject hallucinations: strip trailing punctuation/whitespace before comparing
+    normalized_check = re.sub(r"[^\w\s]", "", t).strip().lower()
+    if normalized_check in _WHISPER_HALLUCINATIONS:
+        return ""
+
     t = FILLER_NOISE_RE.sub("", t)
-    t = re.sub(r"[“”]", '"', t)
-    t = re.sub(r"[‘’]", "'", t)
-    for pattern, replacement in DOMAIN_REPLACEMENTS:
-        t = pattern.sub(replacement, t)
+    t = re.sub("[\u201c\u201d]", '"', t)
+    t = re.sub('[\u2018\u2019]', "'", t)
+    # Domain corrections are English-specific — skip for other languages to avoid
+    # corrupting non-English words that happen to match English phonetic patterns.
+    if language == "en":
+        for pattern, replacement in DOMAIN_REPLACEMENTS:
+            t = pattern.sub(replacement, t)
     t = re.sub(r"[ \t]+", " ", t)
     t = re.sub(r"\s+([,.;!?])", r"\1", t)
     return t.strip()
