@@ -1,6 +1,9 @@
-# Ubuntu Deployment Guide — AquaponicAI
+# Ubuntu Deployment Guide — AquaponicAI (FarmConnect)
+**Full from-scratch setup on a fresh Ubuntu machine**
 
-## Prerequisites — Install on Ubuntu
+---
+
+## Step 1: Install System Dependencies
 
 ```bash
 # Update system
@@ -13,20 +16,21 @@ sudo apt install git -y
 sudo apt install docker.io -y
 sudo systemctl enable docker
 sudo systemctl start docker
-sudo usermod -aG docker $USER   # add yourself to docker group
-newgrp docker                    # apply without logout
+sudo usermod -aG docker $USER
+newgrp docker
 
-# Install Docker Compose
+# Install Docker Compose plugin
 sudo apt install docker-compose-plugin -y
 
-# Verify
+# Verify installations
 docker --version
 docker compose version
+git --version
 ```
 
 ---
 
-## Clone the Project
+## Step 2: Clone the Project from GitHub
 
 ```bash
 git clone https://github.com/iiAlmightii/aquaponic-ai.git
@@ -35,127 +39,167 @@ cd aquaponic-ai
 
 ---
 
-## Set Up Environment Variables
+## Step 3: Generate Secret Keys
+
+```bash
+# Run these two commands — copy the output values
+openssl rand -hex 32   # → paste as SECRET_KEY
+openssl rand -hex 32   # → paste as JWT_SECRET_KEY
+```
+
+---
+
+## Step 4: Create the .env File
 
 ```bash
 cp .env.example .env
-nano .env    # or: vim .env / gedit .env
+nano .env
 ```
 
-### Minimum required values to fill in:
+Fill in these required values (copy from current working machine if needed):
 
 ```env
-# Security — generate both with: openssl rand -hex 32
-SECRET_KEY=<paste generated value>
-JWT_SECRET_KEY=<paste generated value>
+# ── Security ─────────────────────────────────────────────────────────────────
+SECRET_KEY=<paste first openssl output here>
+JWT_SECRET_KEY=<paste second openssl output here>
 
-# Database — copy from your current .env
-DATABASE_URL=postgresql+asyncpg://postgres.iodggaldckguehuzoagm:...
-
-# Supabase (copy from current .env)
+# ── Database (Supabase — same as production) ──────────────────────────────────
+DATABASE_URL=postgresql+asyncpg://postgres.iodggaldckguehuzoagm:-UQ8z_b%24%3F3%2CkEt%21@aws-1-ap-south-1.pooler.supabase.com:5432/postgres?ssl=require&prepared_statement_cache_size=0
 SUPABASE_URL=https://iodggaldckguehuzoagm.supabase.co
-SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
+SUPABASE_ANON_KEY=<copy from current .env>
+SUPABASE_SERVICE_ROLE_KEY=<copy from current .env>
 
-# Redis — copy from current .env (Upstash)
-REDIS_URL=redis://default:gQAA...@assuring-reptile-152940.upstash.io:6379
+# ── Redis (Upstash) ───────────────────────────────────────────────────────────
+REDIS_URL=redis://default:gQAAAAAAAlVsAAIg...@assuring-reptile-152940.upstash.io:6379
 
-# Sarvam — copy from current .env
+# ── STT — use Sarvam (no GPU needed) ─────────────────────────────────────────
+STT_PROVIDER=sarvam
 SARVAM_API_KEY=sk_w3hmkl13_BcUvxuTXx9XudiebgzrvqaEs
 
-# STT — use Sarvam on Ubuntu (no GPU needed)
-STT_PROVIDER=sarvam
+# ── CORS — allow all initially, update after you know the frontend URL ─────────
+ALLOWED_ORIGINS_STR=*
 
-# CORS — allow all initially, update after Vercel deploy
-ALLOWED_ORIGINS=*
+# ── Frontend URL pointing to backend ─────────────────────────────────────────
+VITE_API_URL=http://<ubuntu-machine-ip>/api/v1
 
-# Frontend URL (pointing to wherever your frontend is deployed)
-VITE_API_URL=http://<ubuntu-machine-ip>:8000/api/v1
+# ── Google Sheets (copy from current .env) ────────────────────────────────────
+GOOGLE_SHEETS_SPREADSHEET_ID=1aNaxRpfuo1xi50RzagoO5yFG5St_yI8iZPcitMZln18
+GOOGLE_SHEETS_SERVICE_ACCOUNT_JSON='<copy full JSON string from current .env>'
+
+# ── Data.gov.in ───────────────────────────────────────────────────────────────
+DATA_GOV_IN_API_KEY=579b464db66ec23bdd000001199d989de3af4a4962f1b74903850a5a
+
+# ── These can stay as defaults ────────────────────────────────────────────────
+APP_NAME=AquaponicAI
+ENVIRONMENT=development
+DEBUG=false
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=7
+FASTER_WHISPER_MODEL=medium.en
+FASTER_WHISPER_DEVICE=cuda
 ```
 
-### Values you DON'T need to change:
-- `FASTER_WHISPER_*` — not used when `STT_PROVIDER=sarvam`
-- `EVAL_MODE` — set to false for production
-- `GOOGLE_SHEETS_*` — copy from current .env if you want sheets sync
+Save and close: `Ctrl+X → Y → Enter`
 
 ---
 
-## Build and Run
+## Step 5: Build and Start Everything
 
 ```bash
-# First time — build everything
+# First time — builds Docker images and starts all services
 docker compose up --build -d
 
-# Check containers are running
-docker compose ps
-
-# View logs if something fails
-docker compose logs backend --tail=50
-docker compose logs frontend --tail=20
+# Watch logs to confirm startup (wait for "Startup complete")
+docker compose logs backend --tail=50 -f
 ```
 
-### Expected running containers:
-```
-aquaponic-ai-backend-1    Up (healthy)   0.0.0.0:8000
-aquaponic-ai-frontend-1   Up             0.0.0.0:3001
-aquaponic-ai-nginx-1      Up             0.0.0.0:80
-aquaponic-ai-redis-1      Up (healthy)   (internal)
-```
+Press `Ctrl+C` to stop watching logs. The services keep running in background.
 
-Access the app at: `http://<ubuntu-machine-ip>` (port 80)
+### Expected output in logs:
+```
+✅ Supabase connection verified
+✅ Startup complete | Redis connected
+✅ Translation cache pre-warmed for 29 questions × 5 languages
+```
 
 ---
 
-## Verify Backend Works
+## Step 6: Verify Everything Works
 
 ```bash
+# Check all containers are running
+docker compose ps
+
+# Test backend is responding
 curl http://localhost:8000/api/docs
-# Should return the FastAPI Swagger UI HTML
+# Should return HTML for the Swagger docs page
+
+# Test backend health
+curl http://localhost:8000/health
 ```
+
+Access the app at: **http://\<ubuntu-machine-ip\>**
 
 ---
 
-## Common Issues
+## Step 7: Find Your Ubuntu Machine's IP Address
+
+```bash
+ip addr show | grep "inet " | grep -v "127.0.0.1"
+# Look for something like: inet 192.168.1.105/24
+```
+
+Use that IP (e.g. `192.168.1.105`) to access the app from other machines on the same network.
+
+---
+
+## Common Issues & Fixes
 
 ### Port 80 already in use
 ```bash
 sudo lsof -i :80
-sudo systemctl stop apache2   # or nginx if already installed
+sudo systemctl stop apache2   # or nginx if installed
+docker compose up -d
 ```
 
-### Backend fails to start — check logs
+### Backend fails to start
 ```bash
 docker compose logs backend --tail=100
+# Read the error — usually a missing env var or database connection issue
 ```
 
-### Missing imd_climate_normals.json
+### Missing data files (imd_climate_normals.json)
 ```bash
-docker exec aquaponic-ai-backend-1 ls data/
-# If missing:
+docker exec aquaponic-ai-backend-1 ls /app/data/
+# If imd_climate_normals.json is missing:
 docker cp backend/data/imd_climate_normals.json aquaponic-ai-backend-1:/app/data/
 docker restart aquaponic-ai-backend-1
 ```
 
-### STT not working
-Make sure `.env` has:
+### Voice not working (STT fails)
+Check that `STT_PROVIDER=sarvam` and `SARVAM_API_KEY` are set in `.env`:
+```bash
+grep "STT_PROVIDER\|SARVAM_API_KEY" .env
 ```
-STT_PROVIDER=sarvam
-SARVAM_API_KEY=sk_w3hmkl13_...
+
+### CORS errors on frontend
+Update `ALLOWED_ORIGINS_STR` in `.env` with the actual frontend URL:
+```bash
+nano .env
+# Change: ALLOWED_ORIGINS_STR=https://your-frontend-url.com
+docker compose restart backend
 ```
 
 ---
 
-## Update After Vercel Deploy
+## Pulling Updates from GitHub
 
-Once you have your Vercel URL (e.g. `https://aquaponic-ai.vercel.app`), update `.env`:
-
+When the codebase is updated:
 ```bash
-nano .env
-# Change:
-ALLOWED_ORIGINS=["https://aquaponic-ai.vercel.app","http://localhost:3001"]
-
-# Then restart backend
-docker compose restart backend
+git pull origin master
+docker compose up --build -d
+docker image prune -f   # clean up old images
 ```
 
 ---
@@ -163,16 +207,34 @@ docker compose restart backend
 ## Useful Commands
 
 ```bash
-# Stop everything
+# Stop all services
 docker compose down
 
-# Restart backend only
+# Restart just the backend
 docker compose restart backend
 
-# Update code and redeploy
-git pull
-docker compose up --build -d
+# View live backend logs
+docker compose logs backend -f
 
-# Clean old Docker images (save disk space)
+# View all service logs
+docker compose logs -f
+
+# Free up disk space (remove old Docker images)
 docker image prune -f
+
+# Stop everything including volumes (resets database — careful!)
+docker compose down -v
 ```
+
+---
+
+## Services Running After Setup
+
+| Service | Port | URL |
+|---|---|---|
+| Frontend (React) | 3001 → 80 | http://\<ip\> |
+| Backend (FastAPI) | 8000 | http://\<ip\>:8000/api/docs |
+| PostgreSQL | via Supabase | cloud |
+| Redis | via Upstash | cloud |
+
+Both database and Redis are cloud-hosted (Supabase + Upstash) — no local database setup needed.
