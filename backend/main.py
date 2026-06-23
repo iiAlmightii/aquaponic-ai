@@ -92,7 +92,6 @@ async def _init_db() -> None:
                 # can report db=error rather than the container crash-looping.
 
 
-@asynccontextmanager
 async def _prewarm_translations() -> None:
     """Pre-translate all aquaponic survey questions into supported Indian languages.
 
@@ -115,6 +114,7 @@ async def _prewarm_translations() -> None:
         logger.warning("Translation pre-warm failed — questions will translate on first request", exc_info=True)
 
 
+@asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup / shutdown lifecycle for the application."""
     logger.info("🚀 AquaponicAI starting up…")
