@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 CLIPS_DIR = Path("data/eval_clips")
-RESULTS_DIR = Path("eval/eval_results")
+RESULTS_DIR = Path("data/eval_results")
 STATUS_FILE = RESULTS_DIR / "status.json"
 
 
@@ -83,6 +83,19 @@ async def run_evaluation(background_tasks: BackgroundTasks):
     STATUS_FILE.write_text(json.dumps({"status": "running", "progress": 0, "total": 0}))
     background_tasks.add_task(_run_eval_background)
     return {"status": "started", "participants": ready}
+
+
+@router.get("/participant/{participant_id}")
+async def participant_status(participant_id: str):
+    master_path = CLIPS_DIR / "master_manifest.json"
+    if not master_path.exists():
+        return {"clips_recorded": 0, "complete": False}
+    master = json.loads(master_path.read_text())
+    info = master.get(participant_id, {})
+    return {
+        "clips_recorded": info.get("clips_recorded", 0),
+        "complete": info.get("complete", False),
+    }
 
 
 @router.get("/status")

@@ -339,56 +339,194 @@ class FinancialService:
         }
 
     def _generate_recommendations(self, inp: FinancialInputs, metrics: FinancialMetrics) -> list[dict]:
-        """Rule-based recommendations (to be replaced / augmented with LLM)."""
+        """Rule-based financial recommendations for aquaponic operations."""
         recs = []
+        monthly_opex = inp.monthly_opex
+        monthly_revenue = inp.monthly_revenue
+        monthly_net = monthly_revenue - monthly_opex
 
-        # Feed cost optimisation
-        feed_ratio = inp.monthly_feed_cost / inp.monthly_opex if inp.monthly_opex > 0 else 0
-        if feed_ratio > 0.40:
+        # ── Cash flow viability ──────────────────────────────────────────────
+        if monthly_net < 0:
+            shortfall = abs(monthly_net)
             recs.append({
-                "category": "Cost Reduction",
+                "category": "Cash Flow",
                 "priority": "high",
-                "title": "High feed cost ratio",
+                "title": "Operation is cash-flow negative",
                 "detail": (
-                    f"Feed costs represent {feed_ratio*100:.0f}% of your operating expenses. "
-                    "Consider bulk purchasing, growing duckweed as a supplement, or optimising FCR."
+                    f"Monthly expenses exceed revenue by ₹{shortfall:,.0f}. "
+                    "This is unsustainable long-term. Identify the highest cost line and target a 15–20% reduction, "
+                    "or secure an additional revenue stream (e.g., restaurant direct supply) before the next cycle."
                 ),
             })
-
-        # Payback period
-        if metrics.payback_period_months and metrics.payback_period_months > 24:
+        elif monthly_net < monthly_opex * 0.10:
             recs.append({
-                "category": "Revenue",
-                "priority": "medium",
-                "title": "Long payback period",
+                "category": "Cash Flow",
+                "priority": "high",
+                "title": "Very thin operating margin",
                 "detail": (
-                    f"Estimated payback is {metrics.payback_period_months:.0f} months. "
-                    "Adding a direct-to-consumer sales channel or value-added products can accelerate this."
+                    f"Net margin is below 10%. Any demand dip or cost spike could push the operation into loss. "
+                    "Target a minimum 20% buffer — review feed sourcing and utility contracts first."
                 ),
             })
 
-        # Positive ROI
-        if metrics.roi_percent > 20:
+        # ── Feed cost ────────────────────────────────────────────────────────
+        if monthly_opex > 0:
+            feed_ratio = inp.monthly_feed_cost / monthly_opex
+            if feed_ratio > 0.45:
+                saving = inp.monthly_feed_cost * 0.12
+                recs.append({
+                    "category": "Cost Reduction",
+                    "priority": "high",
+                    "title": f"Feed cost is {feed_ratio*100:.0f}% of OPEX — above safe threshold",
+                    "detail": (
+                        f"Target ≤35%. Actions: (1) buy in 50 kg+ bulk to cut 10–15%, "
+                        f"(2) supplement with duckweed (grows on nutrient-rich water), "
+                        f"(3) track feed-conversion ratio (FCR) — ideal is 1.2–1.6 for tilapia. "
+                        f"Potential saving: ₹{saving:,.0f}/month."
+                    ),
+                })
+            elif feed_ratio > 0.35:
+                recs.append({
+                    "category": "Cost Reduction",
+                    "priority": "medium",
+                    "title": f"Feed cost at {feed_ratio*100:.0f}% of OPEX — monitor closely",
+                    "detail": (
+                        "Still within range, but rising feed prices are common. Lock in bulk contracts "
+                        "and track FCR weekly to catch inefficiencies early."
+                    ),
+                })
+
+        # ── Labor cost ───────────────────────────────────────────────────────
+        if monthly_opex > 0:
+            labor_ratio = inp.monthly_labor_cost / monthly_opex
+            if labor_ratio > 0.45:
+                recs.append({
+                    "category": "Operations",
+                    "priority": "medium",
+                    "title": f"Labor is {labor_ratio*100:.0f}% of OPEX",
+                    "detail": (
+                        "High labor share suggests manual processes that could be automated. "
+                        "Consider: (1) automated fish feeders (₹8k–₹25k one-time), "
+                        "(2) drip/flood irrigation timers, (3) batch scheduling to reduce off-peak staffing."
+                    ),
+                })
+
+        # ── Utilities / energy ───────────────────────────────────────────────
+        if monthly_opex > 0:
+            util_ratio = inp.monthly_utilities_cost / monthly_opex
+            if util_ratio > 0.25:
+                recs.append({
+                    "category": "Energy",
+                    "priority": "medium",
+                    "title": f"Utilities are {util_ratio*100:.0f}% of OPEX — review energy use",
+                    "detail": (
+                        "Aquaponic pumps running 24/7 are the main draw. "
+                        "Switch to energy-efficient DC pumps, install a timer on grow-bed lighting, "
+                        "and consider a small solar setup for pump circuits — typical payback 18–24 months."
+                    ),
+                })
+
+        # ── Payback period ───────────────────────────────────────────────────
+        if metrics.payback_period_months:
+            if metrics.payback_period_months > 48:
+                recs.append({
+                    "category": "Viability",
+                    "priority": "high",
+                    "title": f"Payback of {metrics.payback_period_months:.0f} months is very long",
+                    "detail": (
+                        "Over 4 years payback makes external financing difficult. "
+                        "Revisit CAPEX: can any infrastructure be rented or phased? "
+                        "Also explore government NABARD / NHB subsidies for aquaponic setups."
+                    ),
+                })
+            elif metrics.payback_period_months > 24:
+                uplift = monthly_revenue * 0.15
+                recs.append({
+                    "category": "Revenue",
+                    "priority": "medium",
+                    "title": f"Payback is {metrics.payback_period_months:.0f} months",
+                    "detail": (
+                        f"Adding a direct-to-consumer channel (farmers market, restaurant subscription) "
+                        f"at 15% uplift would save ~{(metrics.payback_period_months * 0.15):.0f} months. "
+                        f"Potential uplift: ₹{uplift:,.0f}/month."
+                    ),
+                })
+
+        # ── Revenue concentration ────────────────────────────────────────────
+        if monthly_revenue > 0:
+            rev_fish_share = inp.monthly_fish_revenue / monthly_revenue
+            if rev_fish_share > 0.85:
+                recs.append({
+                    "category": "Diversification",
+                    "priority": "medium",
+                    "title": f"{rev_fish_share*100:.0f}% of revenue from fish — concentration risk",
+                    "detail": (
+                        "A disease event or price dip in fish markets would devastate income. "
+                        "High-value crops: basil (₹200–300/kg), lettuce (₹60–100/kg), microgreens (₹400–600/kg). "
+                        "Even 20% crop revenue share significantly reduces risk."
+                    ),
+                })
+            elif rev_fish_share < 0.15 and inp.monthly_fish_revenue > 0:
+                recs.append({
+                    "category": "Diversification",
+                    "priority": "low",
+                    "title": "Fish revenue is low relative to crops",
+                    "detail": (
+                        "If fish are taking up tank volume without matching revenue contribution, "
+                        "review stocking density or consider switching species (e.g., from carp to tilapia "
+                        "for faster turnover)."
+                    ),
+                })
+
+        # ── ROI and scaling ──────────────────────────────────────────────────
+        if metrics.roi_percent > 30 and metrics.payback_period_months and metrics.payback_period_months < 24:
+            monthly_surplus = monthly_net
             recs.append({
                 "category": "Growth",
                 "priority": "low",
-                "title": "Strong ROI — consider scaling",
+                "title": f"Strong ROI at {metrics.roi_percent:.1f}% — ready to scale",
                 "detail": (
-                    f"ROI of {metrics.roi_percent:.1f}% is excellent. "
-                    "Consider reinvesting profit to add a second grow bed or expand fish tanks."
+                    f"Monthly surplus of ₹{monthly_surplus:,.0f} could fund a second grow unit in "
+                    f"~{int(metrics.total_capex / monthly_surplus / 0.5)} months if 50% reinvested. "
+                    "Document your system specs and replicate; consistent ops are key before expanding."
                 ),
             })
 
-        # Revenue diversification
-        rev_fish_share = inp.monthly_fish_revenue / inp.monthly_revenue if inp.monthly_revenue > 0 else 0
-        if rev_fish_share > 0.85:
+        # ── Per-sqm productivity ─────────────────────────────────────────────
+        if metrics.land_area_sqm > 0 and metrics.revenue_per_sqm < 500:
             recs.append({
-                "category": "Diversification",
-                "priority": "medium",
-                "title": "Revenue concentration risk",
+                "category": "Productivity",
+                "priority": "low",
+                "title": f"Revenue per m² is ₹{metrics.revenue_per_sqm:.0f} — below benchmark",
                 "detail": (
-                    "Over 85% of revenue comes from fish. Introducing high-value crops like basil, "
-                    "lettuce, or microgreens can reduce risk and improve margins."
+                    "Well-optimised aquaponic systems typically achieve ₹800–₹1,500/m²/year. "
+                    "Consider vertical grow towers for leafy greens, which can 3–4× the crop area "
+                    "without additional floor space."
+                ),
+            })
+
+        # ── NPV check ───────────────────────────────────────────────────────
+        if metrics.npv < 0 and metrics.break_even_month == -1:
+            recs.append({
+                "category": "Viability",
+                "priority": "high",
+                "title": "Project does not break even within planning horizon",
+                "detail": (
+                    f"NPV is negative at ₹{metrics.npv:,.0f}. The current revenue-cost structure "
+                    "cannot recover the initial investment within the selected timeframe. "
+                    "Either reduce CAPEX, increase revenue per cycle, or extend the planning horizon."
+                ),
+            })
+
+        if not recs:
+            recs.append({
+                "category": "Performance",
+                "priority": "low",
+                "title": "Financial structure looks balanced",
+                "detail": (
+                    "Cost and revenue mix are within healthy bounds. "
+                    "Focus on consistent water quality, reliable market relationships, and tracking "
+                    "key ratios monthly to catch drift early."
                 ),
             })
 

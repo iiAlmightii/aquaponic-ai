@@ -16,7 +16,7 @@ import { useStore } from '../../store';
 import { SUPPORTED_LANGUAGES, LangCode, t, createT } from '../../utils/i18n';
 import { FloatingAdvisor } from '../ai/FloatingAdvisor';
 
-type View = 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor';
+type View = 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor' | 'crop-feasibility';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -45,7 +45,8 @@ const NAV_GROUP_DEFS = [
   {
     labelKey: 'nav_group_intel',
     items: [
-      { id: 'ai-advisor', nameKey: 'nav_ai_advisor', icon: Bot },
+      { id: 'ai-advisor',       nameKey: 'nav_ai_advisor',       icon: Bot },
+      { id: 'crop-feasibility', nameKey: 'nav_crop_feasibility', icon: Leaf },
     ],
   },
 ];
@@ -66,7 +67,8 @@ const PAGE_TITLE_KEYS: Record<string, string> = {
   farms:        'page_farms',
   reports:      'page_reports',
   analytics:    'page_analytics',
-  'ai-advisor': 'page_ai_advisor',
+  'ai-advisor':       'page_ai_advisor',
+  'crop-feasibility': 'page_crop_feasibility',
 };
 
 // Fix 1 & 4: Module-level NavItem with typed LucideIcon prop

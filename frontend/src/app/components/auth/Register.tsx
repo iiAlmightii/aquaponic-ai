@@ -4,6 +4,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Leaf } from 'lucide-react';
 import { useStore } from '../../store';
+import { LangCode, createT } from '../../utils/i18n';
 
 interface RegisterProps {
   onSwitchToLogin: () => void;
@@ -18,6 +19,8 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
   const [error, setError] = useState('');
 
   const register = useStore((state: any) => state.register);
+  const lang: LangCode = (useStore((s: any) => s.globalLanguage) || 'en') as LangCode;
+  const tr = createT(lang);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +28,7 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(tr('passwords_no_match'));
       setIsLoading(false);
       return;
     }
@@ -53,16 +56,16 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
                 Agri<span className="text-green-600">Sense</span>
               </span>
             </div>
-            <h1 className="text-gray-900">Create Account</h1>
+            <h1 className="text-gray-900">{tr('create_account')}</h1>
             <p className="text-muted-foreground">
-              Join AgriSense to start planning your farm
+              {tr('login_subtitle')}
             </p>
           </div>
 
           {/* Register Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">{tr('full_name')}</Label>
               <Input
                 id="name"
                 type="text"
@@ -75,7 +78,7 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{tr('email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -88,7 +91,7 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{tr('password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -102,7 +105,7 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">{tr('confirm_password')}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -126,18 +129,18 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
               className="w-full bg-emerald-600 hover:bg-emerald-700"
               disabled={isLoading}
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading ? tr('creating_account') : tr('create_account')}
             </Button>
           </form>
 
           {/* Login Link */}
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Already have an account? </span>
+            <span className="text-muted-foreground">{tr('already_account')} </span>
             <button
               onClick={onSwitchToLogin}
               className="text-emerald-600 hover:text-emerald-700 font-medium"
             >
-              Sign In
+              {tr('sign_in')}
             </button>
           </div>
         </div>

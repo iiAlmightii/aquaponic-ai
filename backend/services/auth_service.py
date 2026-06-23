@@ -80,8 +80,8 @@ class AuthService:
         logger.info("New user registered: %s", email)
         return user
 
-    async def authenticate(self, email: str, password: str) -> tuple[str, str]:
-        """Validate credentials and return (access_token, refresh_token)."""
+    async def authenticate(self, email: str, password: str) -> tuple[str, str, "User"]:
+        """Validate credentials and return (access_token, refresh_token, user)."""
         result = await self.db.execute(select(User).where(User.email == email, User.is_active == True))
         user: Optional[User] = result.scalar_one_or_none()
 
@@ -91,7 +91,7 @@ class AuthService:
         access_token = create_access_token(user.id, user.role)
         refresh_token = create_refresh_token(user.id)
         logger.info("User authenticated: %s", email)
-        return access_token, refresh_token
+        return access_token, refresh_token, user
 
     async def get_current_user(self, token: str) -> User:
         """Resolve JWT → User row. Raises 401 on failure."""

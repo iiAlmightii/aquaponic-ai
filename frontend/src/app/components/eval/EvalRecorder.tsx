@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? "http://localhost:8000/api/v1").replace(/\/$/, "");
+// Use relative paths to work correctly with ngrok and production URLs
+const API_BASE = "/api/v1";
 
 const CLIPS: { group: string; text: string }[] = [
   { group: "A", text: "My farm uses an NFT system." },
@@ -55,15 +56,30 @@ const GROUP_LABELS: Record<string, string> = {
   D: "Fillers & Homophones",
 };
 
+const LS_KEY = "eval_recorder_state";
+
+function loadSaved(): { participantId: string; clipIndex: number } | null {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.participantId === "string" && typeof parsed.clipIndex === "number")
+      return parsed;
+  } catch { /* ignore */ }
+  return null;
+}
+
 export function EvalRecorder() {
-  const [participantId, setParticipantId] = useState("");
+  const saved = loadSaved();
+  const [participantId, setParticipantId] = useState(saved?.participantId ?? "");
   const [started, setStarted] = useState(false);
-  const [clipIndex, setClipIndex] = useState(0);
+  const [clipIndex, setClipIndex] = useState(saved?.clipIndex ?? 0);
   const [clipState, setClipState] = useState<ClipState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [blob, setBlob] = useState<Blob | null>(null);
   const [evalStatus, setEvalStatus] = useState<EvalStatus | null>(null);
   const [polling, setPolling] = useState(false);
+  const [resumeChecking, setResumeChecking] = useState(false);
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -71,6 +87,13 @@ export function EvalRecorder() {
 
   const currentClip = CLIPS[clipIndex];
   const isFinished = clipIndex >= CLIPS.length;
+
+  // Persist state to localStorage whenever participant or progress changes
+  useEffect(() => {
+    if (participantId) {
+      localStorage.setItem(LS_KEY, JSON.stringify({ participantId, clipIndex }));
+    }
+  }, [participantId, clipIndex]);
 
   // Stop mic and cancel pending timer on unmount
   useEffect(() => {
@@ -173,15 +196,38 @@ export function EvalRecorder() {
     }
   }, []);
 
+  const handleStart = async () => {
+    if (!participantId) return;
+    setResumeChecking(true);
+    try {
+      const res = await fetch(`${API_BASE}/eval/participant/${encodeURIComponent(participantId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.complete) {
+          setClipIndex(CLIPS.length); // jump to done screen
+        } else if (data.clips_recorded > 0) {
+          setClipIndex(data.clips_recorded); // resume from where they left off
+        }
+      }
+    } catch { /* network error — just start fresh */ }
+    setResumeChecking(false);
+    setStarted(true);
+  };
+
   if (!started) {
     return (
       <div style={s.page}>
         <div style={s.card}>
-          <h1 style={s.title}>AgriSense — Audio Recording</h1>
+          <h1 style={s.title}>FarmConnect — Audio Recording</h1>
           <p style={s.subtitle}>
             You will record <strong>40 sentences</strong>, one at a time. Read each sentence
             exactly as shown. You can re-record any clip before moving on.
           </p>
+          {saved?.participantId && (
+            <p style={{ ...s.subtitle, color: "#22c55e", marginBottom: "0.5rem" }}>
+              Resuming as <strong>{saved.participantId}</strong> — clip {saved.clipIndex + 1} of 40
+            </p>
+          )}
           <input
             style={s.input}
             placeholder="Enter your name (e.g. priya_01)"
@@ -189,11 +235,11 @@ export function EvalRecorder() {
             onChange={(e) => setParticipantId(e.target.value.trim())}
           />
           <button
-            style={{ ...s.btn, ...s.btnPrimary, opacity: participantId ? 1 : 0.4 }}
-            disabled={!participantId}
-            onClick={() => setStarted(true)}
+            style={{ ...s.btn, ...s.btnPrimary, opacity: (participantId && !resumeChecking) ? 1 : 0.4 }}
+            disabled={!participantId || resumeChecking}
+            onClick={handleStart}
           >
-            Start Recording
+            {resumeChecking ? "Checking…" : saved?.participantId === participantId ? "Resume" : "Start Recording"}
           </button>
         </div>
       </div>

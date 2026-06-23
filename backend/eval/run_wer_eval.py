@@ -61,10 +61,15 @@ def run_evaluation(clips_dir: Path, results_dir: Path, status_file: Path) -> Non
         logger.info("Processing %d/%d — %s / %s", i + 1, total,
                     clip["participant_id"], clip["file"].name)
         wav_path = None
+        whisper_out = "[error]"
+        sarvam_out = "[error]"
         try:
             wav_path = _webm_to_wav(clip["file"])
             whisper_out = _transcribe_whisper(wav_path)
             sarvam_out = _transcribe_sarvam(wav_path)
+        except Exception as exc:
+            logger.error("Clip %s/%s failed: %s", clip["participant_id"],
+                         clip["file"].name, exc)
         finally:
             if wav_path is not None:
                 try:
@@ -73,6 +78,8 @@ def run_evaluation(clips_dir: Path, results_dir: Path, status_file: Path) -> Non
                     pass
 
         gt = _normalise(clip["ground_truth"])
+        whisper_norm = _normalise(whisper_out) if whisper_out != "[error]" else ""
+        sarvam_norm = _normalise(sarvam_out) if sarvam_out != "[error]" else ""
         rows.append({
             "participant_id": clip["participant_id"],
             "clip_id": clip["clip_id"],
@@ -80,8 +87,8 @@ def run_evaluation(clips_dir: Path, results_dir: Path, status_file: Path) -> Non
             "ground_truth": clip["ground_truth"],
             "whisper_transcript": whisper_out,
             "sarvam_transcript": sarvam_out,
-            "whisper_wer": round(jiwer.wer(gt, _normalise(whisper_out)), 4),
-            "sarvam_wer": round(jiwer.wer(gt, _normalise(sarvam_out)), 4),
+            "whisper_wer": round(jiwer.wer(gt, whisper_norm), 4) if whisper_norm else 1.0,
+            "sarvam_wer": round(jiwer.wer(gt, sarvam_norm), 4) if sarvam_norm else 1.0,
         })
         _write_status(status_file, "running", i + 1, total)
 
@@ -138,18 +145,20 @@ def _transcribe_whisper(wav_path: str) -> str:
 
 
 def _transcribe_sarvam(wav_path: str) -> str:
-    api_key = os.environ.get("SARVAM_API_KEY", "")
+    api_key = os.environ.get("SARVAM_API_KEY", "").strip()
     if not api_key:
         logger.warning("SARVAM_API_KEY not set — returning placeholder")
         return "[SARVAM_API_KEY not set]"
     with open(wav_path, "rb") as f:
         response = requests.post(
             "https://api.sarvam.ai/speech-to-text",
-            headers={"API-Subscription-Key": api_key},
+            headers={"api-subscription-key": api_key},
             files={"file": ("audio.wav", f, "audio/wav")},
-            data={"model": "saarika:v2", "language_code": "en-IN"},
+            data={"model": "saarika:v2.5", "language_code": "en-IN"},
             timeout=30,
         )
+    if not response.ok:
+        logger.error("Sarvam STT %d: %s", response.status_code, response.text)
     response.raise_for_status()
     return response.json().get("transcript", "")
 

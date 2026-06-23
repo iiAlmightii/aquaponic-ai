@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 
 function applyDomainCorrections(text) {
-  // Keep casing/punctuation as much as possible; only normalize aquaponics vocabulary.
   let t = String(text || '')
   t = t.replace(/\b(hydroponic|aquaponic)\b/gi, 'aquaponics')
   t = t.replace(/\bmedia\s+(video|bead|bid|bad|vet|bet|bread)\b/gi, 'media bed')
@@ -40,12 +39,91 @@ function extensionFromMime(mimeType) {
   return 'webm'
 }
 
+/**
+ * Silence detector using Web Audio API AnalyserNode.
+ * Calls onSilence() after the user has been silent for `silenceDurationMs`.
+ * Stops monitoring after `maxDurationMs` unconditionally (hard cap).
+ *
+ * @param {MediaStream} stream
+ * @param {{ silenceThresholdDb?: number, silenceDurationMs?: number, maxDurationMs?: number, onSilence: () => void }} opts
+ * @returns {{ stop: () => void }}
+ */
+function createSilenceDetector(stream, {
+  silenceThresholdDb = -40,   // RMS below this (in dBFS) = silence
+  silenceDurationMs = 1200,   // continuous silence needed to trigger stop
+  maxDurationMs = 15000,      // absolute hard cap on recording
+  onSilence,
+}) {
+  let stopped = false
+  let silenceSince = null
+
+  const ctx = new (window.AudioContext || window.webkitAudioContext)()
+  const source = ctx.createMediaStreamSource(stream)
+  const analyser = ctx.createAnalyser()
+  analyser.fftSize = 1024
+  source.connect(analyser)
+
+  const data = new Float32Array(analyser.fftSize)
+  const hardCapTimer = setTimeout(() => { if (!stopped) trigger() }, maxDurationMs)
+
+  function rms() {
+    analyser.getFloatTimeDomainData(data)
+    let sum = 0
+    for (let i = 0; i < data.length; i++) sum += data[i] * data[i]
+    return Math.sqrt(sum / data.length)
+  }
+
+  function trigger() {
+    if (stopped) return
+    stopped = true
+    clearTimeout(hardCapTimer)
+    ctx.close().catch(() => {})
+    onSilence()
+  }
+
+  let rafId
+  function tick() {
+    if (stopped) return
+    const level = rms()
+    const db = level > 0 ? 20 * Math.log10(level) : -Infinity
+    const isSilent = db < silenceThresholdDb
+
+    if (isSilent) {
+      if (silenceSince === null) silenceSince = performance.now()
+      else if (performance.now() - silenceSince >= silenceDurationMs) {
+        trigger()
+        return
+      }
+    } else {
+      silenceSince = null
+    }
+    rafId = requestAnimationFrame(tick)
+  }
+
+  // Small initial delay so the mic click/breath doesn't count as speech
+  const startTimer = setTimeout(() => { if (!stopped) rafId = requestAnimationFrame(tick) }, 300)
+
+  return {
+    stop() {
+      if (stopped) return
+      stopped = true
+      clearTimeout(hardCapTimer)
+      clearTimeout(startTimer)
+      cancelAnimationFrame(rafId)
+      ctx.close().catch(() => {})
+    },
+  }
+}
+
 export function useVoiceRecorder({
-  onResult,
-  onInterim,
+  onResult = undefined,
+  onInterim = undefined,
   phraseHints = '',
-  questionId,
-  autoStopMs = 7000,
+  questionId = undefined,
+  questionType = undefined,
+  language = 'en',
+  // autoStopMs is now used ONLY as the silence hard-cap (max recording duration)
+  autoStopMs = 15000,
   backendUrl = resolveDefaultBackendUrl(),
 } = {}) {
   const [isListening, setIsListening] = useState(false)
@@ -64,7 +142,7 @@ export function useVoiceRecorder({
   const mediaRecorderRef = useRef(null)
   const audioChunksRef = useRef([])
   const streamRef = useRef(null)
-  const autoStopTimerRef = useRef(null)
+  const silenceDetectorRef = useRef(null)
 
   const supported = typeof window !== 'undefined' && !!window.MediaRecorder && !!navigator?.mediaDevices?.getUserMedia
 
@@ -79,11 +157,7 @@ export function useVoiceRecorder({
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       })
       setMicPermission('granted')
       stream.getTracks().forEach((track) => track.stop())
@@ -93,6 +167,13 @@ export function useVoiceRecorder({
       return false
     }
   }, [supported])
+
+  const stop = useCallback(() => {
+    silenceDetectorRef.current?.stop()
+    silenceDetectorRef.current = null
+    if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') return
+    mediaRecorderRef.current.stop()
+  }, [])
 
   const start = useCallback(async () => {
     if (isListening || isProcessing || isStarting) return
@@ -106,11 +187,7 @@ export function useVoiceRecorder({
       setIsStarting(true)
       setError(null)
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       })
       streamRef.current = stream
       setMicPermission('granted')
@@ -139,14 +216,24 @@ export function useVoiceRecorder({
         setAlternatives([])
         setInterpretation(null)
         setEntityConfidence(null)
+
+        // Start silence detector — stops recording automatically when user finishes speaking
+        silenceDetectorRef.current = createSilenceDetector(stream, {
+          silenceThresholdDb: -40,
+          silenceDurationMs: 1200,
+          maxDurationMs: autoStopMs,
+          onSilence: () => {
+            if (mediaRecorderRef.current?.state === 'recording') {
+              mediaRecorderRef.current.stop()
+            }
+          },
+        })
       }
 
       mediaRecorder.onstop = async () => {
+        silenceDetectorRef.current?.stop()
+        silenceDetectorRef.current = null
         setIsListening(false)
-        if (autoStopTimerRef.current) {
-          clearTimeout(autoStopTimerRef.current)
-          autoStopTimerRef.current = null
-        }
 
         if (!audioChunksRef.current.length) {
           setError('No audio captured. Please try again.')
@@ -161,9 +248,10 @@ export function useVoiceRecorder({
         const audioBlob = new Blob(audioChunksRef.current, { type: recordedMime })
         const formData = new FormData()
         formData.append('file', audioBlob, `recording.${extension}`)
-        formData.append('language', 'en')
+        formData.append('language', language || 'en')
         if (questionContext) formData.append('question_context', questionContext)
         if (questionId) formData.append('question_id', questionId)
+        if (questionType) formData.append('question_type', questionType)
         const token = localStorage.getItem('access_token')
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined
 
@@ -203,27 +291,13 @@ export function useVoiceRecorder({
       }
 
       mediaRecorder.start()
-      autoStopTimerRef.current = setTimeout(() => {
-        if (mediaRecorderRef.current?.state === 'recording') {
-          mediaRecorderRef.current.stop()
-        }
-      }, autoStopMs)
     } catch {
       setIsStarting(false)
       setMicPermission('denied')
       setError('Microphone permission denied or unavailable.')
       setIsListening(false)
     }
-  }, [backendUrl, isListening, isProcessing, isStarting, onResult, supported, questionContext, questionId, autoStopMs])
-
-  const stop = useCallback(() => {
-    if (autoStopTimerRef.current) {
-      clearTimeout(autoStopTimerRef.current)
-      autoStopTimerRef.current = null
-    }
-    if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') return
-    mediaRecorderRef.current.stop()
-  }, [])
+  }, [backendUrl, isListening, isProcessing, isStarting, onResult, supported, questionContext, questionId, questionType, language, autoStopMs])
 
   const reset = useCallback(() => {
     setTranscript('')

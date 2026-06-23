@@ -2,18 +2,35 @@
 core/database.py — Async SQLAlchemy engine, session factory, and Base model.
 """
 
+import uuid
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
 from core.config import settings
 
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DEBUG,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,
-)
+engine_kwargs: dict = {
+    "echo": settings.DEBUG,
+    "pool_pre_ping": True,
+    "pool_size": 5,
+    "max_overflow": 10,
+    "pool_timeout": 30,
+    "pool_recycle": 1800,
+}
+
+if "pooler.supabase.com" in settings.DATABASE_URL:
+    # Session-mode pooler (port 5432) supports persistent connections.
+    # Disable asyncpg's prepared-statement cache to stay compatible with pgbouncer.
+    engine_kwargs["connect_args"] = {
+        "statement_cache_size": 0,
+        "prepared_statement_name_func": lambda: f"__asyncpg_{uuid.uuid4().hex}__",
+        "timeout": 30,
+        "command_timeout": 60,
+    }
+else:
+    pass  # local postgres — use defaults above
+
+engine = create_async_engine(settings.DATABASE_URL, **engine_kwargs)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

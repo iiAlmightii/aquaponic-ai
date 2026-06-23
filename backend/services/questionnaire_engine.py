@@ -247,6 +247,15 @@ QUESTION_BANK: list[Question] = [
         category="financial",
     ),
     Question(
+        id="monthly_maintenance_cost",
+        text="What are your monthly maintenance costs (repairs, consumables, water treatment chemicals)?",
+        type=QuestionType.NUMBER,
+        unit="₹/month",
+        min_value=0,
+        category="financial",
+        hint="Include pipe repairs, filter media, pH-adjustment chemicals, and minor equipment fixes.",
+    ),
+    Question(
         id="monthly_fish_revenue",
         text="What is your expected monthly revenue from fish sales?",
         type=QuestionType.NUMBER,
@@ -361,9 +370,13 @@ class QuestionnaireEngine:
             lower = re.sub(r'[^a-z0-9\s]', '', raw.lower())
             for opt in question.options:
                 opt_lower = re.sub(r'[^a-z0-9\s]', '', opt.lower())
-                if opt_lower in lower:
+                if opt_lower in lower and opt not in matched:
                     matched.append(opt)
-            return matched if matched else [raw]
+            # If nothing matched, treat the entire answer as a single free-form entry
+            if not matched:
+                cleaned_raw = re.sub(r'[^a-z0-9\s\-]', '', raw.lower()).strip()
+                return [cleaned_raw] if cleaned_raw else [raw]
+            return matched
 
         if question.id == "farm_location":
             return self._parse_india_city_state(raw)
@@ -419,10 +432,19 @@ class QuestionnaireEngine:
             except ValueError:
                 pass
 
-        # Fallback path: basic spoken-number words (e.g. "fifty", "one hundred twenty").
+        # Fallback path: basic spoken-number words including STT homophones.
         units = {
-            "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
-            "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+            "zero": 0, "oh": 0,
+            "one": 1, "won": 1,
+            "two": 2, "to": 2, "too": 2,
+            "three": 3, "tree": 3, "free": 3,
+            "four": 4, "for": 4, "fore": 4,
+            "five": 5, "fife": 5,
+            "six": 6,
+            "seven": 7,
+            "eight": 8, "ate": 8,
+            "nine": 9, "nein": 9,
+            "ten": 10,
             "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14,
             "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
         }

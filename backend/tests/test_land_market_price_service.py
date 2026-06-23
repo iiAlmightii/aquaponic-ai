@@ -71,5 +71,44 @@ def test_fetch_retries_and_non_fatal(monkeypatch):
     monkeypatch.setenv("LAND_MARKET_MAX_RETRIES", "1")
     svc = LandMarketPriceService()
     price = svc.fetch_price_per_kg("tomato")
-    assert price is None
+    assert price is not None
+    assert "benchmark" in price.source.lower()
     assert attempts["count"] >= 2
+
+
+def test_normalizes_bengaluru_district_and_state_alias(monkeypatch):
+    calls = []
+
+    def fake_get(url, params, timeout):
+        calls.append(dict(params))
+        return DummyResponse(200, {"records": [{"modal_price": "2200"}]})
+
+    monkeypatch.setattr("requests.get", fake_get)
+    monkeypatch.setenv("LAND_MARKET_ENABLE_REALTIME", "true")
+    svc = LandMarketPriceService()
+
+    price = svc.fetch_price_per_kg("tomato", state="ka", district="bangalore")
+
+    assert price is not None
+    assert calls
+    assert calls[0].get("filters[state]") == "Karnataka"
+    assert calls[0].get("filters[district]") == "Bengaluru Urban"
+
+
+def test_infers_state_from_known_district(monkeypatch):
+    calls = []
+
+    def fake_get(url, params, timeout):
+        calls.append(dict(params))
+        return DummyResponse(200, {"records": [{"modal_price": "1800"}]})
+
+    monkeypatch.setattr("requests.get", fake_get)
+    monkeypatch.setenv("LAND_MARKET_ENABLE_REALTIME", "true")
+    svc = LandMarketPriceService()
+
+    price = svc.fetch_price_per_kg("onion", state="", district="bengaluru")
+
+    assert price is not None
+    assert calls
+    assert calls[0].get("filters[state]") == "Karnataka"
+    assert calls[0].get("filters[district]") == "Bengaluru Urban"

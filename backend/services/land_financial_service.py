@@ -30,6 +30,8 @@ def compute_land_financials(context: dict[str, Any]) -> dict[str, Any]:
     pesticide_month = f("pesticide_cost_month")
     fuel_month = f("fuel_cost_month")
     transport_month = f("transport_cost_month")
+    fertilizer_month = f("fertilizer_cost_month")
+    water_cost_month = f("water_cost_month")
     machines_capex = f("machines_cost_total")
     setup_capex = f("setup_cost_total")
 
@@ -44,6 +46,8 @@ def compute_land_financials(context: dict[str, Any]) -> dict[str, Any]:
     cost_pesticide_annual = pesticide_month * 12
     cost_fuel_annual = fuel_month * 12
     cost_transport_annual = transport_month * 12
+    cost_fertilizer_annual = fertilizer_month * 12
+    cost_water_annual = water_cost_month * 12
 
     annual_cost = (
         cost_labor_annual
@@ -55,6 +59,8 @@ def compute_land_financials(context: dict[str, Any]) -> dict[str, Any]:
         + cost_pesticide_annual
         + cost_fuel_annual
         + cost_transport_annual
+        + cost_fertilizer_annual
+        + cost_water_annual
     )
     total_capex = machines_capex + setup_capex
 
@@ -137,6 +143,8 @@ def compute_land_financials(context: dict[str, Any]) -> dict[str, Any]:
         "pesticide": round(cost_pesticide_annual, 2),
         "fuel": round(cost_fuel_annual, 2),
         "transport": round(cost_transport_annual, 2),
+        "fertilizer": round(cost_fertilizer_annual, 2),
+        "water": round(cost_water_annual, 2),
     }
 
     summary = {
@@ -154,12 +162,209 @@ def compute_land_financials(context: dict[str, Any]) -> dict[str, Any]:
         "labor_efficiency_ratio": round(labor_efficiency_ratio, 3),
     }
 
+    recommendations = _generate_land_recommendations(
+        summary=summary,
+        costs=costs_breakdown,
+        crop_rows=crop_rows,
+        workers=workers,
+        salary=salary,
+        spoilage_percent=spoilage_percent,
+        total_revenue=total_revenue,
+        annual_cost=annual_cost,
+        total_capex=total_capex,
+    )
+
     return {
         "summary": summary,
         "cost_breakdown": costs_breakdown,
         "crop_performance": crop_rows,
         "warnings": warnings,
+        "recommendations": recommendations,
     }
+
+
+def _generate_land_recommendations(
+    summary: dict,
+    costs: dict,
+    crop_rows: list,
+    workers: float,
+    salary: float,
+    spoilage_percent: float,
+    total_revenue: float,
+    annual_cost: float,
+    total_capex: float,
+) -> list[dict]:
+    """Rule-based financial recommendations for land-based farm operations."""
+    recs = []
+    profit = float(summary.get("profit", 0) or 0)
+    roi = summary.get("roi_percent")
+
+    def c(key: str) -> float:
+        return float(costs.get(key, 0) or 0)
+
+    # ── Profitability ───────────────────────────────────────────────────────
+    if total_revenue > 0 and profit < 0:
+        recs.append({
+            "category": "Cash Flow",
+            "priority": "high",
+            "title": "Farm is operating at a loss",
+            "detail": (
+                f"Annual costs exceed revenue by ₹{abs(profit):,.0f}. "
+                "Immediate actions: (1) identify the highest cost line and negotiate/reduce it, "
+                "(2) check crop prices — are you selling at market rate or below?, "
+                "(3) review spoilage — every % saved is pure margin."
+            ),
+        })
+    elif total_revenue > 0:
+        margin = profit / total_revenue * 100
+        if margin < 10:
+            recs.append({
+                "category": "Cash Flow",
+                "priority": "high",
+                "title": f"Profit margin is only {margin:.1f}%",
+                "detail": (
+                    "Below 10% leaves no buffer for bad seasons or price drops. "
+                    "Target 20%+ by either cutting the two largest cost lines by 10% each, "
+                    "or adding one high-margin crop (e.g., vegetables for local restaurant supply)."
+                ),
+            })
+
+    # ── Spoilage ────────────────────────────────────────────────────────────
+    spoilage_loss = float(summary.get("spoilage_loss_value", 0) or 0)
+    if spoilage_percent > 15:
+        recs.append({
+            "category": "Post-Harvest",
+            "priority": "high",
+            "title": f"{spoilage_percent:.0f}% spoilage is destroying ₹{spoilage_loss:,.0f}/year",
+            "detail": (
+                "Common fixes: (1) harvest in early morning to reduce heat damage, "
+                "(2) use shade nets for field stacking, (3) establish buyer agreements so produce "
+                "moves within 24 hours. A basic cold room (₹1–2L) often pays for itself in 1 season."
+            ),
+        })
+    elif spoilage_percent > 8:
+        recs.append({
+            "category": "Post-Harvest",
+            "priority": "medium",
+            "title": f"Spoilage at {spoilage_percent:.0f}% — room to improve",
+            "detail": (
+                f"You are losing ₹{spoilage_loss:,.0f}/year to spoilage. "
+                "Reducing to 5% through better harvest timing and grading could recover a significant portion."
+            ),
+        })
+
+    # ── Labor efficiency ────────────────────────────────────────────────────
+    total_labor = c("labor") + c("seasonal_labor")
+    if total_revenue > 0 and total_labor > 0:
+        labor_ratio = total_labor / annual_cost
+        if labor_ratio > 0.50:
+            recs.append({
+                "category": "Operations",
+                "priority": "medium",
+                "title": f"Labor is {labor_ratio*100:.0f}% of total cost",
+                "detail": (
+                    "High labor share indicates manual-heavy operations. "
+                    "Evaluate: (1) drip irrigation (reduces water + weeding labor), "
+                    "(2) raised-bed layout for faster harvesting, "
+                    "(3) piece-rate pay for harvest season vs. fixed salary for permanent staff."
+                ),
+            })
+
+    # ── Fertilizer & input costs ────────────────────────────────────────────
+    fertilizer_cost = c("fertilizer")
+    if annual_cost > 0 and fertilizer_cost / annual_cost > 0.20:
+        recs.append({
+            "category": "Input Costs",
+            "priority": "medium",
+            "title": "Fertilizer is a high cost share",
+            "detail": (
+                "Consider: (1) soil testing to apply only what's needed (saves 15–25%), "
+                "(2) vermicompost or green manure to partially replace chemical fertilizer, "
+                "(3) group buying with neighboring farmers for volume discounts."
+            ),
+        })
+
+    # ── Crop diversification ─────────────────────────────────────────────────
+    if crop_rows and total_revenue > 0:
+        top_crop_rev = max((float(r.get("revenue_annual", 0) or 0) for r in crop_rows), default=0)
+        top_share = top_crop_rev / total_revenue
+        if top_share > 0.80 and len(crop_rows) == 1:
+            recs.append({
+                "category": "Diversification",
+                "priority": "medium",
+                "title": "Single-crop operation — high concentration risk",
+                "detail": (
+                    "A pest outbreak, weather event, or price crash on one crop can wipe out the season. "
+                    "Add at least one complementary crop on 20–30% of land area. "
+                    "Inter-cropping (e.g., tomato + marigold) also naturally reduces pest pressure."
+                ),
+            })
+
+        # Identify lowest-profit crop
+        if len(crop_rows) > 1:
+            worst = min(crop_rows, key=lambda r: float(r.get("profit_annual", 0) or 0))
+            worst_profit = float(worst.get("profit_annual", 0) or 0)
+            if worst_profit < 0:
+                recs.append({
+                    "category": "Crop Mix",
+                    "priority": "medium",
+                    "title": f"'{worst.get('crop', 'Unknown')}' is loss-making",
+                    "detail": (
+                        f"This crop generates a loss of ₹{abs(worst_profit):,.0f}/year after cost allocation. "
+                        "Either negotiate better selling price, reduce its area, or replace with a higher-margin crop."
+                    ),
+                })
+
+    # ── ROI and CAPEX recovery ───────────────────────────────────────────────
+    if roi is not None:
+        if roi < 5:
+            recs.append({
+                "category": "Viability",
+                "priority": "high",
+                "title": f"ROI is only {roi:.1f}% — below cost of capital",
+                "detail": (
+                    "Returns are below bank FD rates. Review whether the CAPEX items can be deferred, "
+                    "shared with other farmers, or leased instead of purchased."
+                ),
+            })
+        elif roi > 30:
+            recs.append({
+                "category": "Growth",
+                "priority": "low",
+                "title": f"Strong ROI at {roi:.1f}% — consider reinvestment",
+                "detail": (
+                    f"Annual surplus of ₹{profit:,.0f} is strong. "
+                    "Options: (1) expand to adjacent land, (2) invest in storage/cold chain to capture "
+                    "off-season premium prices, (3) set up a small processing unit for value addition."
+                ),
+            })
+
+    # ── Transport & market access ────────────────────────────────────────────
+    transport_cost = c("transport") + c("fuel")
+    if annual_cost > 0 and transport_cost / annual_cost > 0.15:
+        recs.append({
+            "category": "Market Access",
+            "priority": "low",
+            "title": "Transport & fuel are a significant cost",
+            "detail": (
+                "Consider: (1) aggregating with nearby farmers for shared transport, "
+                "(2) approaching local wholesalers for farm gate pickup, "
+                "(3) FPO membership often provides subsidised logistics."
+            ),
+        })
+
+    if not recs:
+        recs.append({
+            "category": "Performance",
+            "priority": "low",
+            "title": "Farm financials are in a healthy range",
+            "detail": (
+                "Cost and revenue mix look balanced. Track your KPIs monthly and "
+                "compare actual vs. plan every harvest to catch deviations early."
+            ),
+        })
+
+    return recs
 
 
 def export_sheet_payload(context: dict[str, Any], calc: dict[str, Any]) -> dict[str, list[list[Any]]]:
@@ -232,7 +437,8 @@ def export_sheet_payload(context: dict[str, Any], calc: dict[str, Any]) -> dict[
     warnings = list(calc.get("warnings") or [])
 
     crop_ranking_rows: list[list[Any]] = [[
-        "crop", "revenue_annual", "allocated_cost_annual", "profit_annual", "margin_percent", "revenue_share_percent"
+        "crop", "revenue_annual", "allocated_cost_annual", "profit_annual", "margin_percent",
+        "revenue_share_percent", "cost_per_kg", "yield_per_year_kg",
     ]]
     for row in crop_perf:
         crop_revenue = float(row.get("revenue_annual", 0) or 0)
@@ -246,6 +452,8 @@ def export_sheet_payload(context: dict[str, Any], calc: dict[str, Any]) -> dict[
             crop_profit,
             round(margin_pct, 2),
             round(revenue_share_pct, 2),
+            float(row.get("cost_per_kg", 0) or 0),
+            float(row.get("annual_yield_kg", 0) or 0),
         ])
 
     scenario_rows: list[list[Any]] = [[
@@ -293,11 +501,16 @@ def export_sheet_payload(context: dict[str, Any], calc: dict[str, Any]) -> dict[
 
     top_crop = crop_perf[0].get("crop", "n/a") if crop_perf else "n/a"
 
+    fertilizer_share_pct = (float(costs.get("fertilizer", 0) or 0) / total_cost * 100.0) if total_cost > 0 else 0.0
+    water_share_pct = (float(costs.get("water", 0) or 0) / total_cost * 100.0) if total_cost > 0 else 0.0
+
     cost_breakdown_rows: list[list[Any]] = [["cost_component", "annual_cost"]]
     cost_breakdown_rows.append(["Labor", costs.get("labor", 0)])
     cost_breakdown_rows.append(["Seasonal Labor", costs.get("seasonal_labor", 0)])
     cost_breakdown_rows.append(["Electricity", costs.get("electricity", 0)])
     cost_breakdown_rows.append(["Seeds", costs.get("seeds", 0)])
+    cost_breakdown_rows.append(["Fertilizer", costs.get("fertilizer", 0)])
+    cost_breakdown_rows.append(["Water", costs.get("water", 0)])
     cost_breakdown_rows.append(["Maintenance", costs.get("maintenance", 0)])
     cost_breakdown_rows.append(["Land Rent", costs.get("land_rent", 0)])
     cost_breakdown_rows.append(["Pesticide", costs.get("pesticide", 0)])
@@ -331,6 +544,8 @@ def export_sheet_payload(context: dict[str, Any], calc: dict[str, Any]) -> dict[
         ["Seasonal Labor Share (%)", round(seasonal_labor_share_pct, 2)],
         ["Electricity Cost Share (%)", round(electricity_share_pct, 2)],
         ["Seeds Cost Share (%)", round(seeds_share_pct, 2)],
+        ["Fertilizer Cost Share (%)", round(fertilizer_share_pct, 2)],
+        ["Water Cost Share (%)", round(water_share_pct, 2)],
         ["Maintenance Cost Share (%)", round(maintenance_share_pct, 2)],
         ["Pesticide Cost Share (%)", round(pesticide_share_pct, 2)],
         ["Fuel Cost Share (%)", round(fuel_share_pct, 2)],
@@ -341,6 +556,8 @@ def export_sheet_payload(context: dict[str, Any], calc: dict[str, Any]) -> dict[
         ["Seasonal Labor", costs.get("seasonal_labor", 0)],
         ["Electricity", costs.get("electricity", 0)],
         ["Seeds", costs.get("seeds", 0)],
+        ["Fertilizer", costs.get("fertilizer", 0)],
+        ["Water", costs.get("water", 0)],
         ["Maintenance", costs.get("maintenance", 0)],
         ["Land Rent", costs.get("land_rent", 0)],
         ["Pesticide", costs.get("pesticide", 0)],
@@ -376,12 +593,88 @@ def export_sheet_payload(context: dict[str, Any], calc: dict[str, Any]) -> dict[
         for warning in warnings:
             dashboard_rows.append([warning])
 
+    # ── Break-Even Analysis ──────────────────────────────────────────────────
+    # Monthly cashflow showing when cumulative profit covers CAPEX.
+    breakeven_rows: list[list[Any]] = [[
+        "month", "monthly_revenue", "monthly_cost", "monthly_profit",
+        "cumulative_profit", "remaining_capex", "break_even_reached",
+    ]]
+    cumulative = 0.0
+    remaining_capex = total_capex
+    be_reached = False
+    for month in range(1, 13):
+        m_profit = total_profit / 12.0
+        cumulative += m_profit
+        if not be_reached and remaining_capex > 0:
+            remaining_capex = max(0.0, remaining_capex - max(0.0, m_profit))
+        if not be_reached and remaining_capex <= 0:
+            be_reached = True
+        breakeven_rows.append([
+            month,
+            round(total_revenue / 12.0, 2),
+            round(total_cost / 12.0, 2),
+            round(total_profit / 12.0, 2),
+            round(cumulative, 2),
+            round(remaining_capex, 2),
+            "Yes" if be_reached else "No",
+        ])
+
+    # Payback period estimate
+    payback_months = None
+    if total_profit > 0 and total_capex > 0:
+        payback_months = round(total_capex / (total_profit / 12.0), 1)
+    breakeven_rows.append([""])
+    breakeven_rows.append(["payback_period_months", payback_months if payback_months else "N/A (no profit)"])
+    breakeven_rows.append(["break_even_price_per_kg", round(break_even_price_per_kg, 2)])
+
+    # ── Recommendations ─────────────────────────────────────────────────────
+    recs = calc.get("recommendations") or []
+    recommendations_rows: list[list[Any]] = [["priority", "category", "title", "detail"]]
+    for r in recs:
+        recommendations_rows.append([
+            r.get("priority", ""),
+            r.get("category", ""),
+            r.get("title", ""),
+            r.get("detail", ""),
+        ])
+
+    # ── Cost Efficiency ──────────────────────────────────────────────────────
+    cost_efficiency_rows: list[list[Any]] = [[
+        "cost_component", "annual_cost", "share_pct", "cost_per_kg_contribution"
+    ]]
+    all_costs_items = [
+        ("Labor", costs.get("labor", 0)),
+        ("Seasonal Labor", costs.get("seasonal_labor", 0)),
+        ("Electricity", costs.get("electricity", 0)),
+        ("Seeds", costs.get("seeds", 0)),
+        ("Fertilizer", costs.get("fertilizer", 0)),
+        ("Water", costs.get("water", 0)),
+        ("Maintenance", costs.get("maintenance", 0)),
+        ("Land Rent", costs.get("land_rent", 0)),
+        ("Pesticide", costs.get("pesticide", 0)),
+        ("Fuel", costs.get("fuel", 0)),
+        ("Transport", costs.get("transport", 0)),
+    ]
+    for name, cost_val in all_costs_items:
+        cost_val_f = float(cost_val or 0)
+        share = (cost_val_f / total_cost * 100.0) if total_cost > 0 else 0.0
+        cpk = (cost_val_f / sellable_yield_kg) if sellable_yield_kg > 0 else 0.0
+        cost_efficiency_rows.append([
+            name,
+            round(cost_val_f, 2),
+            round(share, 2),
+            round(cpk, 2),
+        ])
+
     return {
         "Dashboard": dashboard_rows,
         "MonthlyProjection": monthly_rows,
         "ScenarioAnalysis": scenario_rows,
         "CropRanking": crop_ranking_rows,
         "CostBreakdown": cost_breakdown_rows,
+        "BreakEvenAnalysis": breakeven_rows,
+        "Recommendations": recommendations_rows,
+        "CostEfficiency": cost_efficiency_rows,
         "Inputs": inputs_rows,
         "Calculations": calc_rows,
         "Summary": summary_rows,
@@ -391,7 +684,11 @@ def export_sheet_payload(context: dict[str, Any], calc: dict[str, Any]) -> dict[
 def export_csv_text(sheet_payload: dict[str, list[list[Any]]]) -> str:
     out = StringIO()
     writer = csv.writer(out)
-    sheet_order = ["Dashboard", "MonthlyProjection", "ScenarioAnalysis", "CropRanking", "CostBreakdown", "Inputs", "Calculations", "Summary"]
+    sheet_order = [
+        "Dashboard", "MonthlyProjection", "ScenarioAnalysis", "CropRanking",
+        "CostBreakdown", "CostEfficiency", "BreakEvenAnalysis", "Recommendations",
+        "Inputs", "Calculations", "Summary",
+    ]
     for sheet_name in sheet_order:
         rows = sheet_payload.get(sheet_name, [])
         if not rows:
