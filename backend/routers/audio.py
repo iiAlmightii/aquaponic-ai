@@ -282,35 +282,44 @@ async def transcribe_audio(
 
     # ── Sarvam STT path ───────────────────────────────────────────────────────
     if STT_PROVIDER == "sarvam":
-        from services.voice_interpretation import (
-            append_voice_audit_log, interpret_transcript,
-            post_process_transcript, normalize_number_transcript,
-            build_voice_audit_id,
-        )
-        raw_text, stt_conf = await _transcribe_with_sarvam(
-            audio_data, infer_audio_suffix(file), lang
-        )
-        cleaned_text = post_process_transcript(raw_text, language=lang) or raw_text.strip()
-        if question_type == "number" and cleaned_text:
-            normalized = normalize_number_transcript(cleaned_text)
-            if normalized != cleaned_text:
-                cleaned_text = normalized
-        interpretation = interpret_transcript(question_id, cleaned_text, stt_conf) if question_id else {}
-        alternatives: list[str] = []
-        if "farm_name" in interpretation:
-            alternatives = interpretation["farm_name"].get("alternatives") or []
-        audit_id = build_voice_audit_id()
-        append_voice_audit_log({
-            "audit_id": audit_id, "timestamp": None, "question_id": question_id,
-            "provider": "sarvam-saarika", "question_context_present": bool(question_context),
-            "transcript_raw": raw_text, "transcript_clean": cleaned_text,
-            "stt_confidence": stt_conf, "confidence_details": {}, "interpretation": interpretation,
-        })
-        return TranscribeResponse(
-            text=cleaned_text, confidence=stt_conf, provider="sarvam-saarika",
-            audit_id=audit_id, interpretation=interpretation,
-            alternatives=alternatives, confidence_details={},
-        )
+        try:
+            from services.voice_interpretation import (
+                append_voice_audit_log, interpret_transcript,
+                post_process_transcript, normalize_number_transcript,
+                build_voice_audit_id,
+            )
+            raw_text, stt_conf = await _transcribe_with_sarvam(
+                audio_data, infer_audio_suffix(file), lang
+            )
+            cleaned_text = post_process_transcript(raw_text, language=lang) or raw_text.strip()
+            if question_type == "number" and cleaned_text:
+                normalized = normalize_number_transcript(cleaned_text)
+                if normalized != cleaned_text:
+                    cleaned_text = normalized
+            interpretation = interpret_transcript(question_id, cleaned_text, stt_conf) if question_id else {}
+            alternatives: list[str] = []
+            if "farm_name" in interpretation:
+                alternatives = interpretation["farm_name"].get("alternatives") or []
+            audit_id = build_voice_audit_id()
+            try:
+                append_voice_audit_log({
+                    "audit_id": audit_id, "timestamp": None, "question_id": question_id,
+                    "provider": "sarvam-saarika", "question_context_present": bool(question_context),
+                    "transcript_raw": raw_text, "transcript_clean": cleaned_text,
+                    "stt_confidence": stt_conf, "confidence_details": {}, "interpretation": interpretation,
+                })
+            except Exception:
+                pass  # audit log failure must never block transcription
+            return TranscribeResponse(
+                text=cleaned_text, confidence=stt_conf, provider="sarvam-saarika",
+                audit_id=audit_id, interpretation=interpretation,
+                alternatives=alternatives, confidence_details={},
+            )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.exception("Sarvam STT path failed")
+            raise HTTPException(status_code=500, detail=f"Sarvam transcription error: {exc}")
 
     # ── Whisper path (default) ────────────────────────────────────────────────
     if not WHISPER_AVAILABLE:
