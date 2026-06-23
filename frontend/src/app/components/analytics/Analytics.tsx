@@ -25,7 +25,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
+// xlsx loaded dynamically on export to avoid Rollup bundling issues with CJS package
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/EmptyState';
@@ -445,7 +445,8 @@ export function Analytics() {
     URL.revokeObjectURL(url);
   }, [curr.flows]);
 
-  const exportExcel = useCallback(() => {
+  const exportExcel = useCallback(async () => {
+    const XLSX = await import('xlsx');
     const workbook = XLSX.utils.book_new();
 
     const summaryRows = [
