@@ -93,6 +93,28 @@ async def _init_db() -> None:
 
 
 @asynccontextmanager
+async def _prewarm_translations() -> None:
+    """Pre-translate all aquaponic survey questions into supported Indian languages.
+
+    Populates the in-process cache so the first user gets instant Kannada/Hindi/etc
+    questions instead of waiting 5-8s for the Sarvam translate API per question.
+    """
+    try:
+        from services.question_translator import translate_question
+        from services.questionnaire_engine import engine as qe
+        langs = ["kn", "hi", "ta", "te", "mr"]
+        tasks = []
+        for q in qe.questions:
+            for lang in langs:
+                tasks.append(translate_question(q.text, lang))
+                if q.hint:
+                    tasks.append(translate_question(q.hint, lang))
+        await asyncio.gather(*tasks, return_exceptions=True)
+        logger.info("✅ Translation cache pre-warmed for %d questions × %d languages", len(qe.questions), len(langs))
+    except Exception:
+        logger.warning("Translation pre-warm failed — questions will translate on first request", exc_info=True)
+
+
 async def lifespan(app: FastAPI):
     """Startup / shutdown lifecycle for the application."""
     logger.info("🚀 AquaponicAI starting up…")
@@ -103,6 +125,7 @@ async def lifespan(app: FastAPI):
     from routers.audio import _refresh_corrections_cache, _corrections_cache_loop
     asyncio.create_task(_refresh_corrections_cache())
     asyncio.create_task(_corrections_cache_loop())
+    asyncio.create_task(_prewarm_translations())
     logger.info("✅ Startup complete | Redis connected")
     yield
     await close_redis()
