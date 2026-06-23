@@ -224,30 +224,15 @@ function AISurveyInner() {
     };
 
     const doSpeak = () => {
-      const voices = synth.getVoices();
-      // Prefer a voice that matches the current language; fall back to English only if lang is 'en'
-      const langVoice = voices.find(v => v.lang.startsWith(selectedLanguage) && v.localService)
-                     ?? voices.find(v => v.lang.startsWith(selectedLanguage));
-      const enVoice  = langVoice
-                     ?? (selectedLanguage === 'en' ? (voices.find(v => v.lang.startsWith('en') && v.localService) ?? voices.find(v => v.lang.startsWith('en'))) : null);
-      console.log('[TTS] doSpeak — voices:', voices.length,
-        '| chosen:', enVoice?.name, '| lang match:', !!langVoice,
-        '| paused:', synth.paused, '| speaking:', synth.speaking);
-      // If the language is not English and no matching voice found, skip TTS and open mic directly
-      if (!enVoice && selectedLanguage !== 'en') {
-        console.log('[TTS] No voice for lang', selectedLanguage, '— skipping TTS, opening mic directly');
-        openMic();
-        return;
-      }
+      // No manual voice selection — let the browser auto-detect language from text.
+      // This is the same approach used by LandVoiceSurvey which works correctly in Kannada.
       const utt = new SpeechSynthesisUtterance(text);
       utt.rate = 0.9;
-      if (enVoice) utt.voice = enVoice;
       utt.onstart = () => console.log('[TTS] onstart fired');
       utt.onend = () => { console.log('[TTS] onend fired'); openMic(); };
-      utt.onerror = (e) => { console.error('[TTS] onerror:', e.error, e); openMic(); };
+      utt.onerror = (e) => { console.error('[TTS] onerror:', e.error); openMic(); };
       utteranceRef.current = utt;
       synth.speak(utt);
-      console.log('[TTS] speak() called — speaking now:', synth.speaking, '| pending:', synth.pending);
     };
 
     // Always resume first — Chrome auto-pauses the synthesis engine after inactivity.
@@ -269,16 +254,15 @@ function AISurveyInner() {
     }
   }, [ttsEnabled, voiceSupported]);
 
-  // Auto-open mic when question changes — always open mic immediately alongside TTS
+  // When TTS is off, auto-open mic directly on question change (TTS handles mic-open via onend when on)
   useEffect(() => {
     if (!currentQuestion || isComplete) return;
     window.speechSynthesis?.cancel();
-    if (voiceSupported && (currentQuestion.type === 'text' || currentQuestion.type === 'number')) {
-      // Open mic immediately within user gesture context — don't wait for TTS to finish
-      const t = setTimeout(() => startVoiceRef.current(), 600);
+    if (!ttsEnabled && voiceSupported && (currentQuestion.type === 'text' || currentQuestion.type === 'number')) {
+      const t = setTimeout(() => startVoiceRef.current(), 400);
       return () => clearTimeout(t);
     }
-  }, [currentQuestion?.id, voiceSupported, isComplete]);
+  }, [currentQuestion?.id, ttsEnabled, voiceSupported, isComplete]);
 
   // Update input text when question changes
   useEffect(() => {
