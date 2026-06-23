@@ -248,7 +248,7 @@ async def _transcribe_with_sarvam(
                 _SARVAM_STT_URL,
                 headers={"API-Subscription-Key": _SARVAM_API_KEY},
                 files={"file": (f"audio{audio_suffix}", audio_data, mime)},
-                data={"model": "saarika:v2", "language_code": lang_code},
+                data={"model": "saarika:v2.5", "language_code": lang_code},
             )
         if not resp.is_success:
             raise HTTPException(
