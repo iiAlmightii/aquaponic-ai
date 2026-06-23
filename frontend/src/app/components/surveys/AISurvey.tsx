@@ -269,18 +269,16 @@ function AISurveyInner() {
     }
   }, [ttsEnabled, voiceSupported]);
 
-  // When question changes, auto-open mic (mic opens immediately if no TTS voice, or after TTS if voice exists)
+  // Auto-open mic when question changes — always open mic immediately alongside TTS
   useEffect(() => {
     if (!currentQuestion || isComplete) return;
     window.speechSynthesis?.cancel();
-    // When TTS is off, always auto-open mic directly
-    if (!ttsEnabled && voiceSupported && (currentQuestion.type === 'text' || currentQuestion.type === 'number')) {
-      const t = setTimeout(() => startVoiceRef.current(), 400);
+    if (voiceSupported && (currentQuestion.type === 'text' || currentQuestion.type === 'number')) {
+      // Open mic immediately within user gesture context — don't wait for TTS to finish
+      const t = setTimeout(() => startVoiceRef.current(), 600);
       return () => clearTimeout(t);
     }
-    // If there's pending TTS text queued from a gesture (handleConfirm), skip mic-only timer
-    // The speak will open the mic via onend.
-  }, [currentQuestion?.id, ttsEnabled, voiceSupported, isComplete]);
+  }, [currentQuestion?.id, voiceSupported, isComplete]);
 
   // Update input text when question changes
   useEffect(() => {
