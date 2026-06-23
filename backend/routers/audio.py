@@ -1,6 +1,10 @@
-"""Audio transcription endpoints powered by faster-whisper."""
+"""Audio transcription endpoints — supports faster-whisper (local) and Sarvam Saarika (API).
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+Set STT_PROVIDER=sarvam in .env to use Sarvam's cloud STT (no GPU required).
+Set STT_PROVIDER=whisper (default) to use local faster-whisper.
+"""
+
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from pydantic import BaseModel
 import logging
 import os
@@ -9,8 +13,23 @@ import math
 from typing import Any, Optional
 from pathlib import Path
 
+import asyncio
+import time
+import httpx
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
+from core.database import get_db, AsyncSessionLocal
+
 router = APIRouter(tags=["audio"])
 logger = logging.getLogger("aquaponic_ai.audio")
+
+# ── STT provider selection ────────────────────────────────────────────────────
+# STT_PROVIDER=sarvam  → use Sarvam Saarika v2 API (no GPU, needs SARVAM_API_KEY)
+# STT_PROVIDER=whisper → use faster-whisper locally (default)
+STT_PROVIDER = os.getenv("STT_PROVIDER", "whisper").lower()
+_SARVAM_STT_URL = "https://api.sarvam.ai/speech-to-text"
+_SARVAM_API_KEY = os.getenv("SARVAM_API_KEY", "").strip()
 
 # Try to import faster-whisper; it's optional in Docker
 try:
@@ -19,15 +38,28 @@ try:
 except ImportError:
     WHISPER_AVAILABLE = False
 
+# Default to large-v3 — multilingual, best accuracy across all supported languages.
 MODEL_NAME = os.getenv("FASTER_WHISPER_MODEL", "large-v3")
-REQUESTED_DEVICE = os.getenv("FASTER_WHISPER_DEVICE", "cpu").lower()
-REQUESTED_COMPUTE_TYPE = os.getenv("FASTER_WHISPER_COMPUTE_TYPE", "int8")
+# Default to cuda — CPU is not acceptable for real-time transcription latency.
+REQUESTED_DEVICE = os.getenv("FASTER_WHISPER_DEVICE", "cuda").lower()
+REQUESTED_COMPUTE_TYPE = os.getenv("FASTER_WHISPER_COMPUTE_TYPE", "int8_float16")
 RUNTIME_DEVICE = REQUESTED_DEVICE
 RUNTIME_COMPUTE_TYPE = REQUESTED_COMPUTE_TYPE
 _whisper_model: Optional["WhisperModel"] = None
 
 
 def _build_model(device: str, compute_type: str) -> "WhisperModel":
+    if device == "cuda":
+        try:
+            import torch
+            if not torch.cuda.is_available():
+                raise RuntimeError(
+                    "FASTER_WHISPER_DEVICE=cuda but CUDA is not available. "
+                    "Ensure nvidia-container-toolkit is installed and the Docker "
+                    "compose 'deploy.resources.reservations.devices' GPU section is present."
+                )
+        except ImportError:
+            pass  # torch not installed; let ctranslate2 surface the CUDA error directly
     return WhisperModel(MODEL_NAME, device=device, compute_type=compute_type)
 
 
@@ -71,11 +103,116 @@ def infer_audio_suffix(upload: UploadFile) -> str:
     return mapping.get(content_type, ".webm")
 
 
+# ---------------------------------------------------------------------------
+# Corrections cache — enriched terms derived from user-submitted corrections.
+# Refreshed every 5 minutes by a background task; never blocks transcription.
+# ---------------------------------------------------------------------------
+_CORRECTIONS_CACHE: dict[str, list[str]] = {}   # lang -> [corrected_word, ...]
+_CORRECTIONS_CACHE_TS: float = 0.0
+_CORRECTIONS_CACHE_TTL: float = 300.0           # seconds
+
+
+async def _refresh_corrections_cache() -> None:
+    global _CORRECTIONS_CACHE, _CORRECTIONS_CACHE_TS
+    try:
+        from services.corrections_analytics import get_enriched_primer_terms
+        async with AsyncSessionLocal() as db:
+            enriched = await get_enriched_primer_terms(db, min_count=2)
+        _CORRECTIONS_CACHE = enriched
+        _CORRECTIONS_CACHE_TS = time.monotonic()
+    except Exception:
+        pass  # never let analytics failure break transcription
+
+
+async def _corrections_cache_loop() -> None:
+    """Background loop — refreshes corrections cache every TTL seconds."""
+    while True:
+        await asyncio.sleep(_CORRECTIONS_CACHE_TTL)
+        await _refresh_corrections_cache()
+
+
+# Domain vocabulary primers in each supported language.
+# Prepended as initial_prompt so Whisper's decoder is primed for agricultural/financial terms
+# before it sees the first audio token — improves recognition of loanwords and number scales.
+_LANG_DOMAIN_PRIMERS: dict[str, str] = {
+    "hi": "खेती, फसल, आय, लाख, करोड़, रुपये, हेक्टेयर, सिंचाई।",
+    "kn": "ಕೃಷಿ, ಬೆಳೆ, ಆದಾಯ, ಲಕ್ಷ, ಕೋಟಿ, ರೂಪಾಯಿ, ಹೆಕ್ಟೇರ್, ನೀರಾವರಿ.",
+    "ta": "விவசாயம், பயிர், வருமானம், லட்சம், கோடி, ரூபாய், ஹெக்டேர், நீர்ப்பாசனம்.",
+    "te": "వ్యవసాయం, పంట, ఆదాయం, లక్ష, కోటి, రూపాయలు, హెక్టారు, సాగునీరు.",
+    "mr": "शेती, पीक, उत्पन्न, लाख, कोटी, रुपये, हेक्टेयर, सिंचन.",
+}
+
+# Number hints in target language — guide Whisper to output digits rather than spelled-out words.
+_LANG_NUMBER_HINTS: dict[str, str] = {
+    "hi": "संख्या अंकों में लिखें।",
+    "kn": "ಸಂಖ್ಯೆಯನ್ನು ಅಂಕೆಗಳಲ್ಲಿ ಬರೆಯಿರಿ.",
+    "ta": "எண்களை இலக்கங்களில் எழுதுங்கள்.",
+    "te": "సంఖ్యను అంకెలలో రాయండి.",
+    "mr": "संख्या अंकांमध्ये लिहा.",
+}
+
+
+def _build_whisper_prompt(
+    lang: str,
+    question_context: Optional[str],
+    question_type: Optional[str],
+) -> Optional[str]:
+    """Build an initial_prompt appropriate for the transcription language.
+
+    Enriches the primer with correction-derived terms from the live cache so
+    the model sees vocabulary it has previously misheard.
+    """
+    parts: list[str] = []
+    if lang == "en":
+        if question_context:
+            parts.append(question_context)
+        if question_type == "number":
+            parts.append("The answer is a number. Write numbers as digits, not words.")
+    else:
+        primer = _LANG_DOMAIN_PRIMERS.get(lang)
+        if primer:
+            parts.append(primer)
+        if question_type == "number":
+            parts.append(_LANG_NUMBER_HINTS.get(lang, "Write numbers as digits."))
+
+    # Append up to 10 correction-derived terms for this language.
+    # These are words users have consistently corrected Whisper on — priming
+    # the decoder with them improves recognition of those specific terms.
+    extra = _CORRECTIONS_CACHE.get(lang, [])[:10]
+    if extra:
+        parts.append(", ".join(extra) + ".")
+
+    return "\n".join(parts) if parts else None
+
+
+def _build_retry_prompt(
+    lang: str,
+    question_context: Optional[str],
+    question_type: Optional[str],
+    question_id: Optional[str],
+) -> Optional[str]:
+    """Build a retry initial_prompt (tighter, more directive) for low-confidence attempts."""
+    parts: list[str] = []
+    if lang == "en":
+        if question_context:
+            parts.append(question_context)
+        if question_type == "number":
+            parts.append("The answer is a single number. Write only digits.")
+        elif question_id == "farm_name":
+            parts.append("Output only the farm or project name.")
+    else:
+        primer = _LANG_DOMAIN_PRIMERS.get(lang)
+        if primer:
+            parts.append(primer)
+        if question_type == "number":
+            parts.append(_LANG_NUMBER_HINTS.get(lang, "Write numbers as digits."))
+    return "\n".join(parts) if parts else None
+
+
 class TranscribeRequest(BaseModel):
     """Request for audio transcription with question context."""
     language: str = "en"
     question_context: Optional[str] = None
-    # question_id is used for domain-aware interpretation rules (e.g., farm_name entity).
     question_id: Optional[str] = None
 
 
@@ -84,14 +221,48 @@ class TranscribeResponse(BaseModel):
     text: str
     confidence: float = 1.0
     provider: str = "faster-whisper"
-    # Unique id to link STT + later user confirmation/corrections (debugging).
     audit_id: str
-    # Interpretation is question-aware (e.g., farm-name entity + alternatives).
     interpretation: dict[str, Any] = {}
-    # Flat alternatives list (primarily for UI confirmation).
     alternatives: list[str] = []
-    # Confidence breakdown for debugging and UI decisions.
     confidence_details: dict[str, float] = {}
+
+
+async def _transcribe_with_sarvam(
+    audio_data: bytes,
+    audio_suffix: str,
+    language: str = "en",
+) -> tuple[str, float]:
+    """Call Sarvam Saarika v2 STT API. Returns (raw_transcript, confidence)."""
+    if not _SARVAM_API_KEY:
+        raise HTTPException(
+            status_code=501,
+            detail="SARVAM_API_KEY is not set. Add it to .env to use Sarvam STT."
+        )
+    lang_code_map = {"hi": "hi-IN", "kn": "kn-IN", "ta": "ta-IN",
+                     "te": "te-IN", "mr": "mr-IN", "en": "en-IN"}
+    lang_code = lang_code_map.get(language, "en-IN")
+    mime = "audio/webm" if audio_suffix in {".webm", ""} else "audio/wav"
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                _SARVAM_STT_URL,
+                headers={"API-Subscription-Key": _SARVAM_API_KEY},
+                files={"file": (f"audio{audio_suffix}", audio_data, mime)},
+                data={"model": "saarika:v2", "language_code": lang_code},
+            )
+        if not resp.is_success:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Sarvam STT error {resp.status_code}: {resp.text[:200]}"
+            )
+        transcript = (resp.json().get("transcript") or "").strip()
+        if not transcript:
+            raise HTTPException(status_code=400, detail="Could not transcribe audio")
+        return transcript, 0.9  # Sarvam doesn't expose confidence; use 0.9
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Sarvam STT failed: {exc}")
 
 
 @router.post("/transcribe", response_model=TranscribeResponse)
@@ -100,23 +271,59 @@ async def transcribe_audio(
     language: str = "en",
     question_context: Optional[str] = None,
     question_id: Optional[str] = None,
+    question_type: Optional[str] = None,
 ):
-    """Transcribe an uploaded audio chunk using faster-whisper."""
+    """Transcribe audio using the configured STT provider (Sarvam or Whisper)."""
+    audio_data = await file.read()
+    if not audio_data:
+        raise HTTPException(status_code=400, detail="Audio file is empty")
+
+    lang = (language or "en").split("-")[0]
+
+    # ── Sarvam STT path ───────────────────────────────────────────────────────
+    if STT_PROVIDER == "sarvam":
+        from services.voice_interpretation import (
+            append_voice_audit_log, interpret_transcript,
+            post_process_transcript, normalize_number_transcript,
+            build_voice_audit_id,
+        )
+        raw_text, stt_conf = await _transcribe_with_sarvam(
+            audio_data, infer_audio_suffix(file), lang
+        )
+        cleaned_text = post_process_transcript(raw_text, language=lang) or raw_text.strip()
+        if question_type == "number" and cleaned_text:
+            normalized = normalize_number_transcript(cleaned_text)
+            if normalized != cleaned_text:
+                cleaned_text = normalized
+        interpretation = interpret_transcript(question_id, cleaned_text, stt_conf) if question_id else {}
+        alternatives: list[str] = []
+        if "farm_name" in interpretation:
+            alternatives = interpretation["farm_name"].get("alternatives") or []
+        audit_id = build_voice_audit_id()
+        append_voice_audit_log({
+            "audit_id": audit_id, "timestamp": None, "question_id": question_id,
+            "provider": "sarvam-saarika", "question_context_present": bool(question_context),
+            "transcript_raw": raw_text, "transcript_clean": cleaned_text,
+            "stt_confidence": stt_conf, "confidence_details": {}, "interpretation": interpretation,
+        })
+        return TranscribeResponse(
+            text=cleaned_text, confidence=stt_conf, provider="sarvam-saarika",
+            audit_id=audit_id, interpretation=interpretation,
+            alternatives=alternatives, confidence_details={},
+        )
+
+    # ── Whisper path (default) ────────────────────────────────────────────────
     if not WHISPER_AVAILABLE:
         raise HTTPException(
             status_code=501,
             detail="faster-whisper is not installed. Add faster-whisper to backend dependencies and rebuild."
         )
 
-    audio_data = await file.read()
-    if not audio_data:
-        raise HTTPException(status_code=400, detail="Audio file is empty")
-
-    # Local imports to avoid import overhead for optional dependencies.
     from services.voice_interpretation import (
         append_voice_audit_log,
         interpret_transcript,
         post_process_transcript,
+        normalize_number_transcript,
         build_voice_audit_id,
         clamp01,
     )
@@ -140,7 +347,6 @@ async def transcribe_audio(
                 if avg_lp is None:
                     conf = 0.45
                 else:
-                    # avg_logprob is typically negative; exp() maps it back to a 0..1-ish scale.
                     conf = math.exp(float(avg_lp))
                 if no_speech is not None:
                     no_speech_f = clamp01(1.0 - float(no_speech))
@@ -163,49 +369,50 @@ async def transcribe_audio(
             return overall, details
 
         def _transcribe_with_params(*, beam_size: int, initial_prompt: Optional[str], vad_filter: bool) -> tuple[str, float, dict[str, float]]:
-            segs, _ = model.transcribe(
+            segs_gen, _ = model.transcribe(
                 tmp_path,
                 language=lang,
                 beam_size=beam_size,
                 initial_prompt=initial_prompt,
                 vad_filter=vad_filter,
             )
-
-            raw_text = " ".join(segment.text for segment in segs).strip()
+            segments = list(segs_gen)
+            raw_text = " ".join(s.text for s in segments).strip()
             if not raw_text:
                 return "", 0.0, {"segments": 0.0}
 
-            stt_conf, conf_details = _segments_to_confidence(list(segs))
+            stt_conf, conf_details = _segments_to_confidence(segments)
             return raw_text, stt_conf, conf_details
 
-        # Attempt 1: default decoding with VAD.
+        whisper_prompt = _build_whisper_prompt(lang, question_context, question_type)
+
+        # Attempt A: with VAD filter (removes silence around speech)
         transcript_a_raw, stt_conf_a, conf_details_a = _transcribe_with_params(
             beam_size=5,
-            initial_prompt=question_context,
+            initial_prompt=whisper_prompt,
             vad_filter=True,
         )
 
-        # Attempt 2: targeted decode when farm_name is involved.
         transcript_b_raw = ""
         stt_conf_b = 0.0
         conf_details_b: dict[str, float] = {}
 
         low_conf_threshold = float(os.getenv("STT_LOW_CONFIDENCE_THRESHOLD", "0.45"))
-        do_farm_fallback = question_id == "farm_name" and stt_conf_a < low_conf_threshold
 
-        if do_farm_fallback:
-            tuned_prompt = (question_context or "").strip()
-            if tuned_prompt:
-                tuned_prompt += "\n"
-            tuned_prompt += "For the answer, output only the farm/project name (no extra words)."
+        # Retry without VAD when: (a) VAD discarded everything, or (b) number question with low confidence
+        # VAD can aggressively discard short utterances like "2000" or "five thousand"
+        do_retry = (not transcript_a_raw) or (question_type == "number" and stt_conf_a < low_conf_threshold)
+        if not do_retry and question_id == "farm_name" and stt_conf_a < low_conf_threshold:
+            do_retry = True
 
+        if do_retry:
+            retry_prompt = _build_retry_prompt(lang, question_context, question_type, question_id)
             transcript_b_raw, stt_conf_b, conf_details_b = _transcribe_with_params(
-                beam_size=1,
-                initial_prompt=tuned_prompt,
+                beam_size=3,
+                initial_prompt=retry_prompt,
                 vad_filter=False,
             )
 
-        # Choose the better transcript.
         if transcript_b_raw and stt_conf_b >= stt_conf_a:
             chosen_raw = transcript_b_raw
             chosen_stt_conf = stt_conf_b
@@ -218,9 +425,14 @@ async def transcribe_audio(
         if not chosen_raw:
             raise HTTPException(status_code=400, detail="Could not transcribe audio")
 
-        cleaned_text = post_process_transcript(chosen_raw)
+        cleaned_text = post_process_transcript(chosen_raw, language=lang)
         if not cleaned_text:
             cleaned_text = chosen_raw.strip()
+
+        if question_type == "number" and cleaned_text:
+            normalized = normalize_number_transcript(cleaned_text)
+            if normalized != cleaned_text:
+                cleaned_text = normalized
 
         interpretation = interpret_transcript(question_id, cleaned_text, chosen_stt_conf) if question_id else {}
         alternatives: list[str] = []
@@ -230,7 +442,7 @@ async def transcribe_audio(
         audit_id = build_voice_audit_id()
         audit_record = {
             "audit_id": audit_id,
-            "timestamp": None,  # filled in append_voice_audit_log
+            "timestamp": None,
             "question_id": question_id,
             "provider": "faster-whisper",
             "question_context_present": bool(question_context),
@@ -262,6 +474,72 @@ async def transcribe_audio(
     finally:
         if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)
+
+
+class CorrectionRequest(BaseModel):
+    audit_id: str
+    original_transcript: str
+    corrected_transcript: str
+    language: str = "en"
+    question_id: Optional[str] = None
+    session_id: Optional[str] = None
+
+
+@router.post("/correct", status_code=201)
+async def submit_correction(
+    body: CorrectionRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Record a user correction for a bad transcription.
+
+    Called from the frontend when the user edits the transcribed text
+    and confirms it was wrong. Stored in stt_corrections for analysis.
+    """
+    if not body.audit_id or not body.corrected_transcript.strip():
+        raise HTTPException(status_code=400, detail="audit_id and corrected_transcript are required")
+
+    await db.execute(
+        text(
+            """
+            INSERT INTO stt_corrections
+                (audit_id, session_id, original_transcript, corrected_transcript, language, question_id)
+            VALUES
+                (:audit_id, :session_id, :original, :corrected, :language, :question_id)
+            """
+        ),
+        {
+            "audit_id": body.audit_id,
+            "session_id": body.session_id or None,
+            "original": body.original_transcript,
+            "corrected": body.corrected_transcript.strip(),
+            "language": body.language or "en",
+            "question_id": body.question_id or None,
+        },
+    )
+    await db.commit()
+    return {"status": "recorded"}
+
+
+@router.get("/corrections/stats")
+async def corrections_stats(db: AsyncSession = Depends(get_db)):
+    """Aggregate stats over submitted STT corrections — per language and per question."""
+    from services.corrections_analytics import get_stats
+    return await get_stats(db)
+
+
+@router.get("/corrections/patterns")
+async def corrections_patterns(
+    min_count: int = 2,
+    db: AsyncSession = Depends(get_db),
+):
+    """Word-level substitution patterns derived from user corrections.
+
+    Returns pairs where users consistently corrected one word to another,
+    sorted by frequency. Use this to identify systematic Whisper errors
+    and add new domain corrections.
+    """
+    from services.corrections_analytics import get_substitution_patterns
+    return await get_substitution_patterns(db, min_count=min_count)
 
 
 @router.get("/health")
