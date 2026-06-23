@@ -764,14 +764,25 @@ function AISurveyInner() {
 
         {/* Navigation */}
         <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            disabled={session.progress_answered === 0 && !showConfirmation || submitting}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {tr('btn_back')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={session.progress_answered === 0 && !showConfirmation || submitting}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {tr('btn_back')}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-slate-400 hover:text-red-500 text-xs"
+              onClick={() => { resetSession(); startSession(null, selectedLanguage); }}
+              disabled={submitting}
+            >
+              Start Fresh
+            </Button>
+          </div>
 
           {!showConfirmation ? (
             <Button
