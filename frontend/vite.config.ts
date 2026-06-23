@@ -26,12 +26,12 @@ export default defineConfig({
   },
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
-  optimizeDeps: {
-    include: ['xlsx'],
-  },
   build: {
-    commonjsOptions: {
-      include: [/xlsx/, /node_modules/],
+    rollupOptions: {
+      external: ['xlsx'],
+      output: {
+        globals: { xlsx: 'XLSX' },
+      },
     },
   },
 })
