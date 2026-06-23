@@ -225,13 +225,20 @@ function AISurveyInner() {
 
     const doSpeak = () => {
       const voices = synth.getVoices();
-      const enVoice = voices.find(v => v.lang.startsWith(selectedLanguage) && v.localService)
-                   ?? voices.find(v => v.lang.startsWith(selectedLanguage))
-                   ?? voices.find(v => v.lang.startsWith('en') && v.localService)
-                   ?? voices.find(v => v.lang.startsWith('en'));
+      // Prefer a voice that matches the current language; fall back to English only if lang is 'en'
+      const langVoice = voices.find(v => v.lang.startsWith(selectedLanguage) && v.localService)
+                     ?? voices.find(v => v.lang.startsWith(selectedLanguage));
+      const enVoice  = langVoice
+                     ?? (selectedLanguage === 'en' ? (voices.find(v => v.lang.startsWith('en') && v.localService) ?? voices.find(v => v.lang.startsWith('en'))) : null);
       console.log('[TTS] doSpeak — voices:', voices.length,
-        '| chosen:', enVoice?.name, '| local:', enVoice?.localService,
+        '| chosen:', enVoice?.name, '| lang match:', !!langVoice,
         '| paused:', synth.paused, '| speaking:', synth.speaking);
+      // If the language is not English and no matching voice found, skip TTS and open mic directly
+      if (!enVoice && selectedLanguage !== 'en') {
+        console.log('[TTS] No voice for lang', selectedLanguage, '— skipping TTS, opening mic directly');
+        openMic();
+        return;
+      }
       const utt = new SpeechSynthesisUtterance(text);
       utt.rate = 0.9;
       if (enVoice) utt.voice = enVoice;
@@ -262,10 +269,11 @@ function AISurveyInner() {
     }
   }, [ttsEnabled, voiceSupported]);
 
-  // When question changes without a user gesture (e.g. first load), open mic directly
+  // When question changes, auto-open mic (mic opens immediately if no TTS voice, or after TTS if voice exists)
   useEffect(() => {
     if (!currentQuestion || isComplete) return;
     window.speechSynthesis?.cancel();
+    // When TTS is off, always auto-open mic directly
     if (!ttsEnabled && voiceSupported && (currentQuestion.type === 'text' || currentQuestion.type === 'number')) {
       const t = setTimeout(() => startVoiceRef.current(), 400);
       return () => clearTimeout(t);
