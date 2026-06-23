@@ -46,6 +46,7 @@ storage/
 !tsconfig*.json
 !backend/data/imd_climate_normals.json
 !backend/data/crop_knowledge_base.json
+!frontend/vercel.json
 
 # Model files & caches
 *.pkl
