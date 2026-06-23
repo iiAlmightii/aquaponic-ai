@@ -235,22 +235,14 @@ function AISurveyInner() {
       synth.speak(utt);
     };
 
-    // Always resume first — Chrome auto-pauses the synthesis engine after inactivity.
+    // Match LandVoiceSurvey exactly: resume, cancel if speaking, speak directly.
+    // Do NOT check voices.length — Chrome queues the utterance internally.
     synth.resume();
-    console.log('[TTS] speakText called — paused:', synth.paused, '| speaking:', synth.speaking, '| pending:', synth.pending);
-
     if (synth.speaking || synth.pending) {
       synth.cancel();
-      console.log('[TTS] cancelled existing speech, waiting 50ms');
       setTimeout(doSpeak, 50);
     } else {
-      const voices = synth.getVoices();
-      if (voices.length > 0) {
-        doSpeak();
-      } else {
-        console.log('[TTS] no voices yet, waiting for voiceschanged');
-        synth.addEventListener('voiceschanged', doSpeak, { once: true });
-      }
+      doSpeak();
     }
   }, [ttsEnabled, voiceSupported]);
 
