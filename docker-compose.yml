@@ -1,9 +1,21 @@
 # =============================================================================
 # AquaponicAI — Full Stack Docker Compose
 # =============================================================================
-# Usage:
-#   cp .env.example .env   # fill in secrets
-#   docker compose up --build
+#
+# DATABASE MODE — controlled by DATABASE_URL in .env:
+#
+#   Supabase (default — recommended):
+#     DATABASE_URL=postgresql+asyncpg://...supabase.com.../postgres...
+#     docker compose up --build
+#     → only redis, backend, frontend, nginx start.
+#       Local postgres is NOT started (no confusion, no unused container).
+#
+#   Local PostgreSQL (offline / dev without Supabase):
+#     Comment out or remove DATABASE_URL from .env, then:
+#     docker compose --profile local up --build
+#     → local postgres + adminer also start; backend falls back to
+#       postgresql+asyncpg://aquaponic:<POSTGRES_PASSWORD>@postgres:5432/aquaponic_db
+#
 # =============================================================================
 
 networks:
@@ -14,11 +26,15 @@ volumes:
   postgres_data:
   redis_data:
   storage_data:
+  eval_data:
 
 services:
 
-  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  # ── PostgreSQL (local-only profile) ────────────────────────────────────────
+  # Only starts when you explicitly run: docker compose --profile local up
+  # When DATABASE_URL points to Supabase this container is NOT needed.
   postgres:
+    profiles: [local]
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
@@ -45,8 +61,6 @@ services:
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
-    ports:
-      - "6380:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -61,24 +75,24 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
-    gpus: all
     env_file: .env
     environment:
-      DATABASE_URL: postgresql+asyncpg://aquaponic:${POSTGRES_PASSWORD:-secret}@postgres:5432/aquaponic_db
+      # DATABASE_URL comes from env_file (.env) — do NOT override it here.
+      # If .env points to Supabase, the container uses Supabase.
+      # REDIS_URL must be the Docker service name, not the host-side port.
       REDIS_URL: redis://redis:6379/0
       HF_HOME: /app/.cache/huggingface
-      GOOGLE_SHEETS_SERVICE_ACCOUNT_FILE: ${GOOGLE_SHEETS_SERVICE_ACCOUNT_FILE:-/run/secrets/google-service-account.json}
+      STT_PROVIDER: sarvam
     volumes:
       - storage_data:/app/storage
+      - eval_data:/app/data
       - ./backend/.cache/huggingface:/app/.cache/huggingface
-      - ./.secrets/google-service-account.json:/run/secrets/google-service-account.json:ro
     ports:
       - "8000:8000"
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
+    # GPU passthrough removed — app uses Sarvam STT API instead of local Whisper
     healthcheck:
       test:
         [
@@ -121,8 +135,10 @@ services:
     networks:
       - aquaponic_net
 
-  # ── Adminer (Database GUI) ───────────────────────────────────────────────────
+  # ── Adminer / Database GUI (local-only profile) ───────────────────────────────
+  # Only starts alongside local postgres.
   adminer:
+    profiles: [local]
     image: adminer
     restart: always
     ports:
