@@ -120,6 +120,7 @@ function AISurveyInner() {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const pendingTtsRef = useRef<string | null>(null);
   const currentQuestionTypeRef = useRef<string | undefined>(undefined);
+  const lastSpokenRef = useRef('');
 
   // Keep ref in sync so onResult closure always sees the latest question type
   useEffect(() => {
@@ -211,50 +212,65 @@ function AISurveyInner() {
   // Speak a question aloud. Called either directly from a click (🔊 Read button)
   // or from handleConfirm after await — both paths work because Chrome's transient
   // user-activation window lasts ~5 s, covering the typical API round-trip.
-  const speakText = useCallback((text: string) => {
+  // ── TTS: copied exactly from LandVoiceSurvey ─────────────────────────────
+  const speechSupported = typeof window !== 'undefined' && typeof window.speechSynthesis !== 'undefined';
+
+  const _doSpeak = (text: string, onEnd: () => void) => {
     const synth = window.speechSynthesis;
-    if (!synth || !ttsEnabled) return;
-
-    // Only open mic for free-text questions — select/boolean/multiselect use button clicks
-    const qType = currentQuestionTypeRef.current;
-    const openMic = () => {
-      if (qType === 'text' || qType === 'number') {
-        setTimeout(() => { if (voiceSupported) startVoiceRef.current(); }, 1500);
-      }
-    };
-
-    const doSpeak = () => {
-      // No manual voice selection — let the browser auto-detect language from text.
-      // This is the same approach used by LandVoiceSurvey which works correctly in Kannada.
-      const utt = new SpeechSynthesisUtterance(text);
-      utt.rate = 0.9;
-      utt.onstart = () => console.log('[TTS] onstart fired');
-      utt.onend = () => { console.log('[TTS] onend fired'); openMic(); };
-      utt.onerror = (e) => { console.error('[TTS] onerror:', e.error); openMic(); };
-      utteranceRef.current = utt;
-      synth.speak(utt);
-    };
-
-    // Match LandVoiceSurvey exactly: resume, cancel if speaking, speak directly.
-    // Do NOT check voices.length — Chrome queues the utterance internally.
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 0.95;
+    utt.pitch = 1.0;
+    utteranceRef.current = utt;
+    utt.onstart = () => console.log('[TTS] onstart');
+    utt.onend = () => { console.log('[TTS] onend'); onEnd(); };
+    utt.onerror = (e) => { console.error('[TTS] onerror:', e.error); onEnd(); };
     synth.resume();
     if (synth.speaking || synth.pending) {
       synth.cancel();
-      setTimeout(doSpeak, 50);
+      setTimeout(() => synth.speak(utt), 50);
     } else {
-      doSpeak();
+      synth.speak(utt);
     }
-  }, [ttsEnabled, voiceSupported]);
+  };
 
-  // When TTS is off, auto-open mic directly on question change (TTS handles mic-open via onend when on)
-  useEffect(() => {
-    if (!currentQuestion || isComplete) return;
-    window.speechSynthesis?.cancel();
-    if (!ttsEnabled && voiceSupported && (currentQuestion.type === 'text' || currentQuestion.type === 'number')) {
-      const t = setTimeout(() => startVoiceRef.current(), 400);
-      return () => clearTimeout(t);
+  // Speak the current question then open mic — exact same as LandVoiceSurvey.speakAndListen
+  const speakAndListen = useCallback(() => {
+    if (!currentQuestion || isComplete || loading) return;
+    const qType = currentQuestion.type;
+    const openMic = () => {
+      if ((qType === 'text' || qType === 'number') && voiceSupported) {
+        startVoiceRef.current();
+      }
+    };
+    if (!speechSupported || !ttsEnabled) {
+      openMic();
+      return;
     }
-  }, [currentQuestion?.id, ttsEnabled, voiceSupported, isComplete]);
+    _doSpeak(currentQuestion.text, openMic);
+  }, [currentQuestion, isComplete, loading, speechSupported, ttsEnabled, voiceSupported]);
+
+  // Backward-compat alias used by handleConfirm / submitAnswer callbacks
+  const speakText = useCallback((text: string) => {
+    if (!speechSupported || !ttsEnabled) return;
+    _doSpeak(text, () => {
+      const qType = currentQuestionTypeRef.current;
+      if ((qType === 'text' || qType === 'number') && voiceSupported) startVoiceRef.current();
+    });
+  }, [speechSupported, ttsEnabled, voiceSupported]);
+
+  // Auto-speak + auto-listen when a new question arrives — EXACT LandVoiceSurvey pattern
+  useEffect(() => {
+    if (!currentQuestion || isComplete || loading) return;
+    const sig = currentQuestion.id;
+    if (lastSpokenRef.current === sig) return;
+    lastSpokenRef.current = sig;
+    speakAndListen();
+  }, [currentQuestion?.id, isComplete, loading]);
+
+  // Cancel speech on unmount
+  useEffect(() => {
+    return () => { if (speechSupported) window.speechSynthesis?.cancel(); };
+  }, [speechSupported]);
 
   // Update input text when question changes
   useEffect(() => {
