@@ -161,3 +161,12 @@ export const landSurveyAPI = {
   syncSheet: (sessionId) => api.post(`/land-survey/${sessionId}/sync-sheet`),
   lookerUrl: (sessionId) => api.get(`/land-survey/${sessionId}/looker-url`),
 }
+
+export const adminAPI = {
+  overview:   ()          => api.get('/admin/overview'),
+  users:      ()          => api.get('/admin/users'),
+  updateUser: (id, body)  => api.patch(`/admin/users/${id}`, body),
+  deleteUser: (id)        => api.delete(`/admin/users/${id}`),
+  data:       ()          => api.get('/admin/data'),
+  schema:     ()          => api.get('/admin/schema'),
+}
