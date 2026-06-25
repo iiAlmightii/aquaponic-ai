@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -31,7 +31,7 @@ async def admin_required(current_user=Depends(get_current_user)):
 # ── Schemas ───────────────────────────────────────────────────────────────────
 
 class UserRoleUpdate(BaseModel):
-    role: Optional[str] = None
+    role: Optional[Literal["admin", "farmer", "viewer"]] = None
     full_name: Optional[str] = None
 
 
@@ -127,27 +127,24 @@ async def admin_list_users(
     current_user=Depends(admin_required),
     db: AsyncSession = Depends(get_db),
 ) -> list[dict[str, Any]]:
-    users = (await db.execute(select(User).order_by(User.created_at.desc()))).scalars().all()
+    rows = (await db.execute(
+        select(
+            User,
+            select(func.count(Farm.id)).where(Farm.owner_id == User.id).correlate(User).scalar_subquery().label("farms_count"),
+            select(func.count(Session.id)).where(Session.user_id == User.id).correlate(User).scalar_subquery().label("surveys_count"),
+        ).order_by(User.created_at.desc())
+    )).all()
 
-    result = []
-    for u in users:
-        farms_count = (await db.execute(
-            select(func.count(Farm.id)).where(Farm.owner_id == u.id)
-        )).scalar() or 0
-        surveys_count = (await db.execute(
-            select(func.count(Session.id)).where(Session.user_id == u.id)
-        )).scalar() or 0
-        result.append({
-            "id": str(u.id),
-            "email": u.email,
-            "full_name": u.full_name,
-            "role": u.role,
-            "is_active": u.is_active,
-            "created_at": u.created_at,
-            "farms_count": farms_count,
-            "surveys_count": surveys_count,
-        })
-    return result
+    return [{
+        "id": str(u.id),
+        "email": u.email,
+        "full_name": u.full_name,
+        "role": u.role,
+        "is_active": u.is_active,
+        "created_at": u.created_at,
+        "farms_count": farms_count or 0,
+        "surveys_count": surveys_count or 0,
+    } for u, farms_count, surveys_count in rows]
 
 
 @router.patch("/users/{user_id}")
@@ -167,8 +164,8 @@ async def admin_update_user(
 
     if body.role:
         user.role = body.role
-    if body.full_name:
-        user.full_name = body.full_name
+    if body.full_name is not None and body.full_name.strip():
+        user.full_name = body.full_name.strip()
     await db.flush()
     return {"id": str(user.id), "email": user.email, "role": user.role, "full_name": user.full_name}
 

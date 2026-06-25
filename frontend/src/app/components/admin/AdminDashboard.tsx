@@ -8,8 +8,8 @@ import {
   Shield, Users, LayoutDashboard, Database, Table,
   Search, Trash2, Edit2, Check, X, ChevronRight,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { adminAPI } from '../../utils/api';
+import { motion } from 'motion/react';
+import { adminAPI, authAPI } from '../../utils/api';
 import { useStore } from '../../store';
 import { Skeleton } from '../ui/skeleton';
 import { cn } from '../ui/utils';
@@ -40,12 +40,17 @@ export function AdminDashboard({ onNavigate }: { onNavigate?: (v: string) => voi
   const [usersLoading, setUsersLoading] = useState(false);
   const [userSearch, setUserSearch] = useState('');
   const [editingRole, setEditingRole] = useState<string | null>(null);
+  const [pendingRole, setPendingRole] = useState<Record<string, string>>({});
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [newUser, setNewUser] = useState({ full_name: '', email: '', password: '', role: 'farmer' });
+  const [addUserLoading, setAddUserLoading] = useState(false);
 
   // Data state
   const [data, setData] = useState<{ farms: any[]; sessions: any[] } | null>(null);
   const [dataLoading, setDataLoading] = useState(false);
   const [dataSubTab, setDataSubTab] = useState<'farms' | 'sessions'>('farms');
+  const [selectedRow, setSelectedRow] = useState<any>(null);
 
   // Schema state
   const [schema, setSchema] = useState<any[]>([]);
@@ -90,6 +95,21 @@ export function AdminDashboard({ onNavigate }: { onNavigate?: (v: string) => voi
       setUsers(prev => prev.filter(u => u.id !== userId));
       setConfirmDelete(null);
     } catch { /* ignore */ }
+  };
+
+  const handleAddUser = async () => {
+    if (!newUser.email || !newUser.password || !newUser.full_name) return;
+    setAddUserLoading(true);
+    try {
+      const { data: reg } = await authAPI.register({ email: newUser.email, password: newUser.password, full_name: newUser.full_name });
+      if (newUser.role !== 'farmer') {
+        await adminAPI.updateUser(reg.id, { role: newUser.role });
+      }
+      const { data: updated } = await adminAPI.users();
+      setUsers(updated);
+      setShowAddUser(false);
+      setNewUser({ full_name: '', email: '', password: '', role: 'farmer' });
+    } catch { /* ignore */ } finally { setAddUserLoading(false); }
   };
 
   const TABS: { id: Tab; label: string; icon: any }[] = [
@@ -224,6 +244,10 @@ export function AdminDashboard({ onNavigate }: { onNavigate?: (v: string) => voi
                 placeholder="Search by name or email…"
                 className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
             </div>
+            <button onClick={() => setShowAddUser(true)}
+              className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg flex items-center gap-1.5">
+              + Add User
+            </button>
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
@@ -245,12 +269,18 @@ export function AdminDashboard({ onNavigate }: { onNavigate?: (v: string) => voi
                         <td className="px-4 py-3">
                           {editingRole === u.id ? (
                             <div className="flex items-center gap-1">
-                              <select defaultValue={u.role} onChange={e => handleRoleChange(u.id, e.target.value)}
+                              <select defaultValue={u.role} onChange={e => setPendingRole(prev => ({ ...prev, [u.id]: e.target.value }))}
                                 className="text-xs border rounded px-1 py-0.5">
                                 <option value="admin">admin</option>
                                 <option value="farmer">farmer</option>
                                 <option value="viewer">viewer</option>
                               </select>
+                              {pendingRole[u.id] && pendingRole[u.id] !== u.role && (
+                                <button onClick={() => { handleRoleChange(u.id, pendingRole[u.id]); setPendingRole(prev => { const n = {...prev}; delete n[u.id]; return n; }); }}
+                                  className="text-green-600 hover:text-green-700 text-xs font-semibold px-1.5 py-0.5 rounded bg-green-50">
+                                  Save
+                                </button>
+                              )}
                               <button onClick={() => setEditingRole(null)} className="text-slate-400 hover:text-slate-600">
                                 <X className="w-3.5 h-3.5" />
                               </button>
@@ -326,7 +356,7 @@ export function AdminDashboard({ onNavigate }: { onNavigate?: (v: string) => voi
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {(data?.farms || []).map((f: any) => (
-                      <tr key={f.id} className="hover:bg-slate-50">
+                      <tr key={f.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => setSelectedRow(f)}>
                         <td className="px-4 py-3 font-medium text-slate-900">{f.name}</td>
                         <td className="px-4 py-3 text-slate-500 text-xs">{f.owner_email}</td>
                         <td className="px-4 py-3 text-slate-600 capitalize">{f.system_type}</td>
@@ -352,7 +382,7 @@ export function AdminDashboard({ onNavigate }: { onNavigate?: (v: string) => voi
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {(data?.sessions || []).map((s: any) => (
-                      <tr key={s.id} className="hover:bg-slate-50">
+                      <tr key={s.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => setSelectedRow(s)}>
                         <td className="px-4 py-3 font-medium text-slate-900">{s.project_name}</td>
                         <td className="px-4 py-3 text-slate-500 text-xs">{s.owner_email}</td>
                         <td className="px-4 py-3">
@@ -377,6 +407,24 @@ export function AdminDashboard({ onNavigate }: { onNavigate?: (v: string) => voi
               </div>
             )}
           </div>
+
+          {selectedRow && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              className="rounded-xl border border-slate-200 bg-white p-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Row Detail</p>
+                <button onClick={() => setSelectedRow(null)} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(selectedRow).map(([k, v]) => (
+                  <div key={k}>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">{k}</p>
+                    <p className="text-sm text-slate-800 font-medium truncate">{String(v ?? '—')}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
       )}
 
@@ -436,6 +484,38 @@ export function AdminDashboard({ onNavigate }: { onNavigate?: (v: string) => voi
                 </div>
               );
             })()}
+          </div>
+        </div>
+      )}
+      {showAddUser && (
+        <div className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-4">
+            <h2 className="text-base font-semibold text-slate-900">Add New User</h2>
+            {[['Full Name', 'full_name', 'text'], ['Email', 'email', 'email'], ['Password', 'password', 'password']].map(([label, key, type]) => (
+              <div key={key}>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">{label}</label>
+                <input type={type} value={(newUser as any)[key]}
+                  onChange={e => setNewUser(prev => ({ ...prev, [key]: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+              </div>
+            ))}
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">Role</label>
+              <select value={newUser.role} onChange={e => setNewUser(prev => ({ ...prev, role: e.target.value }))}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                <option value="farmer">farmer</option>
+                <option value="admin">admin</option>
+                <option value="viewer">viewer</option>
+              </select>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <button onClick={() => setShowAddUser(false)}
+                className="flex-1 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
+              <button onClick={handleAddUser} disabled={addUserLoading}
+                className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold disabled:opacity-50">
+                {addUserLoading ? 'Adding…' : 'Add User'}
+              </button>
+            </div>
           </div>
         </div>
       )}
