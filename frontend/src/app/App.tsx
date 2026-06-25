@@ -11,10 +11,11 @@ import { Analytics } from './components/analytics/Analytics';
 import { AIAdvisor } from './components/ai/AIAdvisor';
 import { CropFeasibility } from './components/crop/CropFeasibility';
 import { SurveysHub } from './components/surveys/SurveysHub';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 import { MainLayout } from './components/layout/MainLayout';
 import { useStore } from './store';
 
-type View = 'login' | 'register' | 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor' | 'crop-feasibility';
+type View = 'login' | 'register' | 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor' | 'crop-feasibility' | 'admin-panel';
 
 interface User {
   id: string;
@@ -72,6 +73,7 @@ function App() {
       {currentView === 'analytics' && <Analytics />}
       {currentView === 'ai-advisor' && <AIAdvisor />}
       {currentView === 'crop-feasibility' && <CropFeasibility onNavigate={setCurrentView} />}
+      {currentView === 'admin-panel' && <AdminDashboard onNavigate={setCurrentView} />}
     </MainLayout>
   );
 }

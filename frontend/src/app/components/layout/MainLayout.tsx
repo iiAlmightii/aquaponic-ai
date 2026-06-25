@@ -10,13 +10,14 @@ import {
   Menu,
   Leaf,
   Globe,
+  Shield,
   LucideIcon,
 } from 'lucide-react';
 import { useStore } from '../../store';
 import { SUPPORTED_LANGUAGES, LangCode, t, createT } from '../../utils/i18n';
 import { FloatingAdvisor } from '../ai/FloatingAdvisor';
 
-type View = 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor' | 'crop-feasibility';
+type View = 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor' | 'crop-feasibility' | 'admin-panel';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -69,6 +70,7 @@ const PAGE_TITLE_KEYS: Record<string, string> = {
   analytics:    'page_analytics',
   'ai-advisor':       'page_ai_advisor',
   'crop-feasibility': 'page_crop_feasibility',
+  'admin-panel':      'Admin Panel',
 };
 
 // Fix 1 & 4: Module-level NavItem with typed LucideIcon prop
@@ -110,6 +112,15 @@ interface SidebarProps {
 
 function SidebarContent({ user, currentView, onNavigate, onLogout, setMobileMenuOpen, lang }: SidebarProps) {
   const tr = createT(lang);
+  const navGroups = [
+    ...NAV_GROUP_DEFS,
+    ...(user?.role === 'admin' ? [{
+      labelKey: 'Admin',
+      items: [
+        { id: 'admin-panel', nameKey: 'Admin Panel', icon: Shield },
+      ],
+    }] : []),
+  ];
   return (
     <aside className="flex flex-col h-full bg-white border-r border-slate-200">
       {/* Brand */}
@@ -124,7 +135,7 @@ function SidebarContent({ user, currentView, onNavigate, onLogout, setMobileMenu
 
       {/* Nav groups */}
       <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4">
-        {NAV_GROUP_DEFS.map((group) => (
+        {navGroups.map((group) => (
           <div key={group.labelKey}>
             <p className="px-3 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
               {tr(group.labelKey)}
