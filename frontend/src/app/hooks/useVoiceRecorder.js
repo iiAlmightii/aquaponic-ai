@@ -21,8 +21,9 @@ function resolveDefaultBackendUrl() {
   if (envBase && typeof envBase === 'string') {
     return `${envBase.replace(/\/$/, '')}/audio/transcribe`
   }
-  if (typeof window === 'undefined') return 'http://localhost:8000/api/v1/audio/transcribe'
-  return `${window.location.protocol}//${window.location.hostname}:8000/api/v1/audio/transcribe`
+  if (typeof window === 'undefined') return '/api/v1/audio/transcribe'
+  // Always route through nginx (same origin) — never hit backend:8000 directly
+  return `${window.location.origin}/api/v1/audio/transcribe`
 }
 
 function getRecorderMimeType() {
