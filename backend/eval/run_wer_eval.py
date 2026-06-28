@@ -65,17 +65,24 @@ def run_evaluation(clips_dir: Path, results_dir: Path, status_file: Path) -> Non
         sarvam_out = "[error]"
         try:
             wav_path = _webm_to_wav(clip["file"])
-            whisper_out = _transcribe_whisper(wav_path)
-            sarvam_out = _transcribe_sarvam(wav_path)
         except Exception as exc:
-            logger.error("Clip %s/%s failed: %s", clip["participant_id"],
-                         clip["file"].name, exc)
-        finally:
-            if wav_path is not None:
-                try:
-                    os.unlink(wav_path)
-                except OSError:
-                    pass
+            logger.error("WAV conversion failed %s/%s: %s", clip["participant_id"], clip["file"].name, exc)
+
+        if wav_path is not None:
+            try:
+                whisper_out = _transcribe_whisper(wav_path)
+            except Exception as exc:
+                logger.error("Whisper failed %s/%s: %s", clip["participant_id"], clip["file"].name, exc)
+
+            try:
+                sarvam_out = _transcribe_sarvam(wav_path)
+            except Exception as exc:
+                logger.error("Sarvam failed %s/%s: %s", clip["participant_id"], clip["file"].name, exc)
+
+            try:
+                os.unlink(wav_path)
+            except OSError:
+                pass
 
         gt = _normalise(clip["ground_truth"])
         whisper_norm = _normalise(whisper_out) if whisper_out != "[error]" else ""
