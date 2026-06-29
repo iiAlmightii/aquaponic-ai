@@ -87,7 +87,7 @@ export function Dashboard({ user, onNavigate }: DashboardProps) {
   useEffect(() => {
     farmAPI
       .list()
-      .then((res: any) => setFarmsCount((res?.data ?? []).length))
+      .then((res: any) => setFarmsCount((res?.data?.farms ?? res?.data ?? []).length))
       .catch(() => {})
       .finally(() => setFarmsLoading(false));
 
