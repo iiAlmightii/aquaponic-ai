@@ -28,7 +28,15 @@ export function FarmSelector({ className }: FarmSelectorProps) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  if (farms.length === 0) {
+  // Don't block forever — show selector even with no farms after brief wait
+  const [ready, setReady] = useState(farms.length > 0);
+  useEffect(() => {
+    if (farms.length > 0) { setReady(true); return; }
+    const t = setTimeout(() => setReady(true), 2000);
+    return () => clearTimeout(t);
+  }, [farms.length]);
+
+  if (!ready) {
     return <Skeleton className={cn('h-8 w-32 rounded-full', className)} />;
   }
 

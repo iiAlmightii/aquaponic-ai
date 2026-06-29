@@ -70,14 +70,14 @@ export function Reports({ onNavigate }: ReportsProps) {
           };
         });
         setReports(mapped);
+        setLoading(false); // show reports immediately, enrich metrics in background
         // Best-effort: load analytics to enrich report cards with financial metrics
-        try {
-          const analyticsRes = await reportAPI.analytics();
+        reportAPI.analytics().then((analyticsRes: any) => {
           const topSessions: any[] = analyticsRes?.data?.top_sessions || [];
           const map: Record<string, any> = {};
           topSessions.forEach((s: any) => { map[s.session_id] = s; });
           setSessionMetrics(map);
-        } catch { /* metrics preview is best-effort */ }
+        }).catch(() => { /* metrics preview is best-effort */ });
       } catch (e: any) {
         setError(e.message || 'Failed to load reports.');
       } finally {
