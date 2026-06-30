@@ -82,7 +82,8 @@ services:
       # REDIS_URL must be the Docker service name, not the host-side port.
       REDIS_URL: redis://redis:6379/0
       HF_HOME: /app/.cache/huggingface
-      STT_PROVIDER: sarvam
+      STT_PROVIDER: indicwhisper
+      INDICWHISPER_MODEL: ai4bharat/whisper-medium-en
     volumes:
       - storage_data:/app/storage
       - eval_data:/app/data

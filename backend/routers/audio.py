@@ -1,7 +1,9 @@
-"""Audio transcription endpoints — supports faster-whisper (local) and Sarvam Saarika (API).
+"""Audio transcription endpoints.
 
-Set STT_PROVIDER=sarvam in .env to use Sarvam's cloud STT (no GPU required).
-Set STT_PROVIDER=whisper (default) to use local faster-whisper.
+STT_PROVIDER options:
+  indicwhisper → AI4Bharat IndicWhisper (fine-tuned for Indian languages, open-source, needs GPU)
+  sarvam       → Sarvam Saarika v2.5 cloud API (no GPU required, needs SARVAM_API_KEY)
+  whisper      → faster-whisper local (default, needs GPU + faster-whisper installed)
 """
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
@@ -25,11 +27,13 @@ router = APIRouter(tags=["audio"])
 logger = logging.getLogger("aquaponic_ai.audio")
 
 # ── STT provider selection ────────────────────────────────────────────────────
-# STT_PROVIDER=sarvam  → use Sarvam Saarika v2 API (no GPU, needs SARVAM_API_KEY)
-# STT_PROVIDER=whisper → use faster-whisper locally (default)
 STT_PROVIDER = os.getenv("STT_PROVIDER", "whisper").lower()
 _SARVAM_STT_URL = "https://api.sarvam.ai/speech-to-text"
 _SARVAM_API_KEY = os.getenv("SARVAM_API_KEY", "").strip()
+
+# AI4Bharat IndicWhisper model singleton
+_INDICWHISPER_MODEL_ID = os.getenv("INDICWHISPER_MODEL", "ai4bharat/whisper-medium-en")
+_indicwhisper_pipe = None  # lazy-loaded on first request
 
 # Try to import faster-whisper; it's optional in Docker
 try:
@@ -265,6 +269,74 @@ async def _transcribe_with_sarvam(
         raise HTTPException(status_code=502, detail=f"Sarvam STT failed: {exc}")
 
 
+async def _transcribe_with_indicwhisper(
+    audio_data: bytes,
+    audio_suffix: str,
+    language: str = "en",
+) -> tuple[str, float]:
+    """Transcribe using AI4Bharat IndicWhisper — open-source, Indian language fine-tuned.
+
+    Model: ai4bharat/whisper-medium-en (default) — fine-tuned on Indian English speech.
+    Set INDICWHISPER_MODEL env var to use a different AI4Bharat model.
+    Lazily loads on first call; cached in-process afterward.
+    """
+    global _indicwhisper_pipe
+    if _indicwhisper_pipe is None:
+        logger.info("Loading AI4Bharat IndicWhisper model: %s", _INDICWHISPER_MODEL_ID)
+        try:
+            import torch
+            from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline as hf_pipeline
+
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+            logger.info("IndicWhisper using device=%s dtype=%s", device, dtype)
+
+            model = AutoModelForSpeechSeq2Seq.from_pretrained(
+                _INDICWHISPER_MODEL_ID,
+                torch_dtype=dtype,
+                low_cpu_mem_usage=True,
+                use_safetensors=True,
+            )
+            model.to(device)
+            processor = AutoProcessor.from_pretrained(_INDICWHISPER_MODEL_ID)
+
+            _indicwhisper_pipe = hf_pipeline(
+                "automatic-speech-recognition",
+                model=model,
+                tokenizer=processor.tokenizer,
+                feature_extractor=processor.feature_extractor,
+                torch_dtype=dtype,
+                device=device,
+            )
+            logger.info("✅ AI4Bharat IndicWhisper loaded on %s", device)
+        except ImportError:
+            raise HTTPException(
+                status_code=501,
+                detail="transformers/torch not installed. Run: pip install transformers torch torchaudio"
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=f"IndicWhisper load failed: {exc}")
+
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=audio_suffix or ".webm") as f:
+            f.write(audio_data)
+            tmp_path = f.name
+
+        result = await asyncio.to_thread(_indicwhisper_pipe, tmp_path)
+        transcript = (result.get("text") or "").strip()
+        if not transcript:
+            raise HTTPException(status_code=400, detail="Could not transcribe audio")
+        return transcript, 0.92
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"IndicWhisper transcription failed: {exc}")
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.unlink(tmp_path)
+
+
 @router.post("/transcribe", response_model=TranscribeResponse)
 async def transcribe_audio(
     file: UploadFile = File(...),
@@ -279,6 +351,47 @@ async def transcribe_audio(
         raise HTTPException(status_code=400, detail="Audio file is empty")
 
     lang = (language or "en").split("-")[0]
+
+    # ── AI4Bharat IndicWhisper path ───────────────────────────────────────────
+    if STT_PROVIDER == "indicwhisper":
+        try:
+            from services.voice_interpretation import (
+                append_voice_audit_log, interpret_transcript,
+                post_process_transcript, normalize_number_transcript,
+                build_voice_audit_id,
+            )
+            raw_text, stt_conf = await _transcribe_with_indicwhisper(
+                audio_data, infer_audio_suffix(file), lang
+            )
+            cleaned_text = post_process_transcript(raw_text, language=lang) or raw_text.strip()
+            if question_type == "number" and cleaned_text:
+                normalized = normalize_number_transcript(cleaned_text)
+                if normalized != cleaned_text:
+                    cleaned_text = normalized
+            interpretation = interpret_transcript(question_id, cleaned_text, stt_conf) if question_id else {}
+            alternatives: list[str] = []
+            if "farm_name" in interpretation:
+                alternatives = interpretation["farm_name"].get("alternatives") or []
+            audit_id = build_voice_audit_id()
+            try:
+                append_voice_audit_log({
+                    "audit_id": audit_id, "timestamp": None, "question_id": question_id,
+                    "provider": "indicwhisper", "question_context_present": bool(question_context),
+                    "transcript_raw": raw_text, "transcript_clean": cleaned_text,
+                    "stt_confidence": stt_conf, "confidence_details": {}, "interpretation": interpretation,
+                })
+            except Exception:
+                pass
+            return TranscribeResponse(
+                text=cleaned_text, confidence=stt_conf, provider="indicwhisper",
+                audit_id=audit_id, interpretation=interpretation,
+                alternatives=alternatives, confidence_details={},
+            )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.exception("IndicWhisper STT path failed")
+            raise HTTPException(status_code=500, detail=f"IndicWhisper error: {exc}")
 
     # ── Sarvam STT path ───────────────────────────────────────────────────────
     if STT_PROVIDER == "sarvam":
