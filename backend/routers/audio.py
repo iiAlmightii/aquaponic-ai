@@ -30,6 +30,8 @@ logger = logging.getLogger("aquaponic_ai.audio")
 STT_PROVIDER = os.getenv("STT_PROVIDER", "whisper").lower()
 _SARVAM_STT_URL = "https://api.sarvam.ai/speech-to-text"
 _SARVAM_API_KEY = os.getenv("SARVAM_API_KEY", "").strip()
+_GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
+_GROQ_STT_URL = "https://api.groq.com/openai/v1/audio/transcriptions"
 
 # AI4Bharat IndicWhisper model singleton
 _INDICWHISPER_MODEL_ID = os.getenv("INDICWHISPER_MODEL", "ai4bharat/whisper-medium-en")
@@ -337,6 +339,45 @@ async def _transcribe_with_indicwhisper(
             os.unlink(tmp_path)
 
 
+async def _transcribe_with_groq(
+    audio_data: bytes,
+    audio_suffix: str,
+    language: str = "en",
+) -> tuple[str, float]:
+    """Transcribe using Groq's free Whisper large-v3 API.
+
+    Free tier: 7,200 seconds/day. No GPU required.
+    Fastest Whisper inference available (~1-2s latency).
+    """
+    if not _GROQ_API_KEY:
+        raise HTTPException(
+            status_code=501,
+            detail="GROQ_API_KEY is not set. Get a free key at console.groq.com"
+        )
+    lang_map = {"hi": "hi", "kn": "kn", "ta": "ta", "te": "te", "mr": "mr", "en": "en"}
+    lang_code = lang_map.get(language, "en")
+    suffix = audio_suffix or ".webm"
+    mime = "audio/webm" if suffix in {".webm", ""} else "audio/wav"
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(
+                _GROQ_STT_URL,
+                headers={"Authorization": f"Bearer {_GROQ_API_KEY}"},
+                files={"file": (f"audio{suffix}", audio_data, mime)},
+                data={"model": "whisper-large-v3", "language": lang_code, "response_format": "json"},
+            )
+        if not resp.is_success:
+            raise HTTPException(status_code=502, detail=f"Groq STT error {resp.status_code}: {resp.text[:200]}")
+        transcript = (resp.json().get("text") or "").strip()
+        if not transcript:
+            raise HTTPException(status_code=400, detail="Could not transcribe audio")
+        return transcript, 0.95  # whisper-large-v3 is high quality
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Groq STT failed: {exc}")
+
+
 @router.post("/transcribe", response_model=TranscribeResponse)
 async def transcribe_audio(
     file: UploadFile = File(...),
@@ -392,6 +433,46 @@ async def transcribe_audio(
         except Exception as exc:
             logger.exception("IndicWhisper STT path failed")
             raise HTTPException(status_code=500, detail=f"IndicWhisper error: {exc}")
+
+    # ── Groq Whisper large-v3 path ────────────────────────────────────────────
+    if STT_PROVIDER == "groq":
+        try:
+            from services.voice_interpretation import (
+                append_voice_audit_log, interpret_transcript,
+                post_process_transcript, normalize_number_transcript,
+                build_voice_audit_id,
+            )
+            raw_text, stt_conf = await _transcribe_with_groq(audio_data, infer_audio_suffix(file), lang)
+            cleaned_text = post_process_transcript(raw_text, language=lang) or raw_text.strip()
+            if question_type == "number" and cleaned_text:
+                normalized = normalize_number_transcript(cleaned_text)
+                if normalized != cleaned_text:
+                    cleaned_text = normalized
+            interpretation = interpret_transcript(question_id, cleaned_text, stt_conf) if question_id else {}
+            alternatives: list[str] = []
+            if "farm_name" in interpretation:
+                alternatives = interpretation["farm_name"].get("alternatives") or []
+            audit_id = build_voice_audit_id()
+            try:
+                append_voice_audit_log({
+                    "audit_id": audit_id, "timestamp": None, "question_id": question_id,
+                    "provider": "groq-whisper-large-v3",
+                    "question_context_present": bool(question_context),
+                    "transcript_raw": raw_text, "transcript_clean": cleaned_text,
+                    "stt_confidence": stt_conf, "confidence_details": {}, "interpretation": interpretation,
+                })
+            except Exception:
+                pass
+            return TranscribeResponse(
+                text=cleaned_text, confidence=stt_conf, provider="groq-whisper-large-v3",
+                audit_id=audit_id, interpretation=interpretation,
+                alternatives=alternatives, confidence_details={},
+            )
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.exception("Groq STT path failed")
+            raise HTTPException(status_code=500, detail=f"Groq STT error: {exc}")
 
     # ── Sarvam STT path ───────────────────────────────────────────────────────
     if STT_PROVIDER == "sarvam":
