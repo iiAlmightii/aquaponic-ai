@@ -1,0 +1,102 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Outer Container -->
+        <mxCell id="container" value="Docker Compose (5 services + Nginx)" style="rounded=1;dashed=1;whiteSpace=wrap;html=1;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="50" width="1300" height="800" as="geometry"/>
+        </mxCell>
+
+        <!-- Presentation Layer Label -->
+        <mxCell id="pl_label" value="Presentation Layer" style="text;html=1;align=center;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="550" y="80" width="300" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Presentation Boxes -->
+        <mxCell id="p1" value="React 18 + Vite" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="130" width="250" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p2" value="Zustand State" style="rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="500" y="130" width="250" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="p3" value="Web Speech API" style="rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="800" y="130" width="250" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- UI Modules -->
+        <mxCell id="u1" value="Aquaponics Survey" style="rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="200" y="200" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="u2" value="Land Survey" style="rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="420" y="200" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="u3" value="Analytics" style="rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="640" y="200" width="200" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="u4" value="Dashboard" style="rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="860" y="200" width="200" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow 1 -->
+        <mxCell id="a1" value="HTTP/REST (JWT + Axios)" style="endArrow=block;" edge="1" parent="1" source="u2" target="app_label">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Application Layer -->
+        <mxCell id="app_label" value="Application Layer (FastAPI, Python 3.12)" style="text;html=1;align=center;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="300" width="500" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Routers -->
+        <mxCell id="r1" value="Session Router" vertex="1" parent="1">
+          <mxGeometry x="150" y="350" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="r2" value="Audio Router" vertex="1" parent="1">
+          <mxGeometry x="380" y="350" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="r3" value="Analysis Router" vertex="1" parent="1">
+          <mxGeometry x="610" y="350" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="r4" value="Market Price Router" vertex="1" parent="1">
+          <mxGeometry x="840" y="350" width="200" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Services -->
+        <mxCell id="s1" value="QuestionnaireEngine" vertex="1" parent="1">
+          <mxGeometry x="150" y="420" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s2" value="VoiceInterpretation" vertex="1" parent="1">
+          <mxGeometry x="380" y="420" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s3" value="FinancialCalculator" vertex="1" parent="1">
+          <mxGeometry x="610" y="420" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="s4" value="Agmarknet API Client" vertex="1" parent="1">
+          <mxGeometry x="840" y="420" width="200" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow 2 -->
+        <mxCell id="a2" value="async SQLAlchemy" style="endArrow=block;" edge="1" parent="1" source="s2" target="data_label">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Data Layer -->
+        <mxCell id="data_label" value="Data Layer" style="text;html=1;align=center;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="550" y="520" width="300" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="d1" value="PostgreSQL 16 (JSONB context_data, scenarios)" vertex="1" parent="1">
+          <mxGeometry x="300" y="570" width="300" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="d2" value="Redis 7 (market price cache)" vertex="1" parent="1">
+          <mxGeometry x="650" y="570" width="300" height="60" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

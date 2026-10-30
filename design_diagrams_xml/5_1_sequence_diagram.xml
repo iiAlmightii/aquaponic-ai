@@ -1,0 +1,31 @@
+<mxfile host="app.diagrams.net" agent="GitHub Copilot" version="24.7.6" type="device">
+  <diagram id="sequence" name="5.1 Sequence Diagram">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Farmer" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="80" y="50" width="140" height="50" as="geometry"/></mxCell>
+        <mxCell id="3" value="Frontend" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="320" y="50" width="140" height="50" as="geometry"/></mxCell>
+        <mxCell id="4" value="Session API" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="560" y="50" width="140" height="50" as="geometry"/></mxCell>
+        <mxCell id="5" value="Questionnaire Engine" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="800" y="50" width="180" height="50" as="geometry"/></mxCell>
+        <mxCell id="6" value="Financial Service" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1060" y="50" width="170" height="50" as="geometry"/></mxCell>
+        <mxCell id="7" value="Report Service" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="1320" y="50" width="150" height="50" as="geometry"/></mxCell>
+        <mxCell id="20" value="start session" style="endArrow=block;html=1;" edge="1" parent="1" source="2" target="3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="21" value="POST /session/start" style="endArrow=block;html=1;" edge="1" parent="1" source="3" target="4"><mxGeometry relative="1" as="geometry"><mxPoint x="630" y="170" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="22" value="get first question" style="endArrow=block;html=1;" edge="1" parent="1" source="4" target="5"><mxGeometry relative="1" as="geometry"><mxPoint x="880" y="220" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="23" value="question payload" style="endArrow=block;dashed=1;html=1;" edge="1" parent="1" source="5" target="4"><mxGeometry relative="1" as="geometry"><mxPoint x="630" y="260" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="24" value="submit answer" style="endArrow=block;html=1;" edge="1" parent="1" source="3" target="4"><mxGeometry relative="1" as="geometry"><mxPoint x="630" y="320" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="25" value="evaluate completion" style="endArrow=block;html=1;" edge="1" parent="1" source="4" target="5"><mxGeometry relative="1" as="geometry"><mxPoint x="880" y="360" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="26" value="create plan" style="endArrow=block;html=1;" edge="1" parent="1" source="5" target="6"><mxGeometry relative="1" as="geometry"><mxPoint x="1140" y="420" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="27" value="generate report" style="endArrow=block;html=1;" edge="1" parent="1" source="6" target="7"><mxGeometry relative="1" as="geometry"><mxPoint x="1390" y="470" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="28" value="report link" style="endArrow=block;dashed=1;html=1;" edge="1" parent="1" source="7" target="3"><mxGeometry relative="1" as="geometry"><mxPoint x="390" y="520" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="30" value="" style="shape=line;strokeWidth=1;dashed=1;html=1;" vertex="1" parent="1"><mxGeometry x="150" y="110" width="1" height="500" as="geometry"/></mxCell>
+        <mxCell id="31" value="" style="shape=line;strokeWidth=1;dashed=1;html=1;" vertex="1" parent="1"><mxGeometry x="390" y="110" width="1" height="500" as="geometry"/></mxCell>
+        <mxCell id="32" value="" style="shape=line;strokeWidth=1;dashed=1;html=1;" vertex="1" parent="1"><mxGeometry x="630" y="110" width="1" height="500" as="geometry"/></mxCell>
+        <mxCell id="33" value="" style="shape=line;strokeWidth=1;dashed=1;html=1;" vertex="1" parent="1"><mxGeometry x="890" y="110" width="1" height="500" as="geometry"/></mxCell>
+        <mxCell id="34" value="" style="shape=line;strokeWidth=1;dashed=1;html=1;" vertex="1" parent="1"><mxGeometry x="1145" y="110" width="1" height="500" as="geometry"/></mxCell>
+        <mxCell id="35" value="" style="shape=line;strokeWidth=1;dashed=1;html=1;" vertex="1" parent="1"><mxGeometry x="1395" y="110" width="1" height="500" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

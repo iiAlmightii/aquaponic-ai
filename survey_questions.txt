@@ -1,0 +1,69 @@
+Aquaponics AI Survey Questions
+==============================
+
+1. What is the name of your farm or project?
+2. Where is your farm located? (City, State)
+3. What is the total area of your aquaponic system in square metres?
+4. How would you describe your experience with aquaponics?
+5. What type of aquaponic system are you running?
+6. Which fish species are you cultivating?
+7. How many fish are currently in your system?
+8. What is the total volume of your fish tank(s)?
+9. What is the current average weight of your fish?
+10. How much feed do you provide per day?
+11. What is your expected harvest cycle for fish?
+12. What crops are you growing in your system?
+13. What area is dedicated to crop production?
+14. What is your expected monthly crop yield?
+15. Do you have automated IoT water quality sensors installed?
+16. What is your typical water pH level? (Asked only when IoT sensors are not installed)
+17. What is the typical water temperature in your system?
+18. What was your total infrastructure investment (tanks, pipes, grow beds)?
+19. What was the cost of equipment (pumps, lights, sensors, aerators)?
+20. What did you spend on initial fish fingerlings and plant seedlings?
+21. What is your monthly fish feed expenditure?
+22. What is your monthly labour cost (salaries, wages)?
+23. What are your monthly utility costs (electricity, water)?
+24. What are your monthly maintenance costs (repairs, consumables, water treatment chemicals)?
+25. What is your expected monthly revenue from fish sales?
+26. What is your expected monthly revenue from crop sales?
+27. Over how many months would you like the financial plan to project?
+28. What is your primary goal for this aquaponic operation?
+29. What is your biggest operational challenge right now?
+
+Land Survey Questions
+=====================
+
+Base questions:
+1. Enter total land area in square meters.
+2. Monthly water cost in rupees (borewell/tanker/canal charges).
+3. Electricity usage per month in units (for pumps, motors, lighting).
+4. Monthly fertilizer cost in rupees (all types: urea, DAP, organic, etc.).
+5. Number of workers.
+6. Monthly salary per worker in rupees.
+7. Monthly land rent in rupees. Say zero if owned.
+8. Total machine cost in rupees.
+9. Initial farm setup cost in rupees.
+10. Cost of seeds per crop cycle in rupees.
+11. Electricity cost per unit in rupees.
+12. Monthly maintenance cost in rupees.
+13. Estimated post-harvest spoilage percentage. Out of 100 kg harvested, how many kg usually get wasted before sale? Example answer: 8 (means 8%).
+14. Temporary seasonal labor cost per month in rupees.
+15. Pesticide cost per month in rupees.
+16. Fuel cost per month in rupees.
+17. Transport cost to market per month in rupees.
+18. State where the farm operates.
+19. District where the farm operates.
+20. Primary mandi or market name. Say unknown if not sure.
+21. Market type.
+22. Demand level.
+
+Crop-collection questions (repeated per crop):
+23. Tell crop name.
+24. For <crop_name>, how many times do you grow it in one year?
+25. For <crop_name>, months from planting to harvest.
+26. For <crop_name>, expected total yield per harvest in kilograms.
+27. Do you want to add another crop?
+
+Validation/confirmation question used during voice flow:
+28. You said <captured_answer>. Is that correct?

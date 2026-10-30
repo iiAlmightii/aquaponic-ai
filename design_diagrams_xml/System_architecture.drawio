@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="4.1 System Perspective" id="G0GyH_xdNYA80WmAcVWX">
+    <mxGraphModel dx="1348" dy="759" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="User Interfaces\n(Web App + Voice Input)" vertex="1">
+          <mxGeometry height="90" width="220" x="60" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="API Gateway / FastAPI Routers" vertex="1">
+          <mxGeometry height="90" width="240" x="360" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Domain Services\n(Financial, Questionnaire, Auth, AI Advisor)" vertex="1">
+          <mxGeometry height="90" width="300" x="700" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Persistence Layer\n(SQLAlchemy Models + Repositories)" vertex="1">
+          <mxGeometry height="90" width="280" x="710" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-5" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="PostgreSQL" vertex="1">
+          <mxGeometry height="110" width="160" x="1160" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-6" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f5f5f5;strokeColor=#666666;" value="Redis Cache" vertex="1">
+          <mxGeometry height="110" width="140" x="780" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="External AI Providers\n(OpenAI / Anthropic / Local)" vertex="1">
+          <mxGeometry height="90" width="260" x="1100" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-8" edge="1" parent="1" source="BaYxgV3rTw70Ly07mWnZ-1" style="endArrow=block;html=1;" target="BaYxgV3rTw70Ly07mWnZ-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-9" edge="1" parent="1" source="BaYxgV3rTw70Ly07mWnZ-2" style="endArrow=block;html=1;" target="BaYxgV3rTw70Ly07mWnZ-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-10" edge="1" parent="1" source="BaYxgV3rTw70Ly07mWnZ-3" style="endArrow=block;html=1;" target="BaYxgV3rTw70Ly07mWnZ-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-11" edge="1" parent="1" source="BaYxgV3rTw70Ly07mWnZ-4" style="endArrow=block;html=1;" target="BaYxgV3rTw70Ly07mWnZ-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-12" edge="1" parent="1" source="BaYxgV3rTw70Ly07mWnZ-4" style="endArrow=block;html=1;" target="BaYxgV3rTw70Ly07mWnZ-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="BaYxgV3rTw70Ly07mWnZ-13" edge="1" parent="1" source="BaYxgV3rTw70Ly07mWnZ-3" style="endArrow=block;html=1;" target="BaYxgV3rTw70Ly07mWnZ-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

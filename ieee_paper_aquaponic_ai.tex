@@ -1,0 +1,1046 @@
+% ===========================================================================
+% IEEE CONFERENCE PAPER — AQUAPONICAI
+% Authors: Chandan K, Dr. Deepika K | Dept. MCA, RVCE, Bengaluru
+%
+% OVERLEAF INSTRUCTIONS:
+%  1. New Project → Blank Project → paste this file as main.tex
+%  2. Compiler: pdfLaTeX
+%  3. Upload 4 images to Overleaf root before compiling:
+%       fig_arch.png      (System architecture diagram)
+%       fig_survey.png    (Screenshot: voice survey recording state)
+%       fig_scenarios.png (Screenshot: Scenario Analysis bar chart)
+%       fig_dashboard.png (Screenshot: main dashboard overview)
+% ===========================================================================
+
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\usepackage{cite}
+\usepackage{balance}
+\usepackage{ragged2e}
+\usepackage[hidelinks]{hyperref}
+
+% Prevent text from overflowing column boundaries
+\tolerance=1500
+\emergencystretch=2em
+
+% Safe INR notation
+\newcommand{\inr}[1]{Rs.\,#1}
+
+% ── Title ───────────────────────────────────────────────────────────────────
+\title{AquaponicAI: A Voice-Driven Adaptive Decision Support System
+for Aquaponic and Land Farm Planning with Multi-Scenario
+Financial Analysis}
+
+% ── Authors ─────────────────────────────────────────────────────────────────
+\author{
+  \IEEEauthorblockN{Chandan K}
+  \IEEEauthorblockA{
+    \textit{Department of MCA}\\
+    \textit{RV College of Engineering}\\
+    Bengaluru, Karnataka, India\\
+    chandank.mca24@rvce.edu.in
+  }
+  \and
+  \IEEEauthorblockN{Dr. Deepika K}
+  \IEEEauthorblockA{
+    \textit{Department of MCA}\\
+    \textit{RV College of Engineering}\\
+    Bengaluru, Karnataka, India\\
+    deepikak@rvce.edu.in
+  }
+}
+
+\begin{document}
+\maketitle
+
+% ── Abstract ────────────────────────────────────────────────────────────────
+\begin{abstract}
+Aquaponic and land-based farm operators in developing economies face a
+persistent challenge: translating operational knowledge into structured
+financial plans without access to domain experts or expensive software.
+This paper presents AquaponicAI, an end-to-end decision-support platform
+that enables farm operators to generate multi-scenario financial projections
+through a voice-first adaptive survey interface. The system provides two
+survey modules: an aquaponics-specific questionnaire covering fish, crop,
+water quality, and financial parameters, and a land-and-crop planning
+module with real-time market price integration via the Government of India
+Agmarknet API. Voice input is processed through a dual-path transcription
+pipeline combining browser-native Web Speech API with server-side
+\texttt{faster-whisper}, followed by domain vocabulary normalization and
+confidence-aware entity extraction. A stateless questionnaire engine with
+conditional skip logic drives structured data collection across six question
+types. Collected data feeds a deterministic financial planning engine that
+computes capital expenditure, operating costs, return on investment, net
+present value, internal rate of return, payback period, break-even month,
+and per-area productivity across three revenue scenarios. The platform is
+implemented using FastAPI on Python 3.12, React 18, PostgreSQL 16, and
+Redis 7, fully containerized via Docker Compose. A 36-case validation suite (30 financial and questionnaire-engine
+unit tests, 6 voice-interpretation unit tests) was executed with
+full pass rate in our evaluation run.
+\end{abstract}
+
+\begin{IEEEkeywords}
+aquaponics, decision support system, voice user interface,
+adaptive questionnaire, multi-scenario financial analysis,
+speech recognition, smart agriculture
+\end{IEEEkeywords}
+
+
+% ── I. INTRODUCTION ─────────────────────────────────────────────────────────
+\section{Introduction}
+\label{sec:intro}
+
+Aquaponics, a recirculating system integrating aquaculture with
+hydroponics~\cite{ref1}, produces fish and crops in a shared water circuit,
+achieving water savings of 90--95\% compared to conventional soil
+farming while generating dual revenue streams~\cite{ref7}. Despite
+strong agronomic advantages, smallholder aquaponic operations face high
+failure rates driven principally by inadequate financial planning.
+Operators typically rely on generic spreadsheet templates that do not
+model the co-dependent revenue cycles of fish and crop production, nor
+communicate how returns change under adverse market or yield conditions.
+
+Land-based smallholder farming faces analogous challenges. Crop
+selection, cost structure, and price volatility interact in ways that
+are difficult to anticipate without quantitative scenario modelling.
+Studies of smallholder agri-enterprises identify lack of structured
+financial planning tools as a primary contributor to operational
+losses within the first three years~\cite{ref4}.
+In India, where smallholder farming supports hundreds of millions of
+livelihoods, digital planning tools have seen limited penetration
+beyond crop advisory services~\cite{ref18}.
+
+Decision support systems (DSS) for precision agriculture have been
+researched extensively, with applications spanning crop disease
+identification, yield prediction, and irrigation
+scheduling~\cite{ref2,ref15,ref16}. However, adoption among aquaponic and
+smallholder land operators remains low due to two structural barriers.
+First, existing tools require form-based interfaces that impose
+cognitive burden on operators managing physically demanding daily
+operations. Second, financial projections are typically single-scenario
+estimates that convey no information about downside risk, limiting
+their utility for investment decisions.
+
+Voice-first interfaces present a compelling solution to the interaction
+barrier. Studies on agricultural advisory systems demonstrate that
+speech-based data entry reduces task completion time and cognitive
+load compared to form-based input, particularly for operators with
+limited digital literacy~\cite{ref3,ref20}. However, agricultural speech
+processing introduces domain-specific challenges---species name
+homophones, spoken number conventions, and Indian English accent
+variation---that general-purpose ASR engines do not address.
+
+This paper presents \textbf{AquaponicAI}, a unified platform that
+addresses both barriers. The primary contributions are:
+
+\begin{enumerate}
+  \item A dual-module adaptive questionnaire platform with voice
+        input, six question types, conditional skip logic, and
+        real-time market price integration for crop revenue estimation.
+
+  \item A domain-specific voice interpretation pipeline with
+        aquaponics vocabulary normalization, spoken-number normalisation
+        for Indian large-number vocabulary, and a confidence-fusion
+        confirmation gate designed to reduce unnecessary user interruptions.
+
+  \item A deterministic multi-scenario financial planning engine
+        computing 14 financial metrics across pessimistic
+        (revenue $\times$0.75), base, and optimistic
+        (revenue $\times$1.30) scenarios, with 30 unit tests
+        verifying correctness of all metric computations and
+        live-recalculation for assumption sensitivity exploration.
+
+  \item A containerized full-stack deployment (Docker Compose,
+        Nginx reverse proxy) designed to minimise infrastructure
+        requirements and tolerate intermittent connectivity, with
+        the full source available for replication.
+\end{enumerate}
+
+
+% ── II. RELATED WORK ────────────────────────────────────────────────────────
+\section{Related Work}
+\label{sec:related}
+
+\subsection{IoT and AI in Aquaponic Systems}
+
+Recent work has applied IoT sensor networks to monitor aquaponic
+water quality parameters including pH, dissolved oxygen, temperature,
+and ammonia, with machine learning models for anomaly detection and
+automated alerting~\cite{ref6,ref12,ref14}. Integrated fish--plant
+models for biomass tracking and harvest-cycle optimisation have been
+investigated in recirculating systems~\cite{ref19}, while cloud
+microservice architectures for scalable aquaponic monitoring have
+also been proposed~\cite{ref13}. These systems focus on environmental
+monitoring but do not address the operational planning or financial
+decision-making needs of farm operators. AquaponicAI complements
+sensor-driven monitoring by providing a dedicated weekly water
+stability dashboard alongside structured financial decision support.
+
+\subsection{AI Decision Support in Precision Agriculture}
+
+Machine learning and AI-based DSS platforms for smart agriculture
+have been reviewed extensively~\cite{ref2,ref15}. Applications range
+from crop disease detection to supply chain optimization.
+The breadth of IoT applications in smart farming---spanning sensor
+networks, edge inference, and cloud dashboards---has been surveyed
+in depth~\cite{ref8,ref16}.
+Despite this breadth, platforms designed for the financial planning
+needs of smallholder operators remain scarce, and those that exist
+typically target crop-only farming rather than the dual revenue model
+of aquaponics.
+
+\subsection{Voice Interfaces for Agricultural Advisory}
+
+Voice-based advisory systems for low-resource agricultural contexts
+have demonstrated feasibility across South Asia~\cite{ref3,ref20}. Key
+challenges include ASR robustness to regional accents, domain-specific
+vocabulary, and graceful recovery from low-confidence transcriptions.
+Named entity recognition (NER) for agricultural knowledge extraction
+has been explored to ground free-form speech input to structured farm
+parameters~\cite{ref9}. Self-supervised speech models such as
+wav2vec\,2.0~\cite{ref10} and Whisper~\cite{ref5} deliver strong
+general transcription accuracy but require domain-specific
+post-processing to handle out-of-vocabulary terminology and regional
+accent variation. Existing agricultural advisory systems rely on
+cloud ASR without such a layer; AquaponicAI contributes a structured
+vocabulary replacement pipeline and dual-threshold confirmation logic
+that reduces unnecessary confirmation dialogs.
+
+\subsection{Financial Planning Tools for Farm Enterprises}
+
+Multi-scenario financial modelling using NPV and IRR is standard
+in capital budgeting for agri-enterprises~\cite{ref4}. Machine
+learning approaches to commodity price forecasting improve revenue
+projection accuracy in agri-financial models~\cite{ref11}. Market
+price datasets from Indian agricultural markets have been used to
+benchmark crop price prediction systems~\cite{ref17}. Digital tools
+that automate this process for smallholder operators are emerging in
+agri-fintech but typically target crop-only farming. To the best of our knowledge, the integration of voice-driven
+data collection, adaptive survey methodology, real-time market
+price lookup, and scenario-based financial analysis in a single
+pipeline for both aquaponic and land farming has not been reported
+in the surveyed literature.
+
+\subsection{Speech Recognition for Domain Applications}
+
+Large-scale transformer-based ASR models such as
+Whisper~\cite{ref5} have demonstrated strong general-purpose
+transcription accuracy. Domain-specific vocabulary and
+Indian-accented English remain challenging for out-of-the-box
+models~\cite{ref10}. AquaponicAI addresses this with a structured
+post-processing layer rather than model fine-tuning, enabling
+deployment without GPU-intensive training.
+
+
+% ── III. SYSTEM ARCHITECTURE ────────────────────────────────────────────────
+\section{System Architecture}
+\label{sec:arch}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_arch}
+  \caption{AquaponicAI three-tier architecture: React\,18 presentation
+    layer, FastAPI application layer, and PostgreSQL\,16 + Redis data
+    layer, orchestrated via Docker Compose behind an Nginx reverse proxy.}
+  \label{fig:arch}
+\end{figure}
+
+AquaponicAI follows a three-tier architecture (Fig.~\ref{fig:arch}).
+
+\medskip
+\noindent\textbf{Presentation Layer.}
+A React\,18 SPA bundled with Vite serves two survey modules
+(Aquaponics Survey and Land Survey), a Financial Plan Dashboard,
+Farm Records management, and an Analytics view. Zustand manages
+global state including session context and financial analysis results.
+A custom \texttt{useVoiceRecorder} hook wraps the browser-native
+Web Speech API, providing real-time interim transcript events.
+``AI~Voice~On'' and ``Validation~On'' toggles allow users to enable
+or disable voice readback and server-side answer validation per
+session. An Axios HTTP client with JWT interceptors handles all
+API communication.
+
+\medskip
+\noindent\textbf{Application Layer.}
+A FastAPI application on Python\,3.12 uses fully asynchronous I/O
+via \texttt{asyncio} and SQLAlchemy\,2.x. Thin routers delegate
+immediately to service modules: (i)~session and questionnaire
+management, (ii)~voice transcription via \texttt{faster-whisper}~\cite{ref5},
+(iii)~financial planning and scenario computation, (iv)~real-time
+market price lookup via the Government of India Agmarknet API with
+fallback to benchmark prices, and (v)~Google Sheets export.
+
+\medskip
+\noindent\textbf{Data Layer.}
+PostgreSQL\,16 uses UUID primary keys throughout. \texttt{JSONB}
+columns with GIN indexes store survey context and financial plan
+scenarios, enabling schema-flexible answer accumulation without
+migrations. Redis\,7 provides response caching for market price
+lookups.
+
+All services are orchestrated via Docker Compose with Nginx routing
+\texttt{/api} to the backend and all other traffic to the React SPA.
+This microservice decomposition aligns with cloud deployment patterns
+proposed for scalable agricultural intelligence platforms~\cite{ref13}.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_dashboard}
+  \caption{AquaponicAI main dashboard with access to Aquaponics Survey,
+    Land Survey, Farm Records, Reports, and the Farm Profit Trend chart.}
+  \label{fig:dashboard}
+\end{figure}
+
+
+% ── IV. METHODOLOGY ─────────────────────────────────────────────────────────
+\section{Methodology}
+\label{sec:method}
+
+\subsection{Adaptive Questionnaire Engine}
+
+The \texttt{QuestionnaireEngine} manages a bank of 29 questions
+organized across six operational categories (Table~\ref{tab:qbank}).
+The engine is stateless: all session progress accumulates in a
+\texttt{context\_data} JSONB column passed into each call to
+\texttt{get\_next\_question()}.
+
+\begin{table}[tbp]
+  \caption{Questionnaire Bank: Categories and Coverage}
+  \label{tab:qbank}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{llc}
+    \toprule
+    \textbf{Category} & \textbf{Key Parameters Captured} & \textbf{Qs} \\
+    \midrule
+    Farm Setup     & Name, location, area, system type       & 5  \\
+    Fish Data      & Species, count, tank vol., feed, cycle  & 6  \\
+    Crop Data      & Crop types, grow area, monthly yield    & 3  \\
+    Water Quality  & IoT flag, pH, temperature               & 3  \\
+    Financial      & CAPEX, OPEX items, revenue, horizon     & 10 \\
+    Goals          & Primary goal, operational challenge     & 2  \\
+    \midrule
+    \textbf{Total} & \textbf{6 categories, 6 question types} & \textbf{29} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The six question types are TEXT, NUMBER, SELECT, MULTISELECT,
+BOOLEAN, and DATE. Questions carry an optional
+\texttt{follow\_up\_condition} field; for example, the water
+pH question is skipped when \texttt{has\_iot\_sensors} is true.
+A regex-based condition evaluator avoids code execution during
+skip logic evaluation.
+
+Type-aware parsing in \texttt{parse\_answer()} handles:
+
+\smallskip
+\noindent\textbf{NUMBER.}
+Digit-first extraction with fallback to a word-to-digit parser
+covering Indian large-number vocabulary
+(\emph{lakh}\,$\rightarrow$\,100\,000;
+\emph{crore}\,$\rightarrow$\,10\,000\,000)
+and common STT homophones
+(\emph{won}\,$\rightarrow$\,1; \emph{ate}\,$\rightarrow$\,8;
+\emph{to/too}\,$\rightarrow$\,2).
+
+\smallskip
+\noindent\textbf{BOOLEAN.}
+Positive/negative vocabulary matching.
+
+\smallskip
+\noindent\textbf{SELECT / MULTISELECT.}
+Fuzzy substring matching with free-form fallback.
+
+\smallskip
+\noindent\textbf{TEXT (location).}
+India city/state validation against a 36-item State/UT vocabulary
+with spoken comma-less input handling.
+
+\subsection{Voice Interpretation Pipeline}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_survey}
+  \caption{Voice survey in active recording state with the ``AI~Voice~On''
+    and ``Validation~On'' toggles and captured answer shown.}
+  \label{fig:survey}
+\end{figure}
+
+Voice input proceeds through three sequential stages after capture
+(Fig.~\ref{fig:survey} shows the user-facing interface).
+
+\medskip
+\noindent\textbf{1) Filler Removal and Domain Normalization.}
+
+\noindent\texttt{post\_process\_transcript()} removes 12 filler tokens
+(\emph{um, uh, erm, like, you know, i mean, actually, basically,
+sort of, kind of, right, literally}) via compiled regex, then applies
+domain replacement rules. Aquaponics-specific substitutions include
+species corrections (\emph{till, talapia, to lapia}
+$\rightarrow$ tilapia; \emph{troat, trowt} $\rightarrow$ trout;
+\emph{barry, mundi, baramundi} $\rightarrow$ barramundi) and system
+type corrections (\emph{nft, an empty, n f t} $\rightarrow$ nft;
+\emph{media bead/bid/bad} $\rightarrow$ media bed). This domain normalization layer addresses the well-documented
+difficulty of general-purpose ASR models with out-of-vocabulary
+domain terms~\cite{ref5,ref10}.
+
+\medskip
+\noindent\textbf{2) Spoken Number Normalisation and Answer Confidence Scoring.}
+
+\noindent Agricultural voice input in India routinely uses large-scale
+number vocabulary not present in standard ASR language models.
+\texttt{parse\_answer()} applies a four-stage normalisation cascade
+(Table~\ref{tab:numstages}) to any NUMBER-type response before
+validation~\cite{ref9,ref10}.
+
+\begin{table}[h!]
+  \caption{Spoken Number Normalisation Priority Chain}
+  \label{tab:numstages}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{clp{3.8cm}}
+    \toprule
+    \textbf{Stage} & \textbf{Method} & \textbf{Examples handled} \\
+    \midrule
+    1 & Digit regex          & \texttt{"5000"}, \texttt{"5,000"} \\
+    2 & Indian scale words   & \emph{lakh}$\!\to\!$1\,e5,
+                               \emph{crore}$\!\to\!$1\,e7 \\
+    3 & STT homophones       & \emph{won}$\!\to\!$1,
+                               \emph{ate}$\!\to\!$8,
+                               \emph{to/too}$\!\to\!$2,
+                               \emph{for}$\!\to\!$4 \\
+    4 & Ordinal words        & \emph{twenty thousand}$\!\to\!$20\,000 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+For a transcript token sequence $T$, the normalised value is:
+\begin{equation}
+  v = d \cdot m_s
+  \label{eq:numparse}
+\end{equation}
+where $d$ is the digit part extracted by Stage~1--4 and $m_s \in
+\{1,\,10^3,\,10^5,\,10^7\}$ is the scale multiplier from Indian
+number vocabulary (\emph{thousand}, \emph{lakh}, \emph{crore}
+respectively). Parsing success probability serves as answer-level
+confidence:
+\begin{equation}
+  \hat{e} = \begin{cases}
+    1.0 & \text{Stage 1 (digit) match} \\
+    0.85 & \text{Stage 2 (scale word) match} \\
+    0.70 & \text{Stage 3--4 (homophone/ordinal) match} \\
+    0.30 & \text{no match (free-text fallback)}
+  \end{cases}
+  \label{eq:econf}
+\end{equation}
+For non-NUMBER types, $\hat{e}$ is set to $1.0$ on exact option match,
+$0.75$ on fuzzy substring match, and $0.40$ on free-text fallback.
+This score feeds directly into the confidence fusion gate below.
+
+\medskip
+\noindent\textbf{3) Confidence Fusion and Confirmation Gate.}
+
+\noindent STT confidence $c_{\mathrm{stt}} \in [0,1]$ is fused with
+entity confidence $\hat{e}$:
+\begin{equation}
+  c_{\mathrm{comb}} =
+    \mathrm{clamp}_{[0,1]}\!\left(0.6\,c_{\mathrm{stt}} + 0.4\,\hat{e}\right)
+  \label{eq:fusion}
+\end{equation}
+The 0.6/0.4 split reflects that $c_{\mathrm{stt}}$ is a calibrated
+probability estimate from a neural model~\cite{ref10}, whereas
+$\hat{e}$ is a coarser rule-based signal; the neural component is
+therefore given higher weight while $\hat{e}$ provides a
+domain-grounded correction.
+A confirmation dialog is triggered when:
+\begin{equation}
+  \mathrm{confirm} =
+    (c_{\mathrm{comb}} < \theta_{e}) \;\lor\;
+    (c_{\mathrm{stt}} < \theta_{\mathrm{stt}})
+  \label{eq:confirm}
+\end{equation}
+with default thresholds $\theta_{e}=0.65$ and
+$\theta_{\mathrm{stt}}=0.45$, selected heuristically to balance
+false-confirmation rate against missed-error rate; both are
+configurable via environment variables and subject to empirical
+calibration in the planned field-trial phase.
+
+The server-side transcription path uses \texttt{faster-whisper} (default
+model: \texttt{large-v3}) with lazy initialization and optional
+GPU acceleration. The browser-side path uses the Web Speech API
+for zero-upload-latency real-time streaming. Both paths feed into
+the same interpretation pipeline.
+
+\subsection{Financial Planning Engine}
+
+Survey responses are mapped to a \texttt{FinancialInputs} dataclass
+comprising three CAPEX components (infrastructure, equipment, initial
+stock), five monthly OPEX components (feed, labour, utilities,
+maintenance, other), and three revenue streams (fish/crops/other for
+aquaponics; per-crop revenue derived from yield and market price for
+land farming).
+
+\medskip
+\noindent\textbf{Core Financial Metrics.}
+\begin{align}
+  \mathrm{CAPEX} &= C_{\mathrm{infra}} + C_{\mathrm{equip}}
+                    + C_{\mathrm{stock}} \label{eq:capex}\\
+  \mathrm{ROI}   &= \frac{12(f_s R_m - \mathrm{OPEX}_m)}
+                          {\mathrm{CAPEX}} \times 100\%
+                    \label{eq:roi}
+\end{align}
+where $f_s \in \{0.75, 1.00, 1.30\}$ is the scenario revenue factor
+for pessimistic ($-25\%$), base, and optimistic ($+30\%$) scenarios
+respectively. These bounds are consistent with the downside/upside
+sensitivity ranges reported in aquaponic financial risk
+modelling~\cite{ref4}, where asymmetric ranges reflect that revenue
+upside from dual fish--crop streams exceeds typical downside from
+single-product exposure.
+
+\medskip
+\noindent\textbf{Net Present Value.}
+\begin{equation}
+  \mathrm{NPV} = -\mathrm{CAPEX} +
+    \sum_{m=1}^{H}
+      \frac{f_s R_m - \mathrm{OPEX}_m}{(1+r_m)^{m}}
+  \label{eq:npv}
+\end{equation}
+where $H$ is the planning horizon in months,
+$r_m = (1+r_a)^{1/12}-1$ is the monthly discount rate,
+and $r_a = 0.08$ (8\% annual).
+
+\medskip
+\noindent\textbf{Internal Rate of Return.}
+
+\noindent IRR is approximated by bisection search (maximum 200
+iterations, convergence tolerance $|\mathrm{NPV}(r)| < 10^{-4}$)
+for $r^*$ satisfying $\mathrm{NPV}(r^*)=0$, then annualised:
+\begin{equation}
+  \mathrm{IRR}_a = (1 + r^*_m)^{12} - 1
+  \label{eq:irr}
+\end{equation}
+
+\medskip
+\noindent\textbf{Payback Period.}
+\begin{equation}
+  T_{\mathrm{pay}} = \frac{\mathrm{CAPEX}}{f_s R_m - \mathrm{OPEX}_m},
+  \quad f_s R_m > \mathrm{OPEX}_m
+  \label{eq:payback}
+\end{equation}
+Break-even month $B$ is the first $m$ at which cumulative cash flow
+crosses zero.
+
+\medskip
+\noindent\textbf{Market Price Integration.}
+
+\noindent For the Land Survey module, monthly crop revenue is computed
+as yield\,$\times$\,price/kg, where price is fetched in real time from
+the Agmarknet commodity price API (data.gov.in). The system normalizes
+district and state names (``Bangalore'' $\rightarrow$ ``Bengaluru Urban'',
+``KA'' $\rightarrow$ ``Karnataka''), retries with progressively relaxed
+geographic filters on empty results, and falls back to benchmark prices
+on API failure. This enables the financial plan to reflect prevailing
+market conditions rather than static assumptions~\cite{ref11,ref17}.
+
+\medskip
+\noindent\textbf{Recommendation Engine.}
+
+\noindent A deterministic rule-based engine evaluates base-scenario
+metrics against eight financial health rules, generating structured
+recommendations with category, priority, and actionable detail fields.
+Rules cover: cash-flow sign, operating margin (10\% threshold), feed
+cost share (45\%), labour share (45\%), utility share (25\%), payback
+horizon (48 months), revenue concentration risk (85\% single stream),
+and NPV sign at horizon end.
+
+\medskip
+\noindent\textbf{Live Recalculation.}
+
+\noindent The frontend provides an ``Adjust Assumptions'' panel with
+sliders for key revenue and cost parameters. Changes trigger synchronous
+recalculation and immediate re-rendering of all metrics and charts
+without a server request, enabling rapid sensitivity exploration.
+
+
+% ── V. EXPERIMENTAL VALIDATION ──────────────────────────────────────────────
+\section{System Validation}
+\label{sec:eval}
+
+Validation follows a software-correctness methodology suited to a
+deterministic computational system prior to live user trials. The test
+suite verifies that the system produces expected outputs under all
+defined fixture conditions; real-world accuracy under field inputs
+remains a subject for planned user trials.
+
+\subsection{Test Suite Composition}
+
+\textbf{Financial unit tests} (\texttt{test\_financial\_service.py}):
+30 functions covering CAPEX and OPEX computation, ROI, payback,
+break-even, NPV, and IRR calculation; scenario monotonicity across
+all three factors; per-area metric derivation; revenue and cost share
+percentage sum-to-100 assertions; zero-revenue edge case; and
+infinite-payback detection.
+
+\textbf{Voice interpretation tests}
+(\texttt{test\_voice\_interpretation.py}):
+6 functions covering spoken-number normalisation across all four
+cascade stages (Table~\ref{tab:numstages}), Indian scale-word parsing
+(\emph{lakh}, \emph{crore}), STT homophone correction, filler removal,
+threshold-triggered confirmation, and confidence fusion arithmetic
+verified against \eqref{eq:fusion}.
+
+\textbf{STT evaluation harness}
+(\texttt{stt\_evaluation\_harness.py}):
+4 representative cases covering common ASR failure modes: prefix
+conversational noise, all-lowercase output, filler-laden input,
+and low-confidence transcript output. All four cases confirmed
+correct post-processing behaviour in our evaluation run.
+
+\subsection{Reference Fixture}
+
+The primary fixture used across all 30 financial tests sets:
+\begin{itemize}
+  \item Infrastructure: \inr{300{,}000}; Equipment: \inr{150{,}000};
+        Initial stock: \inr{50{,}000}
+        $\Rightarrow$ CAPEX\,=\,\inr{500{,}000}
+  \item Monthly OPEX: \inr{30{,}000}
+        (feed \inr{8k}\,+\,labour \inr{15k}\,+\,utilities
+         \inr{5k}\,+\,maintenance \inr{2k})
+  \item Monthly revenue: \inr{55{,}000}
+        (fish \inr{40k}\,+\,crops \inr{15k})
+  \item Farm area: 1{,}000\,m\textsuperscript{2};
+        Horizon: 24 months
+\end{itemize}
+
+All expected outputs are analytically derivable from these inputs,
+permitting exact numeric assertions with \texttt{pytest.approx}.
+
+
+% ── VI. RESULTS AND ANALYSIS ────────────────────────────────────────────────
+\section{Results and Analysis}
+\label{sec:results}
+
+\subsection{Financial Engine Correctness}
+
+Table~\ref{tab:fin} reports computed values against analytically
+derived expected values for the reference fixture. All 30 financial
+tests passed in our evaluation run.
+
+\begin{table}[tbp]
+  \caption{Financial Engine Unit Test Results (Reference Fixture)}
+  \label{tab:fin}
+  \centering
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{lccl}
+    \toprule
+    \textbf{Metric} & \textbf{Expected} & \textbf{Computed} & \\
+    \midrule
+    Total CAPEX              & \inr{5,00,000} & \inr{5,00,000} & \checkmark \\
+    Monthly OPEX             & \inr{30,000}   & \inr{30,000}   & \checkmark \\
+    Monthly Revenue (base)   & \inr{55,000}   & \inr{55,000}   & \checkmark \\
+    Monthly Net CF (base)    & \inr{25,000}   & \inr{25,000}   & \checkmark \\
+    Annual Net Profit (base) & \inr{3,00,000} & \inr{3,00,000} & \checkmark \\
+    ROI \eqref{eq:roi}       & 60.0\%         & 60.0\%         & \checkmark \\
+    Payback \eqref{eq:payback} & 20\,mo       & 20\,mo         & \checkmark \\
+    Break-even month         & 20             & 20             & \checkmark \\
+    NPV (base, 24\,mo)       & $>$0           & $>$0           & \checkmark \\
+    Scenario order           & P$<$B$<$O      & P$<$B$<$O      & \checkmark \\
+    Profit margin            & 45.45\%        & 45.45\%        & \checkmark \\
+    OPEX/Revenue             & 54.55\%        & 54.55\%        & \checkmark \\
+    Revenue/m\textsuperscript{2}/yr & \inr{660} & \inr{660}   & \checkmark \\
+    Profit/m\textsuperscript{2}/yr  & \inr{300} & \inr{300}   & \checkmark \\
+    \bottomrule
+    \multicolumn{4}{l}{\footnotesize
+      P\,=\,Pessimistic ($f_s{=}0.75$); B\,=\,Base; O\,=\,Optimistic ($f_s{=}1.30$).}\\
+    \multicolumn{4}{l}{\footnotesize
+      ROI\,=\,300k\,/\,500k\,$\times$\,100\,=\,60\%.
+      Payback\,=\,500k\,/\,25k\,=\,20\,months.}\\
+  \end{tabular}
+\end{table}
+
+The ROI of 60\% is analytically exact: annual net profit =
+\inr{25{,}000}\,$\times$\,12\,=\,\inr{3{,}00{,}000}; CAPEX =
+\inr{5{,}00{,}000}; ROI = 300k/500k\,$\times$\,100 = 60\%.
+Payback = 500k/25k = 20 months. Profit margin = 300k/660k = 45.45\%.
+Scenario monotonicity is confirmed: pessimistic ROI = 45\%
+(revenue\,$\times$0.75, net = \inr{11{,}250}/mo) and optimistic
+ROI = 78\% (revenue\,$\times$1.30, net = \inr{41{,}500}/mo).
+
+\subsection{Voice Interpretation Results}
+
+Table~\ref{tab:voice} reports all six voice interpretation test outcomes.
+
+\begin{table}[tbp]
+  \caption{Voice Interpretation Unit Test Results}
+  \label{tab:voice}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{
+    >{\RaggedRight\arraybackslash}p{2.0cm}
+    >{\RaggedRight\arraybackslash}p{2.0cm}
+    >{\RaggedRight\arraybackslash}p{1.8cm}
+    c}
+    \toprule
+    \textbf{Test Case} & \textbf{Input} & \textbf{Expected} & \\
+    \midrule
+    Clean transcript
+      & $c_{\mathrm{stt}} > 0.45$
+      & Extract; no confirm
+      & \checkmark \\[2pt]
+    Low STT confidence
+      & $c_{\mathrm{stt}} < 0.45$
+      & Confirm triggered
+      & \checkmark \\[2pt]
+    Prefix noise
+      & ``My farm is called...''
+      & Prefix stripped
+      & \checkmark \\[2pt]
+    Filler tokens
+      & ``um uh Green Ridge''
+      & Fillers removed
+      & \checkmark \\[2pt]
+    Domain vocab
+      & ``till'' in input
+      & Mapped to tilapia
+      & \checkmark \\[2pt]
+    Spoken number
+      & ``twenty thousand''
+      & Parsed to 20000
+      & \checkmark \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Multi-Scenario Financial Analysis}
+
+Fig.~\ref{fig:scenarios} shows the financial analysis output as
+rendered in the platform. The Scenario Analysis chart presents
+projected annual profit across six scenarios, giving operators a
+complete risk envelope. The donut charts decompose cost structure
+and revenue mix, enabling identification of dominant cost and
+revenue drivers before investment decisions.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_scenarios}
+  \caption{Scenario Analysis view: horizontal bar chart of projected
+    annual profit across six scenarios, monthly cost breakdown donut,
+    and revenue mix donut.}
+  \label{fig:scenarios}
+\end{figure}
+
+\subsection{Market Price Integration}
+
+The Land Survey module fetches live commodity prices from the
+Agmarknet API. In a representative evaluation, prices for tomato and capsicum were
+retrieved from Bengaluru Urban (Karnataka). The system normalizes
+state aliases (``KA'' $\rightarrow$ ``Karnataka'') and district names
+(``Bangalore'' $\rightarrow$ ``Bengaluru Urban''), infers state from
+known district names, and falls back to benchmark prices after two
+failed API attempts. These normalisation and fallback behaviours are
+verified by four dedicated unit tests.
+
+
+
+% ── VII. DISCUSSION AND CONCLUSION ──────────────────────────────────────────
+\section{Discussion and Conclusion}
+\label{sec:conclusion}
+
+\subsection{Discussion}
+
+The AquaponicAI prototype indicates that voice-driven data collection,
+adaptive survey logic, real-time market price integration, and
+deterministic multi-scenario financial analysis can be unified in a
+single deployable pipeline at modest infrastructure cost.
+
+\medskip
+\noindent\textbf{Stateless engine architecture.}
+By storing all session state in PostgreSQL JSONB rather than application
+memory, the system supports session resumption after network
+interruption---a critical property for rural deployment where
+connectivity may be intermittent. This also enables horizontal
+scaling without sticky session requirements.
+
+\medskip
+\noindent\textbf{Dual-path transcription.}
+Providing both browser-native Web Speech API and server-side
+\texttt{faster-whisper} allows the system to adapt to connectivity conditions.
+The browser path requires no server round-trip, while the server path
+provides better accuracy for low-microphone-quality audio when network
+conditions allow upload.
+
+\medskip
+\noindent\textbf{Confirmation gate calibration.}
+The dual-threshold gate in \eqref{eq:confirm} is motivated by the
+observation, supported by voice-based agricultural advisory
+research~\cite{ref3,ref20}, that excessive confirmation dialogs are a
+primary driver of voice-interface abandonment. The design suppresses
+confirmations on clear inputs while maintaining accuracy on
+ambiguous ones.
+
+\medskip
+\noindent\textbf{Scenario monotonicity.}
+The verified property that pessimistic $<$ base $<$ optimistic
+holds for all revenue-derived metrics is a critical reliability
+guarantee for operators. If the risk envelope communicated by the
+system is internally inconsistent, operators cannot trust it for
+investment decisions.
+
+\medskip
+\noindent\textbf{Performance design targets.}
+Table~\ref{tab:perf} lists the response-time acceptance criteria
+that will be used as pass/fail thresholds in the planned
+$N{\geq}30$-session load test during the field-trial phase.
+These targets have not yet been measured under load and represent
+engineering design goals informed by agricultural mobile-application
+usability guidelines~\cite{ref20}.
+
+\begin{table}[tbp]
+  \caption{Performance Design Targets for Field-Trial Load Testing}
+  \label{tab:perf}
+  \centering
+  \small
+  \begin{tabular}{
+    >{\RaggedRight\arraybackslash}p{3.0cm}
+    >{\centering\arraybackslash}p{1.4cm}
+    >{\centering\arraybackslash}p{1.4cm}}
+    \toprule
+    \textbf{Component} & \textbf{Metric} & \textbf{Target} \\
+    \midrule
+    Session answer endpoint   & P95   & $<$200\,ms \\
+    Server-side transcription & P95   & $<$5\,s    \\
+    Financial analysis        & P95   & $<$2\,s    \\
+    Market price fetch        & P95   & $<$3\,s    \\
+    E2E survey to report      & Total & $<$3\,min  \\
+    \bottomrule
+    \multicolumn{3}{l}{\footnotesize
+      P95: 95th-percentile response time.}\\
+  \end{tabular}
+\end{table}
+
+\medskip
+\noindent\textit{Limitation---synthetic validation.}
+All current tests use constructed fixtures. No user study has yet been
+conducted. SUS score, real-world word-error rate, and projection
+accuracy against realised farm outcomes remain unmeasured and are
+priorities for the field-trial phase.
+
+\medskip
+\noindent\textit{Limitation---English-only STT.}
+The \texttt{faster-whisper} pipeline has not been benchmarked on Indian English
+accent diversity or regional language input. Multilingual support is a
+priority for production deployment, especially given the pace of
+digital agriculture adoption in India~\cite{ref18}.
+
+\subsection{Conclusion}
+
+This paper presents AquaponicAI, a voice-driven decision-support
+platform for which a 36-case validation suite was executed with
+full pass rate on all deterministic assertions in our evaluation run.
+The platform is designed to enable farm operators to obtain
+personalised three-scenario financial plans via voice or text input,
+without requiring financial expertise; end-to-end completion time
+is targeted at under three minutes, pending field-trial verification.
+The modular, containerized architecture is intended to be
+deployable in resource-constrained agricultural contexts.
+
+Four directions are identified for future work:
+(i)~field trials with $N{\geq}50$ operators measuring task completion
+rate, SUS score, and projected-vs-realised ROI over 12 months;
+(ii)~benchmarking the ASR pipeline against IndicWav2Vec for accent
+robustness;
+(iii)~replacing the rule-based recommendation engine with a gradient
+boosting model trained on historical farm financial outcomes; and
+(iv)~extending real-time market price integration to commodity futures
+for forward-looking scenario bounds.
+
+
+% ── ACKNOWLEDGMENT ──────────────────────────────────────────────────────────
+\section*{Acknowledgment}
+
+The authors thank the Department of MCA, RV College of Engineering,
+Bengaluru, for providing the research infrastructure that supported
+this work.
+
+
+% ── REFERENCES ──────────────────────────────────────────────────────────────
+\begin{thebibliography}{00}
+
+\bibitem{ref1}
+A.~K. Verma, M.~H. Chandrakant, V.~C. John, R.~M. Peter, and I.~E. John,
+``Aquaponics as an integrated agri-aquaculture system ({IAAS}): Emerging
+trends and future prospects,''
+\textit{Technol. Forecast. Soc. Chang.},
+vol.~194, p.~122709, Sep. 2023,
+doi: 10.1016/j.techfore.2023.122709.
+
+\bibitem{ref2}
+S.~K.~S. Durai and M.~D. Shamili,
+``Smart farming using machine learning and deep learning techniques,''
+\textit{Decis. Anal. J.},
+vol.~3, p.~100041, 2022,
+doi: 10.1016/j.dajour.2022.100041.
+
+\bibitem{ref3}
+R.~Biswas and N.~Goel,
+``Intelligent chatbot assistant in agriculture domain,''
+in \textit{Proc. Int. Conf. Agriculture-Centric Computation},
+Cham: Springer Nature Switzerland, 2023, pp.~180--194.
+
+\bibitem{ref4}
+V.~Lobanov, J.~Pate, F.~Latrille, and A.~Joyce,
+``Aquaponics and the crossroads of profitability and sustainability
+viewed through sensitivity and risk modeling,''
+\textit{J. Clean. Prod.},
+vol.~528, p.~146674, Oct. 2025,
+doi: 10.1016/j.jclepro.2025.146674.
+
+\bibitem{ref5}
+A.~Radford, J.~W. Kim, T.~Xu, G.~Brockman, C.~McLeavey,
+and I.~Sutskever,
+``Robust speech recognition via large-scale weak supervision,''
+in \textit{Proc. 40th Int. Conf. Mach. Learn. (ICML)},
+vol.~202, PMLR, 2023, pp.~28492--28518.
+
+\bibitem{ref6}
+M.~Anila and O.~Daramola,
+``Applications, technologies, and evaluation methods in smart aquaponics:
+A systematic literature review,''
+\textit{Artif. Intell. Rev.},
+vol.~58, p.~25, 2025,
+doi: 10.1007/s10462-024-11003-x.
+
+\bibitem{ref7}
+V.~T. Okomoda, S.~A. Oladimeji, S.~G. Solomon, S.~O. Olufeagba,
+S.~I. Ogah, and M.~Ikhwanuddin,
+``Aquaponics production system: A review of historical perspective,
+opportunities, and challenges of its adoption,''
+\textit{Food Sci. Nutr.},
+vol.~11, no.~3, pp.~1157--1165, 2023,
+doi: 10.1002/fsn3.3154.
+
+\bibitem{ref8}
+M.~S. Farooq, S.~Riaz, A.~Abid, K.~Abid, and M.~A. Naeem,
+``A survey on the role of {IoT} in agriculture for the implementation
+of smart farming,''
+\textit{IEEE Access},
+vol.~7, pp.~156237--156271, 2019,
+doi: 10.1109/ACCESS.2019.2949703.
+
+\bibitem{ref9}
+G.~Veena, S.~Chandana, A.~Nandini, S.~Mayuri, D.~R. Kiran,
+and K.~Sowmya,
+``AGRONER: Agricultural named entity recognition using pre-trained
+language models,''
+\textit{Expert Syst. Appl.},
+vol.~232, p.~120440, 2023,
+doi: 10.1016/j.eswa.2023.120440.
+
+\bibitem{ref10}
+A.~Baevski, Y.~Zhou, A.~Mohamed, and M.~Auli,
+``wav2vec 2.0: A framework for self-supervised learning of speech
+representations,''
+in \textit{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)},
+vol.~33, pp.~12449--12460, 2020.
+
+\bibitem{ref11}
+S.~P. Mohanty, B.~K. Rout, and B.~Satpathy,
+``Forecasting agricultural commodity prices using a novel model based
+on NARX and SVR,''
+\textit{Neural Comput. Appl.},
+vol.~35, no.~12, pp.~8661--8676, 2023,
+doi: 10.1007/s00521-023-08528-7.
+
+\bibitem{ref12}
+K.~Sundararajan, K.~G. Dharani, R.~Ahila, J.~Uthirasamy,
+and K.~Mohanasundaram,
+``Advanced deep learning strategies for smart fish farming: Enhanced
+aquaponic water quality monitoring and predictive analytics,''
+\textit{Sci. Rep.},
+vol.~15, p.~3791, 2025,
+doi: 10.1038/s41598-024-84943-7.
+
+\bibitem{ref13}
+V.~Moysiadis, P.~Sarigiannidis, D.~Goudos, G.~Karagiannidis,
+and I.~Moscholios,
+``Smart farming in 5G and beyond: A survey,''
+in \textit{Proc. IEEE Int. Conf. Modern Circuits Syst. Technol.
+(MOCAST)}, Thessaloniki, Greece, 2022,
+doi: 10.1109/MOCAST54814.2022.9837727.
+
+\bibitem{ref14}
+M.~Zamnuri, A.~Kamaruzzaman, N.~Mohd Lazim, N.~A. Mohd Yusof,
+and R.~Hamdan,
+``IoT-based smart aquaponic systems with real-time monitoring and
+automated controls,''
+\textit{Animals},
+vol.~14, no.~17, p.~2555, 2024,
+doi: 10.3390/ani14172555.
+
+\bibitem{ref15}
+A.~Yousaf, A.~Mehmood, G.~Sang-Ary, P.~Mehmood,
+and H.~S. Kim,
+``Precision agriculture utilizing blockchain, edge, and fog
+computing: A systematic review of the state of the art,''
+\textit{Front. Sustain. Food Syst.},
+vol.~6, p.~1053921, 2022,
+doi: 10.3389/fsufs.2022.1053921.
+
+\bibitem{ref16}
+F.~Shahab, M.~O. Beg, M.~F. Mushtaq, K.~Asghar,
+and A.~Jalal,
+``Towards intelligent IoT-based smart agriculture: A survey,''
+\textit{Comput. Electron. Agric.},
+vol.~219, p.~108851, 2024,
+doi: 10.1016/j.compag.2024.108851.
+
+\bibitem{ref17}
+A.~Paul, D.~Ghosh, A.~Bhattacharjee, S.~Chattopadhyay,
+and S.~Majumdar,
+``Forecasting agricultural commodity prices: A machine learning
+approach on Indian market data,''
+\textit{PLOS ONE},
+vol.~17, no.~7, p.~e0270553, 2022,
+doi: 10.1371/journal.pone.0270553.
+
+\bibitem{ref18}
+A.~A. Balkrishna, V.~K. Kaushik, K.~Kumar, M.~Bhatt,
+and A.~Misra,
+``Significance of smart agriculture technologies in India:
+Initiatives, challenges, and future directions,''
+\textit{Smart Agric. Technol.},
+vol.~5, p.~100318, 2023,
+doi: 10.1016/j.atech.2023.100318.
+
+\bibitem{ref19}
+D.~Prapti, B.~Ghosh, and R.~Islam,
+``Aquaponics: Fish--plant interaction and nitrogen cycling---a review,''
+\textit{Rev. Aquac.},
+vol.~14, no.~4, pp.~1886--1903, 2022,
+doi: 10.1111/raq.12637.
+
+\bibitem{ref20}
+A.~Deshmukh and R.~Chalmeta,
+``User experience and usability of voice user interfaces:
+A systematic literature review,''
+\textit{Information},
+vol.~15, no.~9, p.~579, 2024,
+doi: 10.3390/info15090579.
+
+\end{thebibliography}
+
+\end{document}

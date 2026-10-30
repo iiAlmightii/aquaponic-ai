@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- Title -->
+    <mxCell id="title" value="AgriSense — ER Diagram (Chen Notation)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Times New Roman;fontSize=20;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="450" y="8" width="700" height="32" as="geometry"/>
+    </mxCell>
+
+    <!-- ===================== ENTITIES ===================== -->
+    <!-- Note: Entity labels are BOLD, PK attributes are underlined (fontStyle=4) -->
+
+    <!-- USER entity (center-left) -->
+    <mxCell id="ent_user" value="USER" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="240" y="440" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- FARM entity (center) -->
+    <mxCell id="ent_farm" value="FARM" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="680" y="440" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- FISH_BATCH entity (upper-right) -->
+    <mxCell id="ent_fish" value="FISH_BATCH" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1120" y="240" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- CROP_RECORD entity (right) -->
+    <mxCell id="ent_crop" value="CROP_RECORD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1120" y="440" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- WATER_READING entity (lower-right of FARM) -->
+    <mxCell id="ent_water" value="WATER_READING" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1110" y="640" width="180" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- SESSION entity (lower-left) -->
+    <mxCell id="ent_session" value="SESSION" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="240" y="760" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- SESSION_ANSWER entity -->
+    <mxCell id="ent_answer" value="SESSION_ANSWER" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="680" y="760" width="180" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- FINANCIAL_PLAN entity (lower-center) -->
+    <mxCell id="ent_plan" value="FINANCIAL_PLAN" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="240" y="1010" width="180" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- REPORT entity -->
+    <mxCell id="ent_report" value="REPORT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="680" y="1010" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- MARKET_PRICE entity (standalone, bottom-right) -->
+    <mxCell id="ent_market" value="MARKET_PRICE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1120" y="1010" width="180" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- ===================== RELATIONSHIP DIAMONDS ===================== -->
+
+    <!-- OWNS (USER - FARM) -->
+    <mxCell id="rel_owns" value="OWNS" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="480" y="445" width="120" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- HAS_FISH (FARM - FISH_BATCH) -->
+    <mxCell id="rel_has_fish" value="HAS" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="930" y="280" width="100" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- HAS_CROP (FARM - CROP_RECORD) -->
+    <mxCell id="rel_has_crop" value="HAS" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="930" y="445" width="100" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- HAS_WATER (FARM - WATER_READING) -->
+    <mxCell id="rel_has_water" value="HAS" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="930" y="640" width="100" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- INITIATES (USER - SESSION) -->
+    <mxCell id="rel_init" value="INITIATES" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="255" y="640" width="130" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- CONTAINS (SESSION - SESSION_ANSWER) -->
+    <mxCell id="rel_contains" value="CONTAINS" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="480" y="765" width="130" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- GENERATES (SESSION - FINANCIAL_PLAN) -->
+    <mxCell id="rel_gen" value="GENERATES" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="255" y="895" width="130" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- PRODUCES (SESSION - REPORT) -->
+    <mxCell id="rel_prod" value="PRODUCES" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="480" y="895" width="130" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- ===================== RELATIONSHIP LINES WITH CARDINALITY ===================== -->
+
+    <!-- USER OWNS FARM -->
+    <mxCell id="l_user_owns" value="1" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="ent_user" target="rel_owns">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="l_owns_farm" value="N" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="rel_owns" target="ent_farm">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- FARM HAS FISH_BATCH -->
+    <mxCell id="l_farm_has_fish" value="1" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" edge="1" parent="1" source="ent_farm" target="rel_has_fish">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="760" y="460"/>
+          <mxPoint x="760" y="305"/>
+          <mxPoint x="930" y="305"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="l_has_fish_ent" value="N" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="rel_has_fish" target="ent_fish">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- FARM HAS CROP_RECORD -->
+    <mxCell id="l_farm_has_crop" value="1" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="ent_farm" target="rel_has_crop">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="l_has_crop_ent" value="N" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="rel_has_crop" target="ent_crop">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- FARM HAS WATER_READING -->
+    <mxCell id="l_farm_has_water" value="1" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" edge="1" parent="1" source="ent_farm" target="rel_has_water">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="760" y="490"/>
+          <mxPoint x="760" y="665"/>
+          <mxPoint x="930" y="665"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="l_has_water_ent" value="N" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="rel_has_water" target="ent_water">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- USER INITIATES SESSION -->
+    <mxCell id="l_user_init" value="1" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=0.5;exitY=1;entryX=0.5;entryY=1;" edge="1" parent="1" source="ent_user" target="rel_init">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="l_init_sess" value="N" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="rel_init" target="ent_session">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- SESSION CONTAINS SESSION_ANSWER -->
+    <mxCell id="l_sess_cont" value="1" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="ent_session" target="rel_contains">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="l_cont_ans" value="N" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="rel_contains" target="ent_answer">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- SESSION GENERATES FINANCIAL_PLAN -->
+    <mxCell id="l_sess_gen" value="1" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="ent_session" target="rel_gen">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="l_gen_plan" value="1" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="rel_gen" target="ent_plan">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- SESSION PRODUCES REPORT -->
+    <mxCell id="l_sess_prod" value="1" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" edge="1" parent="1" source="ent_session" target="rel_prod">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="400" y="820"/>
+          <mxPoint x="400" y="920"/>
+          <mxPoint x="480" y="920"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="l_prod_rep" value="N" style="endArrow=none;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" edge="1" parent="1" source="rel_prod" target="ent_report">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="610" y="920"/>
+          <mxPoint x="760" y="920"/>
+          <mxPoint x="760" y="1040"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ===================== ATTRIBUTES (ELLIPSES) ===================== -->
+    <!-- Style used: ellipse, Times New Roman 14pt, B&W -->
+    <!-- PK attributes: fontStyle=4 (underlined) -->
+
+    <!-- USER attributes -->
+    <mxCell id="a_user_id" value="id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="60" y="340" width="90" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_user_email" value="email" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="40" y="430" width="90" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_user_name" value="full_name" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="40" y="510" width="100" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_user_role" value="role" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="100" y="380" width="80" height="44" as="geometry"/>
+    </mxCell>
+
+    <!-- USER attribute lines -->
+    <mxCell id="la_uid" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="240" y="458" as="sourcePoint"/>
+        <mxPoint x="150" y="362" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="la_uemail" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="240" y="462" as="sourcePoint"/>
+        <mxPoint x="130" y="452" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="la_uname" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="240" y="475" as="sourcePoint"/>
+        <mxPoint x="140" y="532" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="la_urole" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="240" y="455" as="sourcePoint"/>
+        <mxPoint x="180" y="402" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- FARM attributes -->
+    <mxCell id="a_farm_id" value="id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="650" y="330" width="90" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_farm_name" value="name" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="770" y="330" width="90" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_farm_loc" value="location" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="870" y="370" width="100" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_farm_size" value="size_ha" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="870" y="420" width="100" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_farm_type" value="farm_type" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="760" y="390" width="100" height="44" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="la_fid" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="680" y="440" as="sourcePoint"/>
+        <mxPoint x="695" y="374" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="la_fname" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="760" y="445" as="sourcePoint"/>
+        <mxPoint x="815" y="374" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="la_floc" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="820" y="450" as="sourcePoint"/>
+        <mxPoint x="920" y="414" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="la_fsize" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="820" y="465" as="sourcePoint"/>
+        <mxPoint x="920" y="442" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="la_ftype" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="790" y="440" as="sourcePoint"/>
+        <mxPoint x="810" y="434" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- FISH_BATCH attributes -->
+    <mxCell id="a_fish_id" value="id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="1060" y="150" width="80" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_fish_sp" value="species" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="150" width="100" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_fish_cnt" value="stock_count" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1310" y="240" width="120" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_fish_wt" value="avg_weight_kg" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="1150" y="160" width="140" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_fish_st" value="status" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="300" width="90" height="40" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="la_fish_id" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1120" y="255" as="sourcePoint"/><mxPoint x="1100" y="190" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_fish_sp" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1240" y="250" as="sourcePoint"/><mxPoint x="1350" y="190" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_fish_cnt" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1250" y="258" as="sourcePoint"/><mxPoint x="1370" y="260" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_fish_wt" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1200" y="240" as="sourcePoint"/><mxPoint x="1220" y="200" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_fish_st" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1260" y="264" as="sourcePoint"/><mxPoint x="1345" y="320" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- CROP_RECORD attributes -->
+    <mxCell id="a_crop_id" value="id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="1340" y="430" width="80" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_crop_type" value="crop_type" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1340" y="490" width="110" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_crop_qty" value="quantity_kg" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1340" y="380" width="120" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_crop_date" value="harvest_date" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="1120" y="360" width="120" height="40" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="la_crop_id" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1280" y="465" as="sourcePoint"/><mxPoint x="1340" y="450" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_crop_type" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1280" y="475" as="sourcePoint"/><mxPoint x="1340" y="510" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_crop_qty" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1260" y="455" as="sourcePoint"/><mxPoint x="1340" y="400" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_crop_date" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1120" y="465" as="sourcePoint"/><mxPoint x="1180" y="400" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- WATER_READING attributes -->
+    <mxCell id="a_wr_id" value="id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="1060" y="610" width="80" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_wr_ph" value="ph" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="1340" y="600" width="80" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_wr_temp" value="temperature" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1340" y="650" width="120" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_wr_do" value="dissolved_O2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1340" y="700" width="130" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_wr_nh3" value="ammonia" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="1110" y="710" width="100" height="40" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="la_wr_id" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1110" y="660" as="sourcePoint"/><mxPoint x="1100" y="650" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_wr_ph" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1290" y="658" as="sourcePoint"/><mxPoint x="1340" y="620" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_wr_temp" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1290" y="668" as="sourcePoint"/><mxPoint x="1340" y="670" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_wr_do" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1290" y="685" as="sourcePoint"/><mxPoint x="1340" y="720" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_wr_nh3" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1200" y="690" as="sourcePoint"/><mxPoint x="1160" y="720" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- SESSION attributes -->
+    <mxCell id="a_s_id" value="id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="100" y="750" width="80" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_s_type" value="session_type" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="80" y="830" width="130" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_s_status" value="status" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="80" y="880" width="90" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_s_ctx" value="context_data" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="200" y="840" width="130" height="40" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="la_sid" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="240" y="770" as="sourcePoint"/><mxPoint x="180" y="770" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_stype" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="240" y="790" as="sourcePoint"/><mxPoint x="145" y="850" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_sstatus" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="240" y="800" as="sourcePoint"/><mxPoint x="170" y="900" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_sctx" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="320" y="790" as="sourcePoint"/><mxPoint x="265" y="840" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- SESSION_ANSWER attributes -->
+    <mxCell id="a_sa_id" value="id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="680" y="680" width="80" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_sa_qid" value="question_id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="900" y="720" width="120" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_sa_ans" value="answer_text" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="900" y="780" width="120" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_sa_pv" value="parsed_value" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="810" y="840" width="120" height="40" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="la_said" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="720" y="760" as="sourcePoint"/><mxPoint x="720" y="720" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_saqid" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="860" y="780" as="sourcePoint"/><mxPoint x="960" y="740" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_saans" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="860" y="795" as="sourcePoint"/><mxPoint x="960" y="800" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_sapv" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="820" y="820" as="sourcePoint"/><mxPoint x="870" y="860" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- FINANCIAL_PLAN attributes -->
+    <mxCell id="a_fp_id" value="id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="80" y="1010" width="80" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_fp_sc" value="scenarios" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="80" y="1080" width="110" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_fp_sm" value="summary_metrics" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="240" y="1090" width="155" height="40" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="la_fpid" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="240" y="1030" as="sourcePoint"/><mxPoint x="160" y="1030" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_fpsc" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="260" y="1050" as="sourcePoint"/><mxPoint x="135" y="1080" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_fpsm" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="330" y="1070" as="sourcePoint"/><mxPoint x="318" y="1090" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- REPORT attributes -->
+    <mxCell id="a_r_id" value="id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="620" y="940" width="80" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_r_type" value="report_type" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="880" y="1010" width="120" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_r_pdf" value="pdf_path" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="880" y="1070" width="110" height="40" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="la_rid" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="680" y="1030" as="sourcePoint"/><mxPoint x="660" y="980" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_rtype" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="840" y="1040" as="sourcePoint"/><mxPoint x="880" y="1030" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_rpdf" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="840" y="1055" as="sourcePoint"/><mxPoint x="880" y="1090" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- MARKET_PRICE attributes -->
+    <mxCell id="a_mp_id" value="id" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="1060" y="960" width="80" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_mp_ct" value="crop_type" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1360" y="960" width="110" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_mp_pr" value="price_per_kg" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1360" y="1010" width="120" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_mp_reg" value="region" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="1360" y="1060" width="100" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_mp_src" value="source" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="1180" y="1090" width="100" height="40" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="la_mpid" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1120" y="1020" as="sourcePoint"/><mxPoint x="1100" y="1000" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_mpct" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1300" y="1025" as="sourcePoint"/><mxPoint x="1360" y="980" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_mppr" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1300" y="1040" as="sourcePoint"/><mxPoint x="1360" y="1030" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_mpreg" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1300" y="1055" as="sourcePoint"/><mxPoint x="1360" y="1080" as="targetPoint"/></mxGeometry>
+    </mxCell>
+    <mxCell id="la_mpsrc" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry"><mxPoint x="1220" y="1070" as="sourcePoint"/><mxPoint x="1230" y="1090" as="targetPoint"/></mxGeometry>
+    </mxCell>
+
+    <!-- Legend -->
+    <mxCell id="leg_title" value="Legend:" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="20" y="1150" width="80" height="24" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_ent" value="ENTITY" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="110" y="1148" width="100" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_attr" value="attribute" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="240" y="1148" width="110" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_pk" value="primary_key" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;fontStyle=4;" vertex="1" parent="1">
+      <mxGeometry x="380" y="1148" width="130" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_rel" value="RELATIONSHIP" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="540" y="1140" width="150" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_card" value="1 / N = Cardinality" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="720" y="1150" width="200" height="24" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>

@@ -1,0 +1,18 @@
+Task Name,Primary Category,Assigned To,Start,Finish,Duration,Predecessors,Status,% Complete,Priority,Deliverable,Acceptance Criteria
+Define EL project objectives,Planning,Team Lead,2026-02-17,2026-02-19,3d,,Completed,100,High,Objective sheet,Objectives are SMART and mapped to major project outcomes
+Prepare WBS and milestone plan,Planning,Team Lead,2026-02-18,2026-02-21,4d,1,Completed,100,High,WBS + timeline,All modules and owners identified with realistic dates
+Create risk and mitigation register,Planning,Team Lead,2026-02-20,2026-02-24,5d,2,Completed,100,Medium,Risk log,Top risks documented with preventive and contingency actions
+Draft high-level architecture diagram,Design,System Architect,2026-02-24,2026-02-28,5d,2,Completed,100,High,Architecture diagram,Covers frontend-backend-db and external integrations
+Define data entities and schema mapping,Design,Backend Dev,2026-02-27,2026-03-03,5d,4,Completed,100,High,Data model/ER artifact,Session/report/financial and IoT entities clearly modeled
+Baseline API modules and contracts,Design,Backend Dev,2026-03-01,2026-03-05,5d,4,Completed,100,Medium,API contract notes,Core endpoints documented with request-response examples
+Implement survey and session flow,Implementation,Full Stack Dev,2026-03-01,2026-03-10,10d,6,Completed,100,High,Working feature,User can start and complete questionnaire flow reliably
+Implement financial projection scenarios,Implementation,Backend Dev,2026-03-06,2026-03-16,11d,6,Completed,100,High,Scenario outputs,Base/pessimistic/optimistic outputs generated correctly
+Build advisory/report integration,Implementation,Full Stack Dev,2026-03-14,2026-03-22,9d,7,Completed,100,High,Report workflow,User can retrieve and view generated reports
+Integrate auth and protected routes,Implementation,Backend Dev,2026-03-08,2026-03-18,11d,6,Completed,100,Medium,Secured APIs,Protected routes validated for authorized access only
+Implement IoT ingest pipeline,Implementation,Backend Dev,2026-03-18,2026-03-28,11d,8,Completed,100,Medium,Ingest endpoint,Sensor payloads validated and stored successfully
+Execute unit and service-level tests,Testing,QA Engineer,2026-03-20,2026-03-28,9d,8,Completed,100,High,Test report,Critical business logic covered with passing tests
+Run API integration test suite,Testing,QA Engineer,2026-03-25,2026-04-03,10d,12,Completed,100,High,Integration evidence,Key APIs pass contract and regression checks
+Defect triage and closure,Testing,QA Engineer,2026-04-02,2026-04-08,7d,13,Completed,100,High,Defect closure sheet,High/medium defects resolved and verified
+Compile EL report with evidence,Documentation,Team Lead,2026-04-01,2026-04-10,10d,14,Completed,100,High,EL report,Objectives/design/implementation/testing evidence clearly documented
+Prepare final presentation,Documentation,Team Lead,2026-04-08,2026-04-13,6d,15,Completed,100,High,Presentation deck,Flow is clear and professional for evaluation
+Submission packaging and handoff,Submission,Team Lead,2026-04-12,2026-04-15,4d,16,Completed,100,High,Final submission pack,All required files submitted on time with checklist signoff

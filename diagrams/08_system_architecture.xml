@@ -1,0 +1,193 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="mz9LMB9tWA3V8CtD_IF_" name="Page-1">
+    <mxGraphModel dx="1554" dy="862" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t1_bg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontFamily=Times New Roman;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="105" width="860" x="20" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="t1_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="Tier 1 — Client Layer (Browser)" vertex="1">
+          <mxGeometry height="24" width="350" x="30" y="58" as="geometry" />
+        </mxCell>
+        <mxCell id="t1_react" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="React 18 + Vite&#xa;(SPA)" vertex="1">
+          <mxGeometry height="55" width="150" x="40" y="88" as="geometry" />
+        </mxCell>
+        <mxCell id="t1_zustand" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Zustand&#xa;(Global State)" vertex="1">
+          <mxGeometry height="55" width="150" x="210" y="88" as="geometry" />
+        </mxCell>
+        <mxCell id="t1_speech" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Web Speech API&#xa;(Voice Input)" vertex="1">
+          <mxGeometry height="55" width="150" x="380" y="88" as="geometry" />
+        </mxCell>
+        <mxCell id="t1_axios" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Axios + JWT&#xa;Interceptor (api.js)" vertex="1">
+          <mxGeometry height="55" width="165" x="550" y="88" as="geometry" />
+        </mxCell>
+        <mxCell id="t1_pages" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Pages: Dashboard,&#xa;Surveys, Reports..." vertex="1">
+          <mxGeometry height="55" width="130" x="730" y="88" as="geometry" />
+        </mxCell>
+        <mxCell id="arr12" edge="1" parent="1" style="endArrow=block;endFill=1;startArrow=block;startFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="HTTPS Requests / Responses">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="160" as="sourcePoint" />
+            <mxPoint x="440" y="178" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="t2_bg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontFamily=Times New Roman;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="85" width="860" x="20" y="178" as="geometry" />
+        </mxCell>
+        <mxCell id="t2_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="Tier 2 — Web / Proxy Layer" vertex="1">
+          <mxGeometry height="24" width="300" x="30" y="181" as="geometry" />
+        </mxCell>
+        <mxCell id="t2_nginx" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Nginx Reverse Proxy&#xa;(Port 80 / 443)" vertex="1">
+          <mxGeometry height="48" width="210" x="155" y="207" as="geometry" />
+        </mxCell>
+        <mxCell id="t2_route" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="/api/* → Backend :8000&#xa;/ → Frontend :3001" vertex="1">
+          <mxGeometry height="48" width="230" x="385" y="207" as="geometry" />
+        </mxCell>
+        <mxCell id="t2_ssl" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="SSL Termination&#xa;+ Static Assets" vertex="1">
+          <mxGeometry height="48" width="210" x="630" y="207" as="geometry" />
+        </mxCell>
+        <mxCell id="arr23" edge="1" parent="1" style="endArrow=block;endFill=1;startArrow=block;startFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Proxied API Requests">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="263" as="sourcePoint" />
+            <mxPoint x="440" y="281" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="t3_bg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontFamily=Times New Roman;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="110" width="860" x="20" y="281" as="geometry" />
+        </mxCell>
+        <mxCell id="t3_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="Tier 3 — Application Layer (FastAPI + Python 3.12 + Uvicorn)" vertex="1">
+          <mxGeometry height="24" width="530" x="30" y="284" as="geometry" />
+        </mxCell>
+        <mxCell id="t3_jwt" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="JWT Middleware&#xa;+ CORS" vertex="1">
+          <mxGeometry height="55" width="130" x="35" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="t3_auth" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="auth.py&#xa;Router" vertex="1">
+          <mxGeometry height="55" width="120" x="180" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="t3_sess" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="session.py&#xa;Router" vertex="1">
+          <mxGeometry height="55" width="120" x="315" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="t3_rep" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="report.py&#xa;Router" vertex="1">
+          <mxGeometry height="55" width="120" x="450" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="t3_aud" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="audio.py&#xa;Router" vertex="1">
+          <mxGeometry height="55" width="120" x="585" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="t3_land" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="land_survey.py&#xa;+ eval.py" vertex="1">
+          <mxGeometry height="55" width="130" x="720" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="arr34" edge="1" parent="1" style="endArrow=block;endFill=1;startArrow=block;startFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Service Layer Calls">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="391" as="sourcePoint" />
+            <mxPoint x="440" y="409" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="t4_bg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontFamily=Times New Roman;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="130" width="860" x="20" y="409" as="geometry" />
+        </mxCell>
+        <mxCell id="t4_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="Tier 4 — Business Logic / Service Layer" vertex="1">
+          <mxGeometry height="24" width="400" x="30" y="412" as="geometry" />
+        </mxCell>
+        <mxCell id="t4_qe" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Questionnaire&#xa;Engine" vertex="1">
+          <mxGeometry height="50" width="125" x="35" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="t4_vi" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Voice&#xa;Interpretation" vertex="1">
+          <mxGeometry height="50" width="125" x="175" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="t4_fc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Financial&#xa;Calculator" vertex="1">
+          <mxGeometry height="50" width="125" x="315" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="t4_rs" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Report&#xa;Service" vertex="1">
+          <mxGeometry height="50" width="125" x="455" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="t4_mp" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Market Price&#xa;Service" vertex="1">
+          <mxGeometry height="50" width="125" x="595" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="t4_gs" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Google Sheets&#xa;Sync" vertex="1">
+          <mxGeometry height="50" width="125" x="735" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="t4_auth" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Auth Service (JWT / bcrypt)" vertex="1">
+          <mxGeometry height="28" width="300" x="35" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="t4_land" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="LandFarm Survey Engine + Land Financial Service" vertex="1">
+          <mxGeometry height="28" width="350" x="350" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="arr45" edge="1" parent="1" style="endArrow=block;endFill=1;startArrow=block;startFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="SQL Queries / Cache Operations">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="539" as="sourcePoint" />
+            <mxPoint x="440" y="557" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="t5_bg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontFamily=Times New Roman;fontSize=16;" value="" vertex="1">
+          <mxGeometry height="110" width="860" x="20" y="557" as="geometry" />
+        </mxCell>
+        <mxCell id="t5_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="Tier 5 — Data Layer" vertex="1">
+          <mxGeometry height="24" width="250" x="30" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="t5_pg" parent="1" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;PostgreSQL 16&lt;br&gt;(Primary Store)" vertex="1">
+          <mxGeometry height="65" width="200" x="75" y="588" as="geometry" />
+        </mxCell>
+        <mxCell id="t5_redis" parent="1" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Redis 7&lt;/span&gt;&lt;/div&gt;(Cache / Sessions)" vertex="1">
+          <mxGeometry height="65" width="200" x="335" y="588" as="geometry" />
+        </mxCell>
+        <mxCell id="t5_fs" parent="1" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;File Storage&lt;br&gt;(PDF Reports)" vertex="1">
+          <mxGeometry height="65" width="200" x="595" y="588" as="geometry" />
+        </mxCell>
+        <mxCell id="ext_stt" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="Whisper STT&#xa;(GPU / Cloud)" vertex="1">
+          <mxGeometry height="55" width="185" x="911" y="193" as="geometry" />
+        </mxCell>
+        <mxCell id="ext_llm" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="LLM API&lt;br&gt;(Sarvam)" vertex="1">
+          <mxGeometry height="55" width="185" x="911" y="319" as="geometry" />
+        </mxCell>
+        <mxCell id="ext_sheets" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="Google Sheets API" vertex="1">
+          <mxGeometry height="55" width="185" x="911" y="454" as="geometry" />
+        </mxCell>
+        <mxCell id="earr_stt" edge="1" parent="1" style="endArrow=block;endFill=1;startArrow=block;startFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ext_stt" value="audio stream">
+          <mxGeometry relative="1" x="-0.5125" y="-43" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="880" y="220" as="sourcePoint" />
+            <mxPoint x="940" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="earr_llm" edge="1" parent="1" style="endArrow=block;endFill=1;startArrow=block;startFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ext_llm" value="&lt;font&gt;LLM requests / AI responses&lt;/font&gt;">
+          <mxGeometry relative="1" x="0.0682" y="-40" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="880" y="347" as="sourcePoint" />
+            <mxPoint x="940" y="347" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="earr_sheets" edge="1" parent="1" style="endArrow=block;endFill=1;startArrow=block;startFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ext_sheets" value="financial data export / sync">
+          <mxGeometry relative="1" x="0.6287" y="-52" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="880" y="482" as="sourcePoint" />
+            <mxPoint x="940" y="482" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="leg_title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=16;fontStyle=1;" value="Legend:" vertex="1">
+          <mxGeometry height="24" width="80" x="20" y="688" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_tier" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontFamily=Times New Roman;fontSize=16;" value="System Tier" vertex="1">
+          <mxGeometry height="28" width="130" x="110" y="686" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_comp" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Component" vertex="1">
+          <mxGeometry height="28" width="120" x="260" y="686" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_ext_l" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="External Service" vertex="1">
+          <mxGeometry height="28" width="140" x="400" y="686" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_data" parent="1" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="Data Store" vertex="1">
+          <mxGeometry height="32" width="110" x="560" y="684" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_arr" edge="1" parent="1" style="endArrow=block;endFill=1;startArrow=block;startFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=16;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="700" as="sourcePoint" />
+            <mxPoint x="790" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="leg_arr_lbl" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=16;" value="Bidirectional Flow" vertex="1">
+          <mxGeometry height="24" width="160" x="800" y="688" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

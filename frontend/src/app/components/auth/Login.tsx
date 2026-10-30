@@ -6,9 +6,10 @@ import { SUPPORTED_LANGUAGES, LangCode } from '../../utils/i18n';
 
 interface LoginProps {
   onSwitchToRegister: () => void;
+  onForgotPassword: () => void;
 }
 
-export function Login({ onSwitchToRegister }: LoginProps) {
+export function Login({ onSwitchToRegister, onForgotPassword }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -138,6 +139,17 @@ export function Login({ onSwitchToRegister }: LoginProps) {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+              </div>
+
+              {/* Forgot password */}
+              <div className="text-right -mt-2">
+                <button
+                  type="button"
+                  onClick={onForgotPassword}
+                  className="text-xs text-green-600 hover:text-green-700 font-medium"
+                >
+                  Forgot password?
+                </button>
               </div>
 
               {error && (

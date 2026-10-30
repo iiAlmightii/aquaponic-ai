@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- Title -->
+    <mxCell id="title" value="AgriSense — UML Class Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=20;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="600" y="8" width="600" height="32" as="geometry"/>
+    </mxCell>
+
+    <!-- ========== ROW 1: DATA MODEL ENTITIES ========== -->
+
+    <!-- USER -->
+    <mxCell id="User" value="User" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="20" y="50" width="300" height="280" as="geometry"/>
+    </mxCell>
+    <mxCell id="User_a" value="- id : UUID {PK}&#xa;- email : String&#xa;- full_name : String&#xa;- role : UserRole&#xa;- hashed_password : String&#xa;- is_active : Boolean&#xa;- created_at : DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="User">
+      <mxGeometry y="30" width="300" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="User_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="User">
+      <mxGeometry y="160" width="300" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="User_m" value="+ register(email, password) : User&#xa;+ login(email, password) : Token&#xa;+ get_profile() : UserSchema&#xa;+ update_profile(data) : void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="User">
+      <mxGeometry y="168" width="300" height="112" as="geometry"/>
+    </mxCell>
+
+    <!-- FARM -->
+    <mxCell id="Farm" value="Farm" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="380" y="50" width="300" height="260" as="geometry"/>
+    </mxCell>
+    <mxCell id="Farm_a" value="- id : UUID {PK}&#xa;- user_id : UUID {FK}&#xa;- name : String&#xa;- location : String&#xa;- size_hectares : Float&#xa;- farm_type : FarmType" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="Farm">
+      <mxGeometry y="30" width="300" height="115" as="geometry"/>
+    </mxCell>
+    <mxCell id="Farm_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="Farm">
+      <mxGeometry y="145" width="300" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="Farm_m" value="+ get_farms(user_id) : List[Farm]&#xa;+ create_farm(data) : Farm&#xa;+ update_farm(id, data) : Farm&#xa;+ delete_farm(id) : void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="Farm">
+      <mxGeometry y="153" width="300" height="107" as="geometry"/>
+    </mxCell>
+
+    <!-- FISHBATCH -->
+    <mxCell id="FishBatch" value="FishBatch" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="740" y="50" width="300" height="260" as="geometry"/>
+    </mxCell>
+    <mxCell id="FishBatch_a" value="- id : UUID {PK}&#xa;- farm_id : UUID {FK}&#xa;- species : String&#xa;- stock_count : Integer&#xa;- avg_weight_kg : Float&#xa;- start_date : Date&#xa;- status : BatchStatus" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="FishBatch">
+      <mxGeometry y="30" width="300" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="FishBatch_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="FishBatch">
+      <mxGeometry y="160" width="300" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="FishBatch_m" value="+ add_batch(data) : FishBatch&#xa;+ update_batch(id, data) : FishBatch&#xa;+ get_batches(farm_id) : List[FishBatch]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="FishBatch">
+      <mxGeometry y="168" width="300" height="92" as="geometry"/>
+    </mxCell>
+
+    <!-- CROPRECORD -->
+    <mxCell id="CropRecord" value="CropRecord" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="1100" y="50" width="300" height="250" as="geometry"/>
+    </mxCell>
+    <mxCell id="CropRecord_a" value="- id : UUID {PK}&#xa;- farm_id : UUID {FK}&#xa;- crop_type : String&#xa;- quantity_kg : Float&#xa;- harvest_date : Date&#xa;- notes : String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="CropRecord">
+      <mxGeometry y="30" width="300" height="115" as="geometry"/>
+    </mxCell>
+    <mxCell id="CropRecord_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="CropRecord">
+      <mxGeometry y="145" width="300" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="CropRecord_m" value="+ add_record(data) : CropRecord&#xa;+ get_records(farm_id) : List[CropRecord]&#xa;+ delete_record(id) : void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="CropRecord">
+      <mxGeometry y="153" width="300" height="97" as="geometry"/>
+    </mxCell>
+
+    <!-- WATERREADING -->
+    <mxCell id="WaterReading" value="WaterReading" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="1460" y="50" width="300" height="260" as="geometry"/>
+    </mxCell>
+    <mxCell id="WaterReading_a" value="- id : UUID {PK}&#xa;- farm_id : UUID {FK}&#xa;- ph : Float&#xa;- temperature : Float&#xa;- dissolved_oxygen : Float&#xa;- ammonia : Float&#xa;- recorded_at : DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="WaterReading">
+      <mxGeometry y="30" width="300" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="WaterReading_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="WaterReading">
+      <mxGeometry y="160" width="300" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="WaterReading_m" value="+ record_reading(data) : WaterReading&#xa;+ get_readings(farm_id) : List[WaterReading]&#xa;+ get_latest(farm_id) : WaterReading" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="WaterReading">
+      <mxGeometry y="168" width="300" height="92" as="geometry"/>
+    </mxCell>
+
+    <!-- ========== ROW 2: SESSION / FINANCE ENTITIES ========== -->
+
+    <!-- SESSION -->
+    <mxCell id="Session" value="Session" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="20" y="400" width="300" height="270" as="geometry"/>
+    </mxCell>
+    <mxCell id="Session_a" value="- id : UUID {PK}&#xa;- user_id : UUID {FK}&#xa;- session_type : SessionType&#xa;- status : SessionStatus&#xa;- context_data : JSONB&#xa;- completed_at : DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="Session">
+      <mxGeometry y="30" width="300" height="115" as="geometry"/>
+    </mxCell>
+    <mxCell id="Session_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="Session">
+      <mxGeometry y="145" width="300" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="Session_m" value="+ start_session(user_id, type) : Session&#xa;+ get_session(id) : Session&#xa;+ update_context(id, data) : void&#xa;+ complete_session(id) : void&#xa;+ get_user_sessions(user_id) : List" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="Session">
+      <mxGeometry y="153" width="300" height="117" as="geometry"/>
+    </mxCell>
+
+    <!-- SESSIONANSWER -->
+    <mxCell id="SessionAnswer" value="SessionAnswer" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="380" y="400" width="300" height="220" as="geometry"/>
+    </mxCell>
+    <mxCell id="SessionAnswer_a" value="- id : UUID {PK}&#xa;- session_id : UUID {FK}&#xa;- question_id : String&#xa;- answer_text : String&#xa;- parsed_value : JSONB&#xa;- created_at : DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="SessionAnswer">
+      <mxGeometry y="30" width="300" height="115" as="geometry"/>
+    </mxCell>
+    <mxCell id="SessionAnswer_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="SessionAnswer">
+      <mxGeometry y="145" width="300" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="SessionAnswer_m" value="+ save_answer(data) : SessionAnswer&#xa;+ get_answers(session_id) : List" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="SessionAnswer">
+      <mxGeometry y="153" width="300" height="67" as="geometry"/>
+    </mxCell>
+
+    <!-- FINANCIALPLAN -->
+    <mxCell id="FinancialPlan" value="FinancialPlan" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="740" y="400" width="300" height="220" as="geometry"/>
+    </mxCell>
+    <mxCell id="FinancialPlan_a" value="- id : UUID {PK}&#xa;- session_id : UUID {FK}&#xa;- scenarios : JSONB&#xa;- summary_metrics : JSONB&#xa;- created_at : DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="FinancialPlan">
+      <mxGeometry y="30" width="300" height="97" as="geometry"/>
+    </mxCell>
+    <mxCell id="FinancialPlan_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="FinancialPlan">
+      <mxGeometry y="127" width="300" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="FinancialPlan_m" value="+ get_plan(session_id) : FinancialPlan&#xa;+ create_plan(scenarios) : FinancialPlan&#xa;+ get_scenarios() : Dict&#xa;+ get_summary_metrics() : Dict" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="FinancialPlan">
+      <mxGeometry y="135" width="300" height="85" as="geometry"/>
+    </mxCell>
+
+    <!-- REPORT -->
+    <mxCell id="Report" value="Report" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="1100" y="400" width="300" height="220" as="geometry"/>
+    </mxCell>
+    <mxCell id="Report_a" value="- id : UUID {PK}&#xa;- session_id : UUID {FK}&#xa;- user_id : UUID {FK}&#xa;- report_type : ReportType&#xa;- pdf_path : String&#xa;- created_at : DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="Report">
+      <mxGeometry y="30" width="300" height="115" as="geometry"/>
+    </mxCell>
+    <mxCell id="Report_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="Report">
+      <mxGeometry y="145" width="300" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="Report_m" value="+ generate_report(session_id) : Report&#xa;+ get_report(id) : Report&#xa;+ download_pdf(id) : bytes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="Report">
+      <mxGeometry y="153" width="300" height="67" as="geometry"/>
+    </mxCell>
+
+    <!-- MARKETPRICE -->
+    <mxCell id="MarketPrice" value="MarketPrice" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="1460" y="400" width="300" height="230" as="geometry"/>
+    </mxCell>
+    <mxCell id="MarketPrice_a" value="- id : UUID {PK}&#xa;- crop_type : String&#xa;- price_per_kg : Decimal&#xa;- currency : String&#xa;- region : String&#xa;- recorded_at : DateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="MarketPrice">
+      <mxGeometry y="30" width="300" height="115" as="geometry"/>
+    </mxCell>
+    <mxCell id="MarketPrice_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="MarketPrice">
+      <mxGeometry y="145" width="300" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="MarketPrice_m" value="+ get_price(crop_type, region) : MarketPrice&#xa;+ refresh_prices() : void&#xa;+ llm_fallback(crop_type) : Float" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="MarketPrice">
+      <mxGeometry y="153" width="300" height="77" as="geometry"/>
+    </mxCell>
+
+    <!-- ========== ROW 3: SERVICE CLASSES ========== -->
+
+    <!-- QuestionnaireEngine -->
+    <mxCell id="QEngine" value="QuestionnaireEngine" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="110" y="750" width="320" height="250" as="geometry"/>
+    </mxCell>
+    <mxCell id="QEngine_a" value="- question_bank : List[Question]&#xa;- skip_logic_rules : Dict" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="QEngine">
+      <mxGeometry y="30" width="320" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="QEngine_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="QEngine">
+      <mxGeometry y="80" width="320" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="QEngine_m" value="+ initialize_session(type) : Session&#xa;+ get_next_question(session) : Question&#xa;+ process_answer(session, answer) : Result&#xa;+ validate_answer(q, answer) : bool&#xa;+ apply_skip_logic(session, q) : Question" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="QEngine">
+      <mxGeometry y="88" width="320" height="162" as="geometry"/>
+    </mxCell>
+
+    <!-- VoiceInterpretationService -->
+    <mxCell id="VoiceInterp" value="VoiceInterpretationService" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="530" y="750" width="320" height="230" as="geometry"/>
+    </mxCell>
+    <mxCell id="VoiceInterp_a" value="- fuzzy_threshold : Float&#xa;- stt_provider : String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="VoiceInterp">
+      <mxGeometry y="30" width="320" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="VoiceInterp_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="VoiceInterp">
+      <mxGeometry y="80" width="320" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="VoiceInterp_m" value="+ interpret_voice(audio) : String&#xa;+ parse_answer(text, question) : Value&#xa;+ confirm_interpretation(text) : bool&#xa;+ fuzzy_match(text, options) : String&#xa;+ transcribe(audio_bytes) : String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="VoiceInterp">
+      <mxGeometry y="88" width="320" height="142" as="geometry"/>
+    </mxCell>
+
+    <!-- FinancialCalculator -->
+    <mxCell id="FinCalc" value="FinancialCalculator" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="950" y="750" width="320" height="260" as="geometry"/>
+    </mxCell>
+    <mxCell id="FinCalc_a" value="- discount_rate : Float&#xa;- projection_years : Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="FinCalc">
+      <mxGeometry y="30" width="320" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="FinCalc_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="FinCalc">
+      <mxGeometry y="80" width="320" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="FinCalc_m" value="+ create_plan(inputs) : FinancialPlan&#xa;+ calc_capex(inputs) : Float&#xa;+ calc_opex(inputs) : Float&#xa;+ calc_roi(capex, revenue) : Float&#xa;+ calc_irr(cashflows) : Float&#xa;+ calc_npv(cashflows, rate) : Float" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="FinCalc">
+      <mxGeometry y="88" width="320" height="172" as="geometry"/>
+    </mxCell>
+
+    <!-- ReportService -->
+    <mxCell id="ReportSvc" value="ReportService" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1370" y="750" width="320" height="230" as="geometry"/>
+    </mxCell>
+    <mxCell id="ReportSvc_a" value="- pdf_engine : ReportLab&#xa;- llm_client : LLMClient" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="ReportSvc">
+      <mxGeometry y="30" width="320" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="ReportSvc_div" value="" style="line;strokeWidth=1;fillColor=none;strokeColor=#000000;" vertex="1" parent="ReportSvc">
+      <mxGeometry y="80" width="320" height="8" as="geometry"/>
+    </mxCell>
+    <mxCell id="ReportSvc_m" value="+ generate_pdf(plan) : bytes&#xa;+ create_report(session_id) : Report&#xa;+ get_llm_recommendations(plan) : String&#xa;+ format_scenarios(scenarios) : Dict" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=6;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="ReportSvc">
+      <mxGeometry y="88" width="320" height="142" as="geometry"/>
+    </mxCell>
+
+    <!-- ========== RELATIONSHIPS ========== -->
+
+    <!-- User 1 to N Farm (composition) -->
+    <mxCell id="rel_user_farm" value="" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=1;html=1;strokeColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="User" target="Farm">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="lbl_uf1" value="1" style="resizable=0;html=1;align=left;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_user_farm">
+      <mxGeometry x="-0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_uf2" value="N" style="resizable=0;html=1;align=right;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_user_farm">
+      <mxGeometry x="0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+
+    <!-- Farm 1 to N FishBatch (aggregation) -->
+    <mxCell id="rel_farm_fish" value="" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=0;html=1;strokeColor=#000000;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="Farm" target="FishBatch">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="lbl_ff1" value="1" style="resizable=0;html=1;align=left;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_farm_fish">
+      <mxGeometry x="-0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_ff2" value="N" style="resizable=0;html=1;align=right;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_farm_fish">
+      <mxGeometry x="0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+
+    <!-- Farm 1 to N CropRecord -->
+    <mxCell id="rel_farm_crop" value="" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=0;html=1;strokeColor=#000000;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="Farm" target="CropRecord">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="700" y="220"/>
+          <mxPoint x="1080" y="220"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_fc1" value="1" style="resizable=0;html=1;align=left;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_farm_crop">
+      <mxGeometry x="-0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_fc2" value="N" style="resizable=0;html=1;align=right;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_farm_crop">
+      <mxGeometry x="0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+
+    <!-- Farm 1 to N WaterReading routed over top -->
+    <mxCell id="rel_farm_water" value="" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=0;html=1;strokeColor=#000000;" edge="1" parent="1" source="Farm" target="WaterReading">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="530" y="25"/>
+          <mxPoint x="1610" y="25"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_fw1" value="1" style="resizable=0;html=1;align=left;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_farm_water">
+      <mxGeometry x="-0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_fw2" value="N" style="resizable=0;html=1;align=right;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_farm_water">
+      <mxGeometry x="0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+
+    <!-- User 1 to N Session vertical -->
+    <mxCell id="rel_user_session" value="" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=1;html=1;strokeColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="User" target="Session">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="lbl_us1" value="1" style="resizable=0;html=1;align=left;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_user_session">
+      <mxGeometry x="-0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_us2" value="N" style="resizable=0;html=1;align=right;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_user_session">
+      <mxGeometry x="0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+
+    <!-- Session 1 to N SessionAnswer -->
+    <mxCell id="rel_sess_ans" value="" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=1;html=1;strokeColor=#000000;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="Session" target="SessionAnswer">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="lbl_sa1" value="1" style="resizable=0;html=1;align=left;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_sess_ans">
+      <mxGeometry x="-0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_sa2" value="N" style="resizable=0;html=1;align=right;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_sess_ans">
+      <mxGeometry x="0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+
+    <!-- Session 1 to 1 FinancialPlan -->
+    <mxCell id="rel_sess_plan" value="" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=1;html=1;strokeColor=#000000;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="Session" target="FinancialPlan">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="360" y="580"/>
+          <mxPoint x="720" y="580"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_sp1" value="1" style="resizable=0;html=1;align=left;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_sess_plan">
+      <mxGeometry x="-0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_sp2" value="1" style="resizable=0;html=1;align=right;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_sess_plan">
+      <mxGeometry x="0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+
+    <!-- Session 1 to N Report routed below -->
+    <mxCell id="rel_sess_report" value="" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="Session" target="Report">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="170" y="710"/>
+          <mxPoint x="1250" y="710"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_sr1" value="1" style="resizable=0;html=1;align=left;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_sess_report">
+      <mxGeometry x="-0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+    <mxCell id="lbl_sr2" value="N" style="resizable=0;html=1;align=right;verticalAlign=bottom;labelBackgroundColor=none;fontFamily=Times New Roman;fontSize=12;" connectable="0" vertex="1" parent="rel_sess_report">
+      <mxGeometry x="0.85" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+    </mxCell>
+
+    <!-- Service dependencies (dashed) -->
+    <mxCell id="rel_qe_sess" value="&lt;&lt;uses&gt;&gt;" style="dashed=1;endArrow=open;endFill=0;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1" source="QEngine" target="Session">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="rel_vi_ans" value="&lt;&lt;uses&gt;&gt;" style="dashed=1;endArrow=open;endFill=0;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1" source="VoiceInterp" target="SessionAnswer">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="rel_fc_plan" value="&lt;&lt;uses&gt;&gt;" style="dashed=1;endArrow=open;endFill=0;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1" source="FinCalc" target="FinancialPlan">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="rel_rs_report" value="&lt;&lt;uses&gt;&gt;" style="dashed=1;endArrow=open;endFill=0;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1" source="ReportSvc" target="Report">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>

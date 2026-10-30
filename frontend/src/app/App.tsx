@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth/Register';
+import { ForgotPassword } from './components/auth/ForgotPassword';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { AISurvey } from './components/surveys/AISurvey';
 import { LandVoiceSurvey } from './components/surveys/LandVoiceSurvey';
@@ -15,7 +16,7 @@ import { AdminDashboard } from './components/admin/AdminDashboard';
 import { MainLayout } from './components/layout/MainLayout';
 import { useStore } from './store';
 
-type View = 'login' | 'register' | 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor' | 'crop-feasibility' | 'admin-panel';
+type View = 'login' | 'register' | 'forgot-password' | 'dashboard' | 'surveys' | 'ai-survey' | 'land-survey' | 'farms' | 'reports' | 'analytics' | 'ai-advisor' | 'crop-feasibility' | 'admin-panel';
 
 interface User {
   id: string;
@@ -53,7 +54,10 @@ function App() {
     if (currentView === 'register') {
       return <Register onSwitchToLogin={() => setCurrentView('login')} />;
     }
-    return <Login onSwitchToRegister={() => setCurrentView('register')} />;
+    if (currentView === 'forgot-password') {
+      return <ForgotPassword onBack={() => setCurrentView('login')} />;
+    }
+    return <Login onSwitchToRegister={() => setCurrentView('register')} onForgotPassword={() => setCurrentView('forgot-password')} />;
   }
 
   // Authenticated views

@@ -12,19 +12,53 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";  -- for fuzzy text search
 -- ENUMS
 -- =============================================================================
 
-CREATE TYPE user_role      AS ENUM ('admin', 'farmer', 'viewer');
-CREATE TYPE batch_status   AS ENUM ('active', 'harvested', 'lost');
-CREATE TYPE crop_status    AS ENUM ('growing', 'harvested', 'failed');
-CREATE TYPE session_status AS ENUM ('in_progress', 'completed', 'abandoned');
-CREATE TYPE input_method   AS ENUM ('voice', 'text', 'select');
-CREATE TYPE reading_source AS ENUM ('manual', 'iot');
-CREATE TYPE report_type    AS ENUM ('summary', 'full', 'financial');
+DO $$ BEGIN
+    CREATE TYPE user_role AS ENUM ('admin', 'farmer', 'viewer');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE batch_status AS ENUM ('active', 'harvested', 'lost');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE crop_status AS ENUM ('growing', 'harvested', 'failed');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE session_status AS ENUM ('in_progress', 'completed', 'abandoned');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE input_method AS ENUM ('voice', 'text', 'select');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE reading_source AS ENUM ('manual', 'iot');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE report_type AS ENUM ('summary', 'full', 'financial');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
 
 -- =============================================================================
 -- USERS
 -- =============================================================================
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email           VARCHAR(255) NOT NULL UNIQUE,
     full_name       VARCHAR(255) NOT NULL,
@@ -36,13 +70,13 @@ CREATE TABLE users (
     updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- =============================================================================
 -- FARMS
 -- =============================================================================
 
-CREATE TABLE farms (
+CREATE TABLE IF NOT EXISTS farms (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     owner_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name        VARCHAR(255) NOT NULL,
@@ -57,13 +91,13 @@ CREATE TABLE farms (
     updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_farms_owner ON farms(owner_id);
+CREATE INDEX IF NOT EXISTS idx_farms_owner ON farms(owner_id);
 
 -- =============================================================================
 -- FISH BATCHES
 -- =============================================================================
 
-CREATE TABLE fish_batches (
+CREATE TABLE IF NOT EXISTS fish_batches (
     id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     farm_id                 UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
     species                 VARCHAR(100) NOT NULL,
@@ -80,14 +114,14 @@ CREATE TABLE fish_batches (
     created_at              TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_fish_batches_farm ON fish_batches(farm_id);
-CREATE INDEX idx_fish_batches_status ON fish_batches(status);
+CREATE INDEX IF NOT EXISTS idx_fish_batches_farm ON fish_batches(farm_id);
+CREATE INDEX IF NOT EXISTS idx_fish_batches_status ON fish_batches(status);
 
 -- =============================================================================
 -- CROP RECORDS
 -- =============================================================================
 
-CREATE TABLE crop_records (
+CREATE TABLE IF NOT EXISTS crop_records (
     id                    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     farm_id               UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
     crop_name             VARCHAR(100) NOT NULL,
@@ -103,13 +137,13 @@ CREATE TABLE crop_records (
     created_at            TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_crop_records_farm ON crop_records(farm_id);
+CREATE INDEX IF NOT EXISTS idx_crop_records_farm ON crop_records(farm_id);
 
 -- =============================================================================
 -- WATER READINGS
 -- =============================================================================
 
-CREATE TABLE water_readings (
+CREATE TABLE IF NOT EXISTS water_readings (
     id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     farm_id             UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
     device_id           VARCHAR(100),
@@ -125,13 +159,13 @@ CREATE TABLE water_readings (
     source              reading_source DEFAULT 'manual'
 );
 
-CREATE INDEX idx_water_readings_farm_ts ON water_readings(farm_id, timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_water_readings_farm_ts ON water_readings(farm_id, timestamp DESC);
 
 -- =============================================================================
 -- SESSIONS (Questionnaire)
 -- =============================================================================
 
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
     id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     farm_id      UUID REFERENCES farms(id) ON DELETE SET NULL,
@@ -145,14 +179,14 @@ CREATE TABLE sessions (
     updated_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_sessions_user ON sessions(user_id);
-CREATE INDEX idx_sessions_status ON sessions(status);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
 
 -- =============================================================================
 -- SESSION ANSWERS
 -- =============================================================================
 
-CREATE TABLE session_answers (
+CREATE TABLE IF NOT EXISTS session_answers (
     id               SERIAL PRIMARY KEY,
     session_id       UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     question_id      VARCHAR(100) NOT NULL,
@@ -164,13 +198,13 @@ CREATE TABLE session_answers (
     created_at       TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_session_answers_session ON session_answers(session_id);
+CREATE INDEX IF NOT EXISTS idx_session_answers_session ON session_answers(session_id);
 
 -- =============================================================================
 -- FINANCIAL PLANS
 -- =============================================================================
 
-CREATE TABLE financial_plans (
+CREATE TABLE IF NOT EXISTS financial_plans (
     id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     farm_id                 UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
     session_id              UUID REFERENCES sessions(id) ON DELETE SET NULL,
@@ -206,13 +240,13 @@ CREATE TABLE financial_plans (
     updated_at              TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_financial_plans_farm ON financial_plans(farm_id);
+CREATE INDEX IF NOT EXISTS idx_financial_plans_farm ON financial_plans(farm_id);
 
 -- =============================================================================
 -- REPORTS
 -- =============================================================================
 
-CREATE TABLE reports (
+CREATE TABLE IF NOT EXISTS reports (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     session_id      UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     report_type     report_type DEFAULT 'full',
@@ -227,7 +261,7 @@ CREATE TABLE reports (
 -- IOT DEVICES
 -- =============================================================================
 
-CREATE TABLE iot_devices (
+CREATE TABLE IF NOT EXISTS iot_devices (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     farm_id     UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
     device_uid  VARCHAR(100) NOT NULL,
@@ -244,7 +278,7 @@ CREATE TABLE iot_devices (
 -- MARKET PRICES (Cache)
 -- =============================================================================
 
-CREATE TABLE market_prices (
+CREATE TABLE IF NOT EXISTS market_prices (
     id          SERIAL PRIMARY KEY,
     commodity   VARCHAR(100) NOT NULL,
     unit        VARCHAR(20) DEFAULT 'kg',
@@ -254,7 +288,7 @@ CREATE TABLE market_prices (
     fetched_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_market_prices_commodity ON market_prices(commodity, fetched_at DESC);
+CREATE INDEX IF NOT EXISTS idx_market_prices_commodity ON market_prices(commodity, fetched_at DESC);
 
 -- =============================================================================
 -- TRIGGERS — auto-update updated_at
@@ -265,7 +299,48 @@ RETURNS TRIGGER AS $$
 BEGIN NEW.updated_at = NOW(); RETURN NEW; END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_users_updated_at    BEFORE UPDATE ON users    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER trg_farms_updated_at    BEFORE UPDATE ON farms    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER trg_sessions_updated_at BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-CREATE TRIGGER trg_plans_updated_at    BEFORE UPDATE ON financial_plans FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_users_updated_at') THEN
+        CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_farms_updated_at') THEN
+        CREATE TRIGGER trg_farms_updated_at BEFORE UPDATE ON farms FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_sessions_updated_at') THEN
+        CREATE TRIGGER trg_sessions_updated_at BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+    END IF;
+END $$;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_plans_updated_at') THEN
+        CREATE TRIGGER trg_plans_updated_at BEFORE UPDATE ON financial_plans FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+    END IF;
+END $$;
+
+-- =============================================================================
+-- STT CORRECTIONS — continuous improvement feedback loop
+-- =============================================================================
+-- Populated when a user flags a bad transcription via the "Did we hear you
+-- correctly?" prompt. Links back to voice_audit.jsonl via audit_id.
+-- Used in Phase 4 to drive prompt adaptation and error analysis.
+
+CREATE TABLE IF NOT EXISTS stt_corrections (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    audit_id        TEXT        NOT NULL,
+    session_id      UUID        REFERENCES sessions(id) ON DELETE SET NULL,
+    original_transcript   TEXT NOT NULL,
+    corrected_transcript  TEXT NOT NULL,
+    language        VARCHAR(10) NOT NULL DEFAULT 'en',
+    question_id     TEXT,
+    flagged_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_stt_corrections_audit_id   ON stt_corrections (audit_id);
+CREATE INDEX IF NOT EXISTS idx_stt_corrections_language   ON stt_corrections (language);
+CREATE INDEX IF NOT EXISTS idx_stt_corrections_flagged_at ON stt_corrections (flagged_at DESC);

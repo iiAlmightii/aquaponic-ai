@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- Title -->
+    <mxCell id="title" value="Activity Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Times New Roman;fontSize=20;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="200" y="8" width="400" height="32" as="geometry"/>
+    </mxCell>
+
+    <!-- START NODE (filled circle) -->
+    <mxCell id="start" value="" style="ellipse;aspect=fixed;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="362" y="55" width="26" height="26" as="geometry"/>
+    </mxCell>
+
+    <!-- A1: User Opens App & Logs In -->
+    <mxCell id="a1" value="User Opens App &amp; Logs In" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="260" y="105" width="230" height="44" as="geometry"/>
+    </mxCell>
+
+    <!-- A2: Navigate to Surveys Hub -->
+    <mxCell id="a2" value="Navigate to Surveys Hub" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="260" y="175" width="230" height="44" as="geometry"/>
+    </mxCell>
+
+    <!-- A3: Select Survey Type -->
+    <mxCell id="a3" value="Select Survey Type&#xa;(Aquaponic / Land Farming)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="255" y="245" width="240" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- A4: System Creates Session -->
+    <mxCell id="a4" value="System Creates Session&#xa;(POST /api/v1/session/start)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="255" y="325" width="240" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- A5: Display Question -->
+    <mxCell id="a5" value="Display Question to User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="260" y="405" width="230" height="44" as="geometry"/>
+    </mxCell>
+
+    <!-- D1: Voice or Text? -->
+    <mxCell id="d1" value="Voice or Text?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="295" y="475" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- A6a: Capture Audio -->
+    <mxCell id="a6a" value="Capture Audio&#xa;(Web Speech API)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="115" y="475" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- A6b: Type Answer -->
+    <mxCell id="a6b" value="Type Answer&#xa;in Text Field" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="475" y="475" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- A7: Speech-to-Text Processing -->
+    <mxCell id="a7" value="Speech-to-Text Processing&#xa;(VoiceInterpretation Service)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="100" y="565" width="190" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- A8: Submit Answer -->
+    <mxCell id="a8" value="Submit Answer&#xa;(POST /api/v1/session/answer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="255" y="645" width="240" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- D2: Valid Answer? -->
+    <mxCell id="d2" value="Valid Answer?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="295" y="725" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- A9: Show Validation Error -->
+    <mxCell id="a9" value="Show Validation Error&#xa;&amp; Prompt Retry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="510" y="725" width="175" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- A10: Save Answer to Database -->
+    <mxCell id="a10" value="Save Answer to Database&#xa;(QuestionnaireEngine)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="255" y="815" width="240" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- D3: More Questions? -->
+    <mxCell id="d3" value="More Questions?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="295" y="895" width="160" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- A11: Generate Financial Scenarios -->
+    <mxCell id="a11" value="Generate Financial Scenarios&#xa;(Base / Pessimistic / Optimistic)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="245" y="985" width="260" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- A12: LLM Generates Recommendations -->
+    <mxCell id="a12" value="LLM Generates Recommendations&#xa;(Anthropic / OpenAI API)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="245" y="1060" width="260" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- A13: Generate PDF Report -->
+    <mxCell id="a13" value="Generate PDF Report&#xa;(ReportLab)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="255" y="1135" width="240" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- A14: Display Dashboard & Report -->
+    <mxCell id="a14" value="Display Dashboard &amp; Report&#xa;to User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="255" y="1210" width="240" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- END NODE (bullseye) -->
+    <mxCell id="end" value="" style="ellipse;aspect=fixed;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="354" y="1290" width="42" height="42" as="geometry"/>
+    </mxCell>
+    <mxCell id="end_ring" value="" style="ellipse;aspect=fixed;fillColor=none;strokeColor=#000000;strokeWidth=3;" vertex="1" parent="1">
+      <mxGeometry x="347" y="1283" width="56" height="56" as="geometry"/>
+    </mxCell>
+
+    <!-- ========== EDGES ========== -->
+
+    <mxCell id="e_s_a1" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="start" target="a1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_a1_a2" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a1" target="a2">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_a2_a3" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a2" target="a3">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_a3_a4" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a3" target="a4">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_a4_a5" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a4" target="a5">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_a5_d1" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a5" target="d1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Decision: Voice -->
+    <mxCell id="e_d1_voice" value="Voice" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;exitX=0;exitY=0.5;" edge="1" parent="1" source="d1" target="a6a">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Decision: Text -->
+    <mxCell id="e_d1_text" value="Text" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;exitX=1;exitY=0.5;" edge="1" parent="1" source="d1" target="a6b">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Voice path -->
+    <mxCell id="e_a6a_a7" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a6a" target="a7">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Converge voice to submit -->
+    <mxCell id="e_a7_a8" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a7" target="a8">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="195" y="635"/>
+          <mxPoint x="375" y="635"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <!-- Converge text to submit -->
+    <mxCell id="e_a6b_a8" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a6b" target="a8">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="555" y="635"/>
+          <mxPoint x="375" y="635"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_a8_d2" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a8" target="d2">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Valid: Yes -->
+    <mxCell id="e_d2_a10" value="Yes" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;exitX=0.5;exitY=1;" edge="1" parent="1" source="d2" target="a10">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Valid: No -->
+    <mxCell id="e_d2_a9" value="No" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;exitX=1;exitY=0.5;" edge="1" parent="1" source="d2" target="a9">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Retry loop back to display question -->
+    <mxCell id="e_a9_a5" value="Retry" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" edge="1" parent="1" source="a9" target="a5">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="700" y="755"/>
+          <mxPoint x="700" y="427"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="e_a10_d3" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a10" target="d3">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- More Questions: Yes (loop back) -->
+    <mxCell id="e_d3_yes" value="Yes" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;exitX=0;exitY=0.5;" edge="1" parent="1" source="d3" target="a5">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="200" y="925"/>
+          <mxPoint x="200" y="427"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <!-- More Questions: No -->
+    <mxCell id="e_d3_no" value="No" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;exitX=0.5;exitY=1;" edge="1" parent="1" source="d3" target="a11">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="e_a11_a12" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a11" target="a12">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_a12_a13" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a12" target="a13">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_a13_a14" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a13" target="a14">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_a14_end" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1" source="a14" target="end">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>

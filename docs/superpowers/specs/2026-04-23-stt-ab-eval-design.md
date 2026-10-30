@@ -160,7 +160,7 @@ Tracks all participants and their completion counts. Updated on every upload. Us
 ## 5. WER Evaluation Pipeline
 
 **File:** `backend/eval/run_wer_eval.py`  
-**Run once** after all participants finish recording.
+**Triggered automatically** via a "Run Evaluation" button in the frontend eval module, which calls `POST /api/v1/eval/run`. The backend runs the pipeline as a background task and streams progress. Results are written to disk and a status endpoint `GET /api/v1/eval/status` returns completion state and a link to download `results.csv`. The "Run Evaluation" button is visible only after the master_manifest shows at least one participant with all 40 clips recorded.
 
 ### Dependencies (added to requirements.txt)
 - `jiwer` — WER computation

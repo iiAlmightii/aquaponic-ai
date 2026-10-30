@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- Title -->
+    <mxCell id="title" value="AgriSense — DFD Level 2: Financial Calculation Process (P4)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Times New Roman;fontSize=20;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="80" y="8" width="1000" height="32" as="geometry"/>
+    </mxCell>
+
+    <!-- ===== EXTERNAL ENTITIES ===== -->
+
+    <mxCell id="e1" value="Completed Survey Session&#xa;(from P2: Survey Mgmt)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="30" y="148" width="195" height="55" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="e2" value="LLM API&#xa;(Anthropic / OpenAI)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="895" y="455" width="195" height="55" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="e3" value="Report Service (P5)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="30" y="700" width="195" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- ===== DATA STORES (cylinders) ===== -->
+
+    <mxCell id="d2" value="D2: Sessions DB" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="30" y="455" width="195" height="60" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="d5" value="D5: Market Prices DB" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="895" y="148" width="195" height="60" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="d4" value="D4: Financial Plans DB" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="895" y="700" width="195" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- ===== PROCESSES (ellipses) ===== -->
+
+    <mxCell id="p41" value="P4.1&#xa;Parse Survey&#xa;Context Data" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="290" y="143" width="210" height="70" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="p42" value="P4.2&#xa;Calculate CAPEX&#xa;(Tank / Equipment)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="90" y="320" width="210" height="70" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="p43" value="P4.3&#xa;Calculate OPEX&#xa;(Feed / Labor / Utilities)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="390" y="320" width="220" height="70" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="p44" value="P4.4&#xa;Fetch Current&#xa;Market Price Data" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="650" y="143" width="210" height="70" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="p45" value="P4.5&#xa;Project Revenue&#xa;(Fish + Vegetables)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="650" y="320" width="210" height="70" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="p46" value="P4.6&#xa;Compute Financial Metrics&#xa;(ROI / IRR / NPV / Payback)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="380" y="490" width="250" height="70" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="p47" value="P4.7&#xa;Generate 3 Scenarios&#xa;(Base / Pessimistic / Optimistic)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="390" y="668" width="250" height="75" as="geometry"/>
+    </mxCell>
+
+    <!-- ===== DATA FLOWS ===== -->
+
+    <!-- e1 to p41: survey answers -->
+    <mxCell id="f1" value="survey answers (context_data)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="e1" target="p41">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- d2 to p41: session data -->
+    <mxCell id="f2" value="session context" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="d2" target="p41">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="127" y="485"/>
+          <mxPoint x="127" y="355"/>
+          <mxPoint x="278" y="355"/>
+          <mxPoint x="278" y="178"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- p41 to p42: capital expense inputs -->
+    <mxCell id="f3" value="tank / equipment params" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p41" target="p42">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- p41 to p43: operational inputs -->
+    <mxCell id="f4" value="operational inputs" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p41" target="p43">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- p41 to p44: crop/fish type -->
+    <mxCell id="f5" value="crop / fish type request" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p41" target="p44">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- d5 to p44: stored prices -->
+    <mxCell id="f6" value="stored price records" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="d5" target="p44">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- p44 to p45: market prices -->
+    <mxCell id="f7" value="current market prices" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p44" target="p45">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- p42 to p46: total CAPEX -->
+    <mxCell id="f8" value="total CAPEX" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p42" target="p46">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- p43 to p46: total OPEX -->
+    <mxCell id="f9" value="total OPEX" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p43" target="p46">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- p45 to p46: revenue projections -->
+    <mxCell id="f10" value="revenue projections" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p45" target="p46">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- p46 to p47: computed metrics -->
+    <mxCell id="f11" value="ROI, IRR, NPV, payback period" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p46" target="p47">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- p47 to d4: store plan -->
+    <mxCell id="f12" value="financial plan (3 scenarios)" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p47" target="d4">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- p47 to e3: plan for report -->
+    <mxCell id="f13" value="plan summary for PDF" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p47" target="e3">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- p47 to e2: LLM context -->
+    <mxCell id="f14" value="financial context + metrics" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="p47" target="e2">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="670" y="705"/>
+          <mxPoint x="992" y="705"/>
+          <mxPoint x="992" y="510"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- e2 to p47: AI recommendations -->
+    <mxCell id="f15" value="AI recommendations" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="e2" target="p47">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="960" y="482"/>
+          <mxPoint x="960" y="730"/>
+          <mxPoint x="640" y="730"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- ===== LEGEND ===== -->
+    <mxCell id="leg_title" value="Legend:" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="30" y="790" width="80" height="24" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_proc" value="Process" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="120" y="788" width="110" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_ext" value="External Entity" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="250" y="788" width="140" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_ds" value="Data Store" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="410" y="786" width="110" height="32" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_arr" value="" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="550" y="802" as="sourcePoint"/>
+        <mxPoint x="640" y="802" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="leg_arr_lbl" value="Data Flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="650" y="790" width="90" height="24" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>

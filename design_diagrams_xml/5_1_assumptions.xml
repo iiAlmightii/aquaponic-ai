@@ -1,0 +1,12 @@
+<mxfile host="app.diagrams.net" agent="GitHub Copilot" version="24.7.6" type="device">
+  <diagram id="assumptions" name="5.1 Assumptions">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Assumptions for Detailed Design" style="text;html=1;fontStyle=1;fontSize=20;strokeColor=none;fillColor=none;" vertex="1" parent="1"><mxGeometry x="80" y="40" width="500" height="40" as="geometry"/></mxCell>
+        <mxCell id="3" value="1. System uses FastAPI backend with REST APIs.\n2. PostgreSQL is the source of truth for transactional data.\n3. Redis is used for cache/session acceleration where configured.\n4. AI provider availability can vary; fallback provider may be used.\n5. Voice input may include STT uncertainty; confidence is stored when available.\n6. Financial projections are scenario-based (base, optimistic, pessimistic).\n7. Google Sheets sync is optional and requires credentials.\n8. Users are authenticated before accessing protected operations." style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=10;" vertex="1" parent="1"><mxGeometry x="80" y="100" width="980" height="360" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

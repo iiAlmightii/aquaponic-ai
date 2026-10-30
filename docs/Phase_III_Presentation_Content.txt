@@ -1,0 +1,349 @@
+AI-Driven Farm Production Management and Financial Planning System
+Phase III Review Presentation Content
+
+Title, slide content, and speaker notes are written in the same style as the phase-II presentation document so the content can be copied directly into a PPT.
+
+SLIDE 1 - TITLE SLIDE
+
+Project Title: AI-Driven Farm Production Management and Financial Planning System
+Course: MCA491P Major Project Review
+Student Name: [Your Name]
+USN: [Your USN]
+Internal Guide: [Guide Name]
+External Guide: [External Guide Name]
+Institution: RV College of Engineering
+
+TRANSCRIPT - Slide 1
+
+Good morning/afternoon respected panel members. I am [Name], USN [USN], presenting the Phase III review of my major project titled "AI-Driven Farm Production Management and Financial Planning System." The system is a full-stack platform for farm production planning, voice-based data collection, agronomic decision support, and financial analysis. It supports aquaponics and land farming workflows, and the implementation now covers user authentication, adaptive surveys, AI advisory, report generation, IoT ingestion, Google Sheets sync, and evaluation tooling.
+
+SLIDE 2 - AGENDA
+
+1. Project overview and problem statement
+2. Phase-wise progress and completed implementation
+3. System architecture and codebase structure
+4. Core modules and backend services
+5. Frontend modules and user workflows
+6. Database design and data flow
+7. Testing, evaluation, and validation
+8. Deployment, integration, and current status
+9. Challenges, future scope, and conclusion
+
+TRANSCRIPT - Slide 2
+
+The presentation begins with the project problem and scope, then summarizes what has been completed in Phase III. After that, I will explain the architecture, the backend and frontend modules, the database model, and the testing and evaluation work that was added or completed in this phase. I will conclude with the current status, remaining work, and future enhancements.
+
+SLIDE 3 - PROJECT OVERVIEW
+
+The system addresses three major needs in modern farm operations:
+- Farm production planning and operational tracking
+- AI-assisted financial planning with scenario analysis
+- Voice-first and low-friction data collection for farmers
+
+Key capabilities:
+- Guided farm questionnaires through voice or text
+- Financial planning with CAPEX, OPEX, ROI, IRR, NPV, and payback calculations
+- Support for aquaponic and land-farming workflows
+- AI advisor for multilingual guidance
+- IoT data ingestion for water quality monitoring
+- PDF and Google Sheets export for reporting and collaboration
+
+TRANSCRIPT - Slide 3
+
+The project is designed for practical farm decision support. A farmer can start a guided survey, provide answers by voice or text, and receive a structured financial plan and recommendations. The platform is built to support real operational use, not only academic demonstration, so the system emphasizes validation, clarity, and modular design.
+
+SLIDE 4 - PHASE III IMPLEMENTATION SUMMARY
+
+Completed in this phase:
+- FastAPI backend with modular routers and service layer
+- Authentication and session management
+- Aquaponics questionnaire engine with skip logic
+- Land farming survey engine and finance pipeline
+- Financial calculation engine with scenario modeling
+- AI advisor integration
+- Audio transcription support using faster-whisper and browser voice input
+- Report generation and Google Sheets sync
+- Crop intelligence and farm analysis features
+- IoT ingestion and evaluation endpoints
+
+TRANSCRIPT - Slide 4
+
+Phase III focused on completing the functional backbone of the platform. The current codebase now includes all major backend routers, reusable services, a responsive frontend, and the integration points required for farm planning, transcription, analytics, and reporting. This phase moved the project from an early prototype into a working end-to-end system.
+
+SLIDE 5 - SYSTEM ARCHITECTURE
+
+Architecture layers:
+- Presentation layer: React frontend, voice UI, dashboards, reports
+- API layer: FastAPI routers, validation, and request handling
+- Service layer: business logic for surveys, finance, AI, and reports
+- Data layer: PostgreSQL and Redis
+- External integration layer: Google Sheets, AI services, Whisper/STT, IoT inputs
+
+Main backend routers:
+- auth
+- session
+- analysis
+- report
+- farm
+- iot
+- audio
+- finance_sheets
+- land_survey
+- crop
+- ai_advisor
+- eval
+
+TRANSCRIPT - Slide 5
+
+The architecture follows a clean separation of concerns. The frontend focuses on interaction and presentation, while the backend routers remain thin and delegate actual computation to services. This makes the system easier to test, maintain, and extend. The codebase now includes dedicated routes for evaluation, land surveys, crop intelligence, and AI advisory in addition to the core farm management features.
+
+SLIDE 6 - FRONTEND IMPLEMENTATION
+
+Frontend stack:
+- React 18 with Vite
+- TypeScript and JavaScript components
+- Zustand for global state management
+- Axios for authenticated API calls
+- Web Speech API for voice capture in the browser
+- Charts, tables, forms, dialogs, and reusable UI components
+
+Main user-facing screens:
+- Login and register screens
+- Dashboard
+- Surveys hub
+- Aquaponic voice survey
+- Land voice survey
+- AI advisor chat
+- Analytics and financial views
+- Farm management screen
+- Reports screen
+- Evaluation recorder screen
+
+TRANSCRIPT - Slide 6
+
+The frontend is organized into feature-based components. The main user journey starts with authentication and moves into surveys, analytics, and reporting. Voice capture is handled in the browser where possible, which reduces friction for users. The interface also includes separate screens for land farming, AI advisory, and evaluation data collection.
+
+SLIDE 7 - BACKEND SERVICES
+
+Core backend services:
+- auth_service: registration, login, JWT and password handling
+- questionnaire_engine: adaptive question flow and answer validation
+- financial_service: CAPEX/OPEX and three-scenario projections
+- voice_interpretation: spoken number extraction and normalization
+- crop_intelligence_service: crop feasibility and recommendations
+- sarvam_llm_service: multilingual AI advice generation
+- land_farm_survey_engine: land-farming workflow
+- land_financial_service: land farming financial calculations
+- google_sheets_financial_sync: export and sync to Sheets
+- looker_studio_service: dashboard link support
+- land_market_price_service: market price lookup for land crops
+- land_sheet_sync: land-farm sheet export pipeline
+
+TRANSCRIPT - Slide 7
+
+The service layer is where the actual application intelligence lives. The questionnaire engine controls survey progression with skip logic. The financial service computes financial metrics and scenario outcomes. The crop intelligence and AI advisor modules provide decision support, while the Google Sheets and Looker Studio helpers extend the platform into reporting and collaboration workflows.
+
+SLIDE 8 - DATABASE AND DATA FLOW
+
+Primary data stores:
+- PostgreSQL 16 for persistent application data
+- Redis 7 for session and cache use cases
+
+Important data entities:
+- users
+- farms
+- sessions
+- session_answers
+- financial_plans
+- water_readings
+- reports
+- iot_devices
+- market_prices
+
+Key design choices:
+- UUID-based primary keys
+- JSONB for flexible session and scenario data
+- audit-friendly structured records for answers and calculations
+- cached data for external lookups and repeated access
+
+TRANSCRIPT - Slide 8
+
+The database design is optimized for flexibility and traceability. Survey answers, financial scenarios, and AI output are stored in a structured way that supports both querying and export. Redis is used where short-lived or repeated lookups make sense, especially for sessions and cached pricing data.
+
+SLIDE 9 - CORE WORKFLOWS
+
+Workflow 1: Voice survey and financial plan
+- User starts session
+- User answers through voice or text
+- System validates answer and applies skip logic
+- Financial plan is generated when survey completes
+- Recommendations and report are produced
+
+Workflow 2: AI advisory
+- User opens AI advisor screen
+- Farm context is attached to the conversation
+- Multilingual response is generated
+
+Workflow 3: IoT and reporting
+- Sensor readings are ingested
+- Data is stored for dashboard use
+- Reports and Sheets export are generated when needed
+
+TRANSCRIPT - Slide 9
+
+The main workflows connect the backend services into a complete user journey. Survey data leads to financial planning. Financial planning can lead to reporting and Google Sheets export. IoT and analytics enrich the operational picture. This makes the platform more than a questionnaire app; it is an integrated decision-support system.
+
+SLIDE 10 - TESTING AND VALIDATION
+
+Test coverage added in the codebase includes:
+- Auth service tests
+- Financial service tests
+- Voice interpretation tests
+- Crop intelligence tests
+- Land survey engine tests
+- Land financial service tests
+- Google Sheets integration tests
+- AI advisor tests
+- Evaluation router tests
+- Land market price tests
+
+Validation focus:
+- Correct scenario calculation
+- Safe and consistent question flow
+- Robust input parsing from voice text
+- Integration behavior for external services
+- Evaluation upload and status tracking
+
+TRANSCRIPT - Slide 10
+
+Testing was used to verify the core business logic and the integration points. The most important checks are financial correctness, survey flow integrity, and input parsing. Additional tests protect the external integration layers so that errors are handled cleanly and the application remains predictable.
+
+SLIDE 11 - EVALUATION PIPELINE
+
+Evaluation mode features:
+- Dedicated eval router enabled when EVAL_MODE is true
+- Participant-wise clip upload
+- Manifest-based clip tracking
+- Background WER evaluation pipeline
+- Result export as CSV
+- Status tracking for the evaluation run
+
+Use case:
+- Collect recorded clips from participants
+- Compare transcription systems or configurations
+- Generate evaluation results for review and reporting
+
+TRANSCRIPT - Slide 11
+
+This phase also includes a structured evaluation pipeline for speech data collection and WER analysis. The pipeline supports participant uploads, progress tracking, and result generation. It is useful for reviewing voice-input performance and for demonstrating that the STT workflow is not only implemented but also measurable.
+
+SLIDE 11.1 - PHASE II CHANGES INCORPORATED
+
+Summary of Phase II suggestions and incorporation
+
+- **Sarvam integration:** Added Sarvam LLM (Sarvam-M / Sarvam 30B) as the AI Advisor backend for multilingual advisory and chat features; referenced in frontend dashboard and service layer.
+- **Saarika / Sarvam Saarika v2 STT:** Integrated Sarvam Saarika v2 REST API as an additional transcription system used in evaluation runs (compared against faster-whisper). This is available as a selectable evaluation target in the backend eval pipeline.
+- **Whisper (faster-whisper) + Web Speech API:** Kept faster-whisper (large-v3) as the primary offline STT option and the browser `Web Speech API` for in-browser capture; both are supported end-to-end (capture → server transcription → post-processing).
+- **Voice testing via ngrok:** Added guidance and tooling to use `ngrok` to expose the evaluation endpoint for remote participant recordings; useful for field testing and collecting labeled audio for WER analysis.
+- **Evaluation comparisons:** The eval pipeline now supports side-by-side WER runs and CSV export for: faster-whisper (large-v3), Sarvam Saarika v2, and browser-captured transcripts (Web Speech API). Results are accessible via the eval status and results endpoints.
+
+TRANSCRIPT - Slide 11.1
+
+Following Phase II feedback, we expanded the voice stack and evaluation tooling. Sarvam was onboarded for multilingual AI advisory, Saarika (Sarvam's STT) was added to compare against faster-whisper, and the Web Speech API continues to provide lightweight browser capture. We also added ngrok-based remote testing instructions so participants can submit clips from the field and the eval pipeline can produce WER comparisons and CSV exports for analysis.
+
+SLIDE 12 - SECURITY AND RELIABILITY
+
+Implemented safeguards:
+- JWT authentication for protected operations
+- Password hashing through bcrypt
+- Ownership checks on user-bound data
+- Rate limiting through SlowAPI
+- Graceful database error handling
+- Background Whisper model preload without blocking startup
+- CORS configuration and gzip compression
+
+Reliability notes:
+- Backend starts even when DB connectivity is delayed
+- Redis connection lifecycle is managed at app startup and shutdown
+- External integrations fail safely with explicit errors
+
+TRANSCRIPT - Slide 12
+
+Security and reliability were treated as core requirements, not optional features. The backend now includes defensive error handling and rate limiting, and the application avoids exposing one user’s session data to another. The startup flow is designed to be resilient even when the database or external services are temporarily unavailable.
+
+SLIDE 13 - DEPLOYMENT STATUS
+
+Current deployment support:
+- Docker Compose for multi-service orchestration
+- Backend container
+- Frontend container
+- Nginx reverse proxy
+- PostgreSQL container
+- Redis container
+
+Local development support:
+- Python virtual environment for backend
+- Node.js frontend development server
+- Uvicorn for backend hot reload
+
+TRANSCRIPT - Slide 13
+
+The project can be run locally or through Docker Compose. This makes development easier and also supports a cleaner deployment story. The containerized setup is especially useful when the project is demonstrated to reviewers because it keeps the environment consistent.
+
+SLIDE 14 - CHALLENGES FACED
+
+Major implementation challenges:
+- Handling voice input reliably across browsers and devices
+- Supporting both aquaponics and land-farming logic in one platform
+- Designing financial calculations that are deterministic and explainable
+- Integrating AI while keeping core logic auditable
+- Managing external services such as Google Sheets and STT safely
+- Ensuring session data is isolated per user
+
+TRANSCRIPT - Slide 14
+
+The main challenge was balancing intelligence with reliability. Some features, like crop feasibility and financial outputs, needed to be deterministic. Other features, like AI advice and transcription, needed flexibility. The final implementation separates these concerns so that the system stays understandable and testable.
+
+SLIDE 15 - FUTURE SCOPE
+
+Possible next enhancements:
+- Real-time mobile-friendly dashboards for field use
+- More detailed IoT alerting and threshold notifications
+- Additional language support and speech models
+- Advanced forecasting using historical production data
+- Role-based admin analytics and farm benchmarking
+- Offline-first capture mode for poor network conditions
+- Additional report templates for academic and farmer use
+
+TRANSCRIPT - Slide 15
+
+The current system is already functional, but there is clear scope for expansion. The next stage can improve mobile usability, predictive analytics, and offline support. More intelligent dashboards and stronger field-device integration would make the system even more practical for real farm operations.
+
+SLIDE 16 - CONCLUSION
+
+The project now provides:
+- End-to-end farm planning and analysis support
+- Adaptive surveys and voice input
+- AI-assisted and multilingual advisory
+- Financial planning with scenario analysis
+- Reporting, Sheets sync, IoT ingestion, and evaluation support
+
+TRANSCRIPT - Slide 16
+
+In conclusion, the AI-Driven Farm Production Management and Financial Planning System has progressed into a complete integrated platform. It now supports the major workflows required for modern farm planning and management. Thank you for your time, and I welcome your questions.
+
+SLIDE 17 - REFERENCES
+
+Suggested references for the final PPT:
+- FAO Aquaponics Food Production Systems report
+- ICAR-CIFA technical bulletins
+- FastAPI documentation
+- SQLAlchemy documentation
+- PostgreSQL documentation
+- Redis documentation
+- React and Vite documentation
+- Whisper / faster-whisper documentation
+- Google Sheets API documentation
+- Sarvam AI documentation
+
+END OF FILE

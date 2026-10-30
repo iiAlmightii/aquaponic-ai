@@ -1,0 +1,903 @@
+================================================================================
+PROJECT CONTEXT DOCUMENT — FarmConnect 
+Single Source of Truth for Thesis/Report Generation
+RVCE MCA Major Project Report — MCA491P — Academic Year 2025-26
+================================================================================
+
+INSTRUCTIONS FOR CLAUDE DESKTOP:
+Use all sections below as authoritative source material to generate each
+chapter of the MCA major project report. Where placeholders appear in
+[BRACKETS], fill them with the student's actual personal details.
+Plagiarism must remain below 10% (AI + similarity combined).
+
+================================================================================
+SECTION 0 — STUDENT / GUIDE DETAILS (Fill before generating report)
+================================================================================
+
+Student Name       : Chandan K
+USN                : [1RV24MC025]
+Internal Guide     : [Dr. Deepika K, Associate Professor, Dept of MCA, RVCE]
+Department         : Master of Computer Applications
+College            : RV College of Engineering®, Mysore Road,
+                     RV Vidyaniketan Post, Bengaluru – 560059
+Affiliated to      : Visvesvaraya Technological University, Belagavi
+Academic Year      : 2025-26
+Submission Month   : [May / June 2026]
+
+================================================================================
+SECTION 1 — PROJECT IDENTIFICATION
+================================================================================
+
+Project Title      : AgriSense — AI-Driven Farm Production Management and
+                     Financial Planning Platform for Aquaponic and Land Farms
+
+Short Name         : AgriSense (previously branded AquaponicAI)
+Course Code        : MCA491P
+Version            : 1.0.0
+Type               : In-house / Inhouse Software Project
+
+Domain             : AgriTech / Precision Agriculture / AI-Assisted Decision Support
+Sub-Domain         : Voice-Driven Surveys, Financial Analytics, IoT Water Quality
+                     Monitoring, LLM-Powered Advisory, Land-Farm Intelligence
+
+================================================================================
+SECTION 2 — PROJECT DESCRIPTION (Chapter 1.1)
+================================================================================
+
+2.1 Background and Problem Statement
+--------------------------------------
+Indian agriculture employs over 50% of the workforce yet remains largely
+data-poor. Aquaponic farming — integrating fish culture with hydroponics in a
+recirculating ecosystem — is an emerging high-value segment but lacks affordable,
+accessible planning and monitoring tools tailored to smallholders. Existing
+solutions are either enterprise-grade (costly) or generic farm-management tools
+that ignore the unique nutrient cycling, stocking density, and dual-revenue
+structure (fish + crops) of aquaponic systems.
+
+Land-based farmers face an analogous gap: no accessible tool exists that lets a
+farmer who is illiterate or semi-literate collect operational data via voice,
+instantly compute financial projections, and receive actionable AI advice in
+their local language.
+
+AgriSense was built to bridge this gap: a full-stack web application offering
+voice-first guided surveys, multi-scenario financial modelling (CAPEX / OPEX /
+ROI / IRR / NPV), water-quality IoT monitoring, real-time crop market price
+integration, a knowledge-base-driven crop feasibility engine, and an LLM-powered
+AI advisor — all accessible from any device with a browser.
+
+2.2 Objectives
+---------------
+1. Build a voice-driven questionnaire engine (aquaponic + land-farm variants)
+   that guides farmers through data collection using speech input.
+2. Compute financial projections: CAPEX, OPEX, monthly cash flows, ROI, IRR,
+   NPV, break-even, and payback period under three scenarios (base / pessimistic
+   -20% / optimistic +20%).
+3. Integrate real-time commodity market price data (data.gov.in Agmarknet API)
+   for crop revenue estimation.
+4. Provide a crop feasibility engine using a JSON knowledge base sourced from
+   FAO and ICAR-CIFA literature.
+5. Enable IoT water-quality data ingestion (pH, dissolved oxygen, temperature,
+   ammonia, nitrite, nitrate, turbidity, TDS).
+6. Deliver AI advisory chat powered by the Sarvam-M multilingual LLM.
+7. Offer Google Sheets export for financial data.
+8. Generate downloadable PDF financial reports via ReportLab.
+9. Support Supabase cloud PostgreSQL and local Docker PostgreSQL deployments.
+10. Provide a responsive React 18 SPA with role-based access (admin / farmer /
+    viewer).
+
+2.3 Scope
+----------
+- Two survey flows: Aquaponic Voice Survey and Land-Farm Voice Survey.
+- Financial calculation for both farm types.
+- IoT ingestion endpoint for water sensors.
+- AI Advisor (chat) using Sarvam multilingual LLM.
+- Crop intelligence: feasibility evaluation against area, temperature, pH, and
+  grow system.
+- Market price fetching with 6-hour cache and fallback hardcoded Indian prices.
+- Report generation (PDF) and historical session management.
+- Google Sheets financial sync.
+- Evaluation harness for STT A/B testing (enabled via EVAL_MODE=true).
+- Not in scope: mobile app, offline mode, regional-language TTS.
+
+================================================================================
+SECTION 3 — COMPANY / ORGANIZATION PROFILE (Chapter 1.2)
+================================================================================
+
+This is an in-house academic project developed independently at the Department
+of Master of Computer Applications, RV College of Engineering, Bengaluru.
+The project simulates a startup product, "AgriSense," targeting small-to-medium
+aquaponic and land-based farmers across India.
+
+No external organisation internship was undertaken. The external guide column
+may be left blank or filled with the college's project coordinator.
+
+================================================================================
+SECTION 4 — LITERATURE SURVEY CONTEXT (Chapter 2)
+================================================================================
+
+4.1 Domain Background
+----------------------
+Aquaponics is a production system that couples aquaculture (raising fish) with
+hydroponics (growing plants in water) in a symbiotic environment. Fish waste
+provides organic nutrients for plant growth; plants filter water for fish.
+Global aquaponics market size was USD 1.5 billion in 2022 and is projected to
+grow at 12.5% CAGR through 2030 (Grand View Research).
+
+Indian agriculture GDP contribution: ~18% (2023-24). Number of farmers with
+smartphone access has crossed 60% (TRAI 2024). Yet fewer than 5% use any
+digital farm-management tool (NABARD 2023).
+
+4.2 Existing Systems and Their Limitations
+-------------------------------------------
+| System            | Limitation                                          |
+|-------------------|-----------------------------------------------------|
+| FarmLogs / Granular| US/EU centric, not suited for aquaponics            |
+| AquaManager Pro   | Desktop-only, no financial modelling                |
+| Cropin            | Enterprise SaaS, cost-prohibitive for smallholders  |
+| Government portals| Static, no voice input, no AI advisory              |
+| Google Sheets     | Manual, no guided survey, no automatic computations |
+
+4.3 Key Technologies Reviewed
+-------------------------------
+- Speech-to-Text: OpenAI Whisper (faster-whisper CTranslate2 backend) vs.
+  Google Web Speech API. Whisper chosen for offline capability and accuracy
+  on Indian-accented speech.
+- LLM advisory: OpenAI GPT-4, Anthropic Claude, Sarvam-M (chosen for
+  multilingual Indian-language support at lower cost).
+- Financial modelling algorithms: NPV, IRR (Newton-Raphson iteration),
+  Payback Period, ROI, Break-Even analysis.
+- Database: PostgreSQL 16 with JSONB for flexible session context storage
+  vs. MongoDB (relational integrity preferred for financial data).
+- Frontend: React 18 + Zustand vs. Vue 3 / SvelteKit (React chosen for
+  component ecosystem; Zustand for lightweight state management).
+
+4.4 Hardware and Software Requirements
+----------------------------------------
+Minimum server requirements:
+  CPU    : 2 vCPU (4 vCPU recommended for Whisper CPU inference)
+  RAM    : 4 GB (8 GB recommended)
+  Storage: 20 GB SSD
+  OS     : Ubuntu 22.04 LTS / Docker-compatible Linux
+  GPU    : Optional (NVIDIA CUDA for faster-whisper GPU mode)
+
+Client requirements:
+  Browser: Chrome 90+ / Firefox 88+ / Safari 15+ (Web Speech API support)
+  Mic    : Required for voice survey mode
+
+Software stack (versions):
+  Python        3.12
+  FastAPI       0.111.0
+  SQLAlchemy    2.0.31 (async)
+  asyncpg       0.29.0
+  Redis         7 (Docker: redis:7-alpine)
+  PostgreSQL    16 (Docker: postgres:16-alpine or Supabase cloud)
+  Node.js       20 LTS
+  React         18
+  Vite          5
+  Zustand       5
+  Nginx         alpine (reverse proxy)
+  Docker / Docker Compose
+
+================================================================================
+SECTION 5 — SOFTWARE REQUIREMENTS SPECIFICATION (Chapter 3)
+================================================================================
+
+5.1 Functional Requirements
+-----------------------------
+FR-01  User Registration and Login (JWT + bcrypt)
+FR-02  Role-based access: admin sees all data; farmer sees own data; viewer read-only
+FR-03  Create / list / update / delete Farms
+FR-04  Start Aquaponic Voice Survey session
+FR-05  Answer survey questions via text or voice (Web Speech API / faster-whisper)
+FR-06  System validates and parses answers; context accumulates across questions
+FR-07  Skip-logic driven survey progression (follow_up_condition)
+FR-08  Go-back to previous question within a session
+FR-09  On session completion, compute financial plan (CAPEX, OPEX, 3 scenarios)
+FR-10  Generate PDF report downloadable by the user
+FR-11  Start Land-Farm Voice Survey session
+FR-12  Land-Farm survey collects: crops, area, costs, market prices, financial info
+FR-13  Real-time commodity price fetch from data.gov.in Agmarknet API with cache
+FR-14  Crop feasibility evaluation (area, temp, pH, grow system checks)
+FR-15  IoT water readings ingestion via POST /api/v1/iot/ingest
+FR-16  View water quality history per farm
+FR-17  AI Advisor chat endpoint powered by Sarvam-M LLM
+FR-18  Google Sheets export for aquaponic financial data
+FR-19  Dashboard: farm count, top sessions, revenue/ROI/crop charts
+FR-20  Analytics: survey history, financial comparison across sessions
+FR-21  STT A/B evaluation harness (EVAL_MODE=true)
+
+5.2 Non-Functional Requirements
+---------------------------------
+NFR-01  Performance: API response < 300 ms for non-AI endpoints (p95)
+NFR-02  AI advisory response < 8 seconds (Sarvam-M API latency)
+NFR-03  Whisper transcription < 5 seconds for a 10-second audio clip (CPU)
+NFR-04  Rate limiting: 200 requests/minute per IP; 10/minute for auth endpoints
+NFR-05  Security: Passwords hashed with bcrypt (cost=12); JWT HS256; HTTPS in prod
+NFR-06  Scalability: Stateless backend behind Nginx; Redis for session caching
+NFR-07  Availability: Health endpoint at GET /health returns db status
+NFR-08  Data integrity: PostgreSQL ACID transactions; UUID PKs throughout
+NFR-09  Portability: Docker Compose; supports Supabase cloud or local PostgreSQL
+
+5.3 External Interface Requirements
+-------------------------------------
+- Sarvam AI API (https://api.sarvam.ai) — AI Advisor chat
+- data.gov.in Agmarknet API — real-time crop market prices
+- Google Sheets API v4 — financial data export
+- OpenWeatherMap API (optional) — weather context
+- Anthropic API (claude-sonnet) — LLM recommendations in report
+- OpenAI API — alternative LLM provider
+
+5.4 Design Constraints
+------------------------
+- Browser must support Web Speech API for in-browser STT.
+- Supabase free tier pauses after 7 days inactivity; backend handles 503 gracefully.
+- JSONB columns used for flexible schema (session context, financial scenarios,
+  AI recommendations) to avoid migration churn during development.
+- Schema applied via infra/schema.sql (not Alembic migrations) for simplicity.
+
+================================================================================
+SECTION 6 — SYSTEM ARCHITECTURE (Chapter 4)
+================================================================================
+
+6.1 High-Level Architecture
+-----------------------------
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                         CLIENT TIER                         │
+  │  React 18 SPA (Vite build) served by Nginx on port 3001     │
+  │  Components: Dashboard, AISurvey, LandVoiceSurvey,          │
+  │              Analytics, Reports, AIAdvisor, FarmManagement  │
+  │  State: Zustand store (auth + session + analysis slices)    │
+  │  Voice: Web Speech API (browser) → faster-whisper (server)  │
+  └────────────────────┬────────────────────────────────────────┘
+                       │ HTTP/REST (JWT Bearer)
+  ┌────────────────────▼────────────────────────────────────────┐
+  │                       NGINX REVERSE PROXY                   │
+  │  Port 80/443 | /api → backend:8000 | / → frontend:80        │
+  └────────────────────┬────────────────────────────────────────┘
+                       │
+  ┌────────────────────▼────────────────────────────────────────┐
+  │                     APPLICATION TIER                        │
+  │  FastAPI 0.111 (Python 3.12) on port 8000                   │
+  │  Async SQLAlchemy + asyncpg | GZip middleware | slowapi      │
+  │  Routers: auth, session, analysis, report, farm, iot,       │
+  │           audio, finance_sheets, land_survey, crop,         │
+  │           ai_advisor, eval (optional)                       │
+  └──────────┬─────────────────────────┬──────────────────────┘
+             │                         │
+  ┌──────────▼──────────┐   ┌──────────▼──────────────────────┐
+  │   PostgreSQL 16     │   │          Redis 7                 │
+  │  (Supabase cloud    │   │  Session cache (TTL 1h)          │
+  │   or local Docker)  │   │  LRU eviction (256 MB)           │
+  │  Port 5433 (local)  │   │  Port 6380 (host) / 6379 (net)  │
+  └─────────────────────┘   └─────────────────────────────────┘
+             │
+  ┌──────────▼────────────────────────────────────────────────┐
+  │              EXTERNAL SERVICES                            │
+  │  Sarvam AI API | data.gov.in Agmarknet | Google Sheets   │
+  │  Anthropic API | OpenAI API | OpenWeatherMap API          │
+  └───────────────────────────────────────────────────────────┘
+
+6.2 Docker Services (docker-compose.yml)
+-----------------------------------------
+| Service   | Image              | Port (host) | Purpose                    |
+|-----------|--------------------|-------------|----------------------------|
+| backend   | custom Dockerfile  | 8000        | FastAPI application        |
+| frontend  | custom Dockerfile  | 3001        | React SPA via Nginx        |
+| nginx     | nginx:alpine       | 80 / 443    | Reverse proxy              |
+| postgres  | postgres:16-alpine | 5433        | Local DB (--profile local) |
+| redis     | redis:7-alpine     | 6380        | Cache / rate-limit state   |
+| adminer   | adminer            | 8080        | DB GUI (--profile local)   |
+
+6.3 API Routes Summary
+-----------------------
+Base prefix: /api/v1
+
+Authentication:
+  POST   /auth/register        Register new user
+  POST   /auth/login           Login; returns JWT access + refresh tokens
+  GET    /auth/me              Get current user profile
+  POST   /auth/refresh         Refresh access token
+
+Questionnaire Session (Aquaponic):
+  POST   /session/start        Create session; return first question
+  POST   /session/answer       Submit answer; return next question
+  POST   /session/back         Go back one question
+  GET    /session/{id}         Get session state
+  DELETE /session/{id}         Abandon session
+
+AI Analysis:
+  GET    /analysis/{sessionId} Get AI analysis for completed session
+
+Reports:
+  GET    /report/{sessionId}   Download PDF report
+  GET    /report/history       List completed sessions with financials
+  GET    /report/analytics     Aggregated analytics for dashboard
+  GET    /report/dashboard     Lightweight dashboard summary
+
+Farm Management:
+  GET    /farm/                List farms
+  POST   /farm/                Create farm
+  GET    /farm/{id}            Get farm details
+  PUT    /farm/{id}            Update farm
+  DELETE /farm/{id}            Delete farm
+
+IoT:
+  POST   /iot/ingest           Ingest water reading from IoT device
+  GET    /iot/{farmId}/readings  Get water quality history
+  POST   /iot/devices          Register IoT device
+
+Audio Transcription:
+  POST   /audio/transcribe     Transcribe uploaded audio (faster-whisper)
+
+Google Sheets:
+  POST   /finance/sheets/export  Export financial data to Google Sheets
+
+Land Farm Survey:
+  POST   /land-survey/start    Start land-farm survey
+  POST   /land-survey/answer   Submit land survey answer
+  GET    /land-survey/{id}     Get land survey state
+  GET    /land-survey/{id}/report  Download land survey PDF report
+
+Crop Intelligence:
+  GET    /crop/evaluate        Evaluate crop feasibility
+  GET    /crop/list            List all crops in knowledge base
+  GET    /crop/{name}          Get crop details
+
+AI Advisor:
+  POST   /ai/chat              Chat with Sarvam-M AI advisor
+
+Health:
+  GET    /health               DB + Redis connectivity check
+
+Evaluation (EVAL_MODE=true only):
+  POST   /eval/session         Create evaluation session
+  GET    /eval/results         Get WER evaluation results
+
+================================================================================
+SECTION 7 — DETAILED DESIGN (Chapter 5)
+================================================================================
+
+7.1 Database Schema (ER Description)
+--------------------------------------
+Tables and relationships (PostgreSQL 16 / Supabase):
+
+users
+  id (UUID PK), email (UNIQUE), full_name, hashed_password,
+  role (admin|farmer|viewer), is_active, is_verified,
+  created_at, updated_at
+  → has many: farms, sessions
+
+farms
+  id (UUID PK), owner_id (FK → users), name, location,
+  latitude, longitude, area_sqm, system_type, description, metadata (JSONB),
+  created_at, updated_at
+  → has many: fish_batches, crop_records, water_readings,
+              iot_devices, financial_plans
+
+fish_batches
+  id (UUID PK), farm_id (FK), species, quantity, avg_weight_kg,
+  tank_volume_liters, stocking_density_kg_m3, feed_type, feed_kg_per_day,
+  start_date, expected_harvest_date, status (active|harvested|lost), notes
+
+crop_records
+  id (UUID PK), farm_id (FK), crop_name, variety, growing_area_sqm,
+  planting_date, expected_harvest_date, actual_yield_kg, expected_yield_kg,
+  grow_system (nft|dwc|media_bed|raft), status (growing|harvested|failed)
+
+water_readings
+  id (UUID PK), farm_id (FK), device_id, timestamp,
+  ph, dissolved_oxygen_mg_l, temperature_c, ammonia_mg_l,
+  nitrite_mg_l, nitrate_mg_l, turbidity_ntu, tds_ppm,
+  source (manual|iot)
+
+sessions
+  id (UUID PK), user_id (FK), farm_id (FK nullable),
+  status (in_progress|completed|abandoned),
+  current_step, total_steps,
+  context_data (JSONB) — accumulated answers,
+  ai_analysis (JSONB) — cached AI output,
+  completed_at, created_at, updated_at
+
+session_answers
+  id (SERIAL PK), session_id (FK), question_id, question_text,
+  answer_text, answer_data (JSONB), input_method (voice|text|select),
+  confidence_score (STT confidence)
+
+financial_plans
+  id (UUID PK), farm_id (FK), session_id (FK nullable),
+  plan_name, horizon_months,
+  CAPEX: infrastructure_cost, equipment_cost, initial_stock_cost,
+  OPEX/month: monthly_feed_cost, monthly_labor_cost, monthly_utilities_cost,
+              monthly_maintenance_cost, monthly_other_cost,
+  Revenue/month: monthly_fish_revenue, monthly_crop_revenue, monthly_other_revenue,
+  Computed: total_capex, total_opex_annual, total_revenue_annual,
+            gross_profit_annual, net_profit_annual, roi_percent,
+            payback_period_months, break_even_month,
+  scenarios (JSONB): {base, pessimistic, optimistic},
+  ai_recommendations (JSONB array)
+
+reports
+  id (UUID PK), session_id (FK), report_type (summary|full|financial),
+  file_path, file_size_bytes, generated_at, download_count, expires_at
+
+iot_devices
+  id (UUID PK), farm_id (FK), device_uid (UNIQUE per farm),
+  device_type (water_sensor|camera|pump_controller), label,
+  is_active, last_seen, config (JSONB)
+
+market_prices
+  id (SERIAL PK), commodity, unit, price_inr, region, source, fetched_at
+  (GIN index on commodity + fetched_at for cache queries)
+
+PostgreSQL Triggers: auto-update updated_at on users, farms, sessions,
+                     financial_plans before each UPDATE.
+Extensions: uuid-ossp, pg_trgm (fuzzy text search)
+
+7.2 Key Algorithms and Module Logic
+-------------------------------------
+
+A. Questionnaire Engine (services/questionnaire_engine.py)
+   - Question bank of ~30 questions with id, text, type (text/number/select/
+     multiselect/boolean/date), options, unit, min/max value, category.
+   - Categories: setup, fish, crops, financials, market, planning.
+   - Engine.next_question(context) → returns next unanswered required question.
+   - Engine.parse_answer(question, raw_text) → validates, normalises, returns
+     typed value. Number parsing resolves spoken words (e.g. "fifty thousand" →
+     50000) and STT homophones ("too" → 2, "for" → 4).
+   - Engine.is_complete(context) → True when all required questions answered.
+   - Session context_data JSONB accumulates {answers: {q_id: value}}.
+
+B. Financial Calculator (services/financial_service.py)
+   - FinancialInputs dataclass: capex fields, monthly opex fields,
+     monthly revenue fields, horizon_months, discount_rate (8% default).
+   - Computed properties: total_capex, monthly_opex, monthly_revenue, monthly_net.
+   - FinancialService.calculate(inputs) → FinancialMetrics:
+     * annual_opex = monthly_opex × 12
+     * annual_revenue = monthly_revenue × 12
+     * gross_profit = annual_revenue − annual_opex
+     * net_profit = gross_profit (pre-tax in current version)
+     * roi_percent = (net_profit / total_capex) × 100
+     * payback_period_months: months until cumulative net cash flow ≥ 0
+     * break_even_month: first month where cumulative cash flow turns positive
+     * NPV: sum of discounted monthly net cash flows − total_capex
+     * IRR: Newton-Raphson iteration on monthly cash flows
+     * Per-sqm metrics: revenue_per_sqm, profit_per_sqm, capex_per_sqm
+     * Cost share: feed%, labor%, utilities%, maintenance% of total opex
+     * Revenue share: fish%, crop%, other% of total revenue
+   - Three scenarios stored as JSONB:
+     * base: calculated as-is
+     * pessimistic: revenue × 0.80 (−20%)
+     * optimistic: revenue × 1.20 (+20%)
+
+C. Land Financial Service (services/land_financial_service.py)
+   - compute_land_financials(context) uses survey answers to compute:
+     * Labor cost = workers × salary/month × 12
+     * Electricity = units × cost/unit × 12
+     * Seed cost = seed_cost/cycle × total_cycles_per_year
+     * Revenue per crop = yield_kg × price/kg × (1 − spoilage%)
+     * Calculates ROI, payback, break-even for land farms.
+   - Returns CSV-exportable dict for Google Sheets sync.
+
+D. Voice Interpretation (services/voice_interpretation.py)
+   - FILLER_NOISE_RE strips um/uh/like/you-know fillers from STT output.
+   - extract_spoken_number(): resolves Indian number words (lakh, crore),
+     homophones (won=1, to=2, for=4, tree=3, ate=8), compound forms
+     ("twenty three thousand" → 23000).
+   - Confidence score from Whisper segments used to flag low-confidence answers
+     for user confirmation prompt in the UI.
+
+E. Land Farm Survey Engine (services/land_farm_survey_engine.py)
+   - State machine with prompts: farm details → crop list → per-crop details
+     (area, yield, cycles/year, price) → costs (labor, electricity, maintenance,
+     land rent, seed, pesticide, fuel, transport, fertilizer, water) →
+     CAPEX (machines, setup cost) → financial horizon.
+   - _is_valid_crop_name(): rejects STT noise ("thanks for watching",
+     "like and subscribe") from crop name answers.
+   - _clean_crop_name(): strips punctuation, deduplicates repeated words.
+   - parse_prompt_answer(prompt, text): type-aware parsing using
+     _extract_number() for number prompts.
+
+F. Crop Intelligence Service (services/crop_intelligence_service.py)
+   - Loads backend/data/crop_knowledge_base.json (FAO/ICAR-CIFA sourced).
+   - evaluate_crop(name, area_m2, temperature_c, ph, system_type):
+     * Checks minimum area and optimal area thresholds.
+     * Checks temperature range (min/max from knowledge base).
+     * Checks pH tolerance range.
+     * Checks grow system compatibility (nft / dwc / media_bed / raft).
+     * Returns: feasibility (feasible | challenging | not_feasible),
+                reasons[], warnings[], suggestions[].
+
+G. Market Price Service (services/land_market_price_service.py)
+   - Fetch flow: in-memory cache (6-hour TTL) → data.gov.in Agmarknet API
+     → hardcoded India fallback prices (Agmarknet FY 2024-25 averages).
+   - API query progressively broadens filters:
+     Step 1: exact state + district + market_name
+     Step 2: state + district only
+     Step 3: state only
+     Step 4: all-India (no filter)
+   - Price conversion: Agmarknet prices are in ₹/quintal; service converts
+     to ₹/kg by dividing by 100.
+   - Returns: PriceResult(price_per_kg, record_count, cache_hit, source).
+   - INDIA_FALLBACK_PRICES dict covers 60+ common crops.
+
+H. Audio Transcription (routers/audio.py)
+   - Uses faster-whisper (CTranslate2 backend of OpenAI Whisper).
+   - Model: large-v3 by default (configurable via FASTER_WHISPER_MODEL env var).
+   - Device: cpu by default; set FASTER_WHISPER_DEVICE=cuda for GPU.
+   - Model is lazily initialised on first request and cached in-process.
+   - Background preload at startup (asyncio.create_task) reduces first-request
+     latency.
+   - Supports: .webm, .wav, .mp3, .m4a, .mp4, .ogg, .flac input formats.
+   - Segments with confidence < 0.6 are flagged; frontend shows confirmation.
+
+I. AI Advisor (routers/ai_advisor.py + services/sarvam_llm_service.py)
+   - Chat endpoint: POST /ai/chat {message, session_id (optional)}
+   - Routed to SarvamLLMService using the sarvam-m model (Sarvam 30B).
+   - Requires SARVAM_API_KEY in environment.
+   - Supports Indian language queries (Hindi, Kannada, Telugu, Tamil, etc.).
+   - Falls back gracefully to 503 if API key not configured.
+
+J. Report Generation (routers/report.py)
+   - PDF generated using ReportLab (BytesIO streamed response).
+   - Report sections: farm summary, question-answer log, financial metrics,
+     cash flow table, scenario comparison, AI recommendations.
+   - GET /report/analytics provides aggregated data for charts:
+     monthly revenue trend, ROI distribution, crop revenue breakdown.
+   - GET /report/dashboard returns lightweight top-sessions summary
+     (uses 60-second frontend cache to avoid duplicate calls from
+     Dashboard and Analytics mounting simultaneously).
+
+7.3 Frontend Component Architecture
+-------------------------------------
+
+frontend/src/app/
+├── components/
+│   ├── auth/          Login, Register pages
+│   ├── dashboard/     Dashboard.tsx — stat cards, chart carousel, top sessions
+│   ├── analytics/     Analytics.tsx — full analytics page with charts
+│   ├── surveys/
+│   │   ├── AISurvey.tsx           Aquaponic voice survey
+│   │   ├── LandVoiceSurvey.tsx    Land-farm voice survey
+│   │   └── SurveysHub.tsx         Survey launch cards + history table
+│   ├── reports/       Reports.tsx — session history, PDF download
+│   ├── farms/         FarmManagement.tsx — CRUD for farms
+│   ├── ai/            AIAdvisor.tsx — chat interface with Sarvam LLM
+│   ├── eval/          EvalRecorder.tsx — STT evaluation UI
+│   └── ui/            Shared components: StatCard, EmptyState, ChartCarousel,
+│                      Skeleton, Button, Input, Progress, PretextText
+├── store/index.js     Zustand store — auth slice + session slice
+├── utils/api.js       Axios instance with JWT interceptors + API helpers
+│                      Includes 60-second in-memory analytics cache
+└── hooks/
+    └── useVoiceRecorder.js  Web Speech API wrapper (start/stop/result)
+
+Zustand Store Slices:
+  authSlice: user, isAuth, login(), register(), logout(), fetchMe()
+  sessionSlice: session, loading, error, analysis,
+                startSession(), submitAnswer(), goBackQuestion(),
+                fetchAnalysis(), resetSession(), setSelectedFarmId()
+
+API Helper Modules (api.js):
+  authAPI, sessionAPI, analysisAPI, reportAPI,
+  farmAPI, iotAPI, audioAPI, landSurveyAPI, cropAPI
+
+7.4 Voice Survey UX Flow
+--------------------------
+1. User lands on SurveysHub → clicks "Start Aquaponic Survey" or "Land Farm Survey".
+2. AISurvey / LandVoiceSurvey component calls startSession().
+3. First question rendered with text + hint.
+4. User clicks mic icon → useVoiceRecorder starts Web Speech API listening.
+5. Speech → onResult callback → answer text populated in input field.
+6. If STT confidence < threshold, yellow "Please confirm" banner shown.
+7. User clicks Submit → submitAnswer() → POST /session/answer or /land-survey/answer.
+8. Server validates, parses answer (resolve spoken numbers, validate ranges),
+   stores in session_answers table, advances current_step in sessions.
+9. Next question returned and rendered. Browser TTS reads question aloud.
+10. On completion → FinancialCalculator runs → analysis stored.
+11. User navigated to Reports to download PDF.
+
+================================================================================
+SECTION 8 — IMPLEMENTATION (Chapter 6)
+================================================================================
+
+8.1 Technology Stack Summary
+------------------------------
+Backend:
+  Language      : Python 3.12
+  Framework     : FastAPI 0.111.0
+  ORM           : SQLAlchemy 2.0.31 (async) + asyncpg 0.29.0
+  Auth          : python-jose (JWT HS256) + bcrypt 4.1.3
+  Cache         : redis[asyncio] 5.0.7
+  Rate Limiting : slowapi 0.1.9
+  AI/LLM        : anthropic 0.30.0, openai 1.35.9 (Sarvam-M via httpx)
+  STT           : faster-whisper 1.0.3 (CTranslate2 backend)
+  PDF           : reportlab 4.2.2, weasyprint 62.3
+  HTTP client   : httpx 0.27.0, requests 2.32.3
+  Config        : pydantic-settings 2.3.4
+  Server        : uvicorn[standard] 0.30.1
+
+Frontend:
+  Language      : TypeScript / JavaScript (ES2022)
+  Framework     : React 18
+  Build tool    : Vite 5
+  State         : Zustand 5
+  HTTP client   : Axios (with JWT interceptors)
+  UI components : lucide-react (icons), tailwind-like utility classes
+  Voice input   : Web Speech API (SpeechRecognition)
+  Charts        : Recharts
+  Served by     : Nginx (SPA fallback config)
+
+Infrastructure:
+  Containerisation : Docker + Docker Compose
+  Reverse proxy    : Nginx alpine
+  Database         : PostgreSQL 16 (Supabase cloud OR local Docker)
+  Cache store      : Redis 7
+  CI/CD            : Manual Docker build (no CI pipeline in scope)
+
+8.2 Key Code Modules
+---------------------
+backend/main.py              — FastAPI app, lifespan, middleware, router registration
+backend/core/config.py       — Pydantic-settings configuration (env vars)
+backend/core/database.py     — Async SQLAlchemy engine + session factory
+backend/core/redis_client.py — Redis connection lifecycle
+backend/models/__init__.py   — All SQLAlchemy ORM models
+backend/routers/auth.py      — JWT registration, login, refresh, me
+backend/routers/session.py   — Questionnaire session CRUD
+backend/routers/analysis.py  — AI analysis retrieval
+backend/routers/report.py    — PDF generation + analytics + history
+backend/routers/farm.py      — Farm CRUD
+backend/routers/iot.py       — IoT ingestion + water reading history
+backend/routers/audio.py     — faster-whisper transcription
+backend/routers/land_survey.py       — Land-farm survey endpoints
+backend/routers/crop.py              — Crop intelligence API
+backend/routers/ai_advisor.py        — Sarvam LLM chat
+backend/routers/finance_sheets.py    — Google Sheets export
+backend/services/questionnaire_engine.py    — Aquaponic survey engine
+backend/services/financial_service.py       — Financial calculator (NPV/IRR/ROI)
+backend/services/voice_interpretation.py    — STT answer parsing
+backend/services/land_farm_survey_engine.py — Land survey state machine
+backend/services/land_financial_service.py  — Land farm financial computation
+backend/services/land_market_price_service.py — Commodity price fetching
+backend/services/crop_intelligence_service.py — Crop feasibility engine
+backend/services/sarvam_llm_service.py      — Sarvam-M LLM integration
+backend/services/google_sheets_financial_sync.py — Google Sheets sync
+infra/schema.sql            — PostgreSQL DDL (tables, indexes, triggers)
+docker-compose.yml          — Full-stack container orchestration
+
+frontend/src/app/store/index.js          — Zustand global state
+frontend/src/app/utils/api.js            — Axios API client
+frontend/src/app/hooks/useVoiceRecorder.js — Web Speech API hook
+frontend/src/app/components/surveys/AISurvey.tsx       — Aquaponic survey UI
+frontend/src/app/components/surveys/LandVoiceSurvey.tsx — Land survey UI
+frontend/src/app/components/dashboard/Dashboard.tsx    — Main dashboard
+frontend/src/app/components/analytics/Analytics.tsx    — Analytics page
+frontend/src/app/components/reports/Reports.tsx        — Reports / history
+frontend/src/app/components/ai/AIAdvisor.tsx           — AI chat interface
+frontend/src/app/components/farms/FarmManagement.tsx   — Farm CRUD UI
+
+8.3 Notable Implementation Decisions
+--------------------------------------
+1. JSONB over separate tables for session context: survey answers accumulate
+   per-session without requiring schema migration for new questions.
+2. Three-scenario financial output stored as JSONB in financial_plans.scenarios:
+   allows atomic retrieval of all scenarios in a single query.
+3. Dual database support (Supabase / local): on startup, backend detects
+   "supabase.com" in DATABASE_URL and skips create_all (schema pre-applied via
+   infra/schema.sql). Local postgres runs create_all automatically.
+4. Background Whisper preload: asyncio.create_task at startup warms the model
+   cache so first-user transcription is not slow.
+5. 60-second analytics cache in api.js: Dashboard and Analytics both fetch
+   /report/analytics on mount; frontend cache prevents duplicate API calls
+   within 60 seconds of each other.
+6. Split loading state in Dashboard: farm count and analytics fetch
+   independently so the farm card renders immediately while chart data loads.
+7. Rate limiting via slowapi: 200 req/min global, 10 req/min for auth — to
+   prevent brute-force attacks without a dedicated WAF.
+8. Request timing middleware: X-Process-Time header on every response enables
+   performance monitoring from browser DevTools.
+
+================================================================================
+SECTION 9 — SOFTWARE TESTING (Chapter 7)
+================================================================================
+
+9.1 Test Files
+---------------
+backend/tests/test_financial_service.py        — FinancialCalculator unit tests
+backend/tests/test_voice_interpretation.py     — Spoken number parsing tests
+backend/tests/test_land_farm_survey_engine.py  — Land survey parser tests
+backend/tests/test_land_financial_service.py   — Land financial computation tests
+backend/tests/test_land_market_price_service.py — Market price fetch + cache tests
+backend/tests/test_crop_intelligence.py        — Crop feasibility engine tests
+backend/tests/test_auth.py                     — Auth endpoint tests
+backend/tests/test_ai_advisor.py               — AI advisor endpoint tests
+backend/tests/test_google_sheets_financial_sync.py — Sheets export tests
+backend/tests/test_google_sheets_error_handling.py — Sheets error handling
+backend/tests/test_eval_router.py              — Evaluation router tests
+backend/tests/stt_evaluation_harness.py        — STT WER evaluation harness
+
+Test command: cd backend && pytest
+With coverage: pytest --cov=. --cov-report=html
+Unit tests only (no DB): pytest -k "not Endpoint"
+
+9.2 Sample Test Cases
+----------------------
+
+TC-01: Spoken number extraction — standalone scale word
+  Input:  "thousand"
+  Expected: 1000.0
+  File: test_land_farm_survey_engine.py::test_extract_number_handles_standalone_thousand_word
+  Result: PASS
+
+TC-02: Spoken number extraction — compound scale word
+  Input:  "twenty three thousand"
+  Expected: 23000.0
+  File: test_land_farm_survey_engine.py::test_extract_number_handles_compound_scale_words
+  Result: PASS
+
+TC-03: parse_prompt_answer accepts spoken scale words for number prompts
+  Prompt: water_cost_month (kind=number)
+  Input: "thousand"
+  Expected: 1000.0
+  File: test_land_farm_survey_engine.py::test_parse_prompt_answer_accepts_spoken_scale_word_numbers
+  Result: PASS
+
+TC-04: Market price fetch with fallback filters
+  Setup: mock requests.get; first 2 calls return empty records; 3rd returns prices
+  Input: commodity="tomato", state="Karnataka", district="Bengaluru", market="Yeshwanthpur"
+  Expected: price_per_kg ≈ 25.5 (2500+2600 avg in ₹/quintal ÷ 100)
+  File: test_land_market_price_service.py::test_fetch_price_with_fallback_filters
+  Result: PASS
+
+TC-05: Market price uses cache when realtime disabled
+  Setup: first call fetches live; then set realtime=False
+  Expected: second call returns same result with cache_hit=True
+  File: test_land_market_price_service.py::test_fetch_uses_cache_when_realtime_disabled
+  Result: PASS
+
+TC-06: Financial ROI calculation
+  Input: total_capex=100000, monthly_net=5000, horizon=12
+  Expected: roi_percent = (60000/100000)×100 = 60.0
+  File: test_financial_service.py
+  Result: PASS
+
+TC-07: Crop feasibility — insufficient area
+  Input: crop="lettuce", area_m2=0.5 (min=2 m²)
+  Expected: feasibility="not_feasible", reason contains "below the minimum"
+  File: test_crop_intelligence.py
+  Result: PASS
+
+TC-08: Voice answer filler word stripping
+  Input: "um so like it's about uh fifty thousand rupees"
+  Expected extracted number: 50000.0
+  File: test_voice_interpretation.py
+  Result: PASS
+
+9.3 Testing Strategy
+---------------------
+- Unit testing: Pure service functions tested without database (pytest + monkeypatch).
+- Integration testing: Endpoint tests use FastAPI TestClient with test database.
+- Mocking: External APIs (data.gov.in, Sarvam, Anthropic) mocked via monkeypatch.
+- STT evaluation: stt_evaluation_harness.py implements WER (Word Error Rate)
+  computation by comparing Whisper transcription against ground-truth text.
+  A/B evaluation between default and alternative models exposed via /eval endpoints.
+
+================================================================================
+SECTION 10 — CONCLUSION (Chapter 8)
+================================================================================
+
+AgriSense successfully delivered an end-to-end AI-driven farm management and
+financial planning platform for both aquaponic and land-based farms. The system
+demonstrated that voice-driven data collection — combined with intelligent speech
+parsing that resolves Indian spoken numbers, homophones, and filler words — can
+meaningfully lower the barrier to digital adoption for semi-literate farmers.
+
+The three-scenario financial model (base / pessimistic / optimistic) with NPV,
+IRR, ROI, payback period, and break-even computation provides a rigorous
+decision-support tool for new farm investments. Integration with the data.gov.in
+Agmarknet API for real-time commodity prices ensures financial projections are
+grounded in actual market conditions rather than static assumptions.
+
+The crop feasibility engine, backed by FAO and ICAR-CIFA literature, gives
+objective guidance on whether a given crop is viable in a farmer's available
+area, temperature zone, and water system type — addressing a critical
+information gap for first-time aquaponic entrants.
+
+The platform was validated through comprehensive unit tests covering spoken
+number parsing, market price caching, crop feasibility logic, and financial
+metric computation. All critical service-layer algorithms are independently
+testable without database dependencies.
+
+================================================================================
+SECTION 11 — FUTURE ENHANCEMENTS (Chapter 9)
+================================================================================
+
+1. Mobile Application (React Native / Flutter): offline-capable voice surveys
+   for connectivity-limited rural areas.
+2. Regional Language Support: Extend AI Advisor and TTS to support Hindi,
+   Kannada, Telugu, Tamil using Sarvam-M's native multilingual capability.
+3. Automated IoT Integration: MQTT broker for real-time sensor push instead of
+   polling; Grafana dashboard for water quality time-series visualisation.
+4. Computer Vision for Disease Detection: integrate a crop disease detection
+   model (YOLOv8 / EfficientNet) via the farm camera IoT device type.
+5. Government Scheme Matching: auto-suggest applicable PM-KUSUM, PMFBY, NABARD
+   subsidy schemes based on farm type and location.
+6. Predictive Analytics: ARIMA / Prophet time-series models for yield and
+   revenue forecasting based on historical IoT and session data.
+7. Multi-tenancy / SaaS: organisation-level accounts for agricultural extension
+   workers managing multiple farmer accounts.
+8. Alembic Migrations: replace current schema.sql approach with versioned
+   migrations for production schema evolution.
+9. CI/CD Pipeline: GitHub Actions workflow for automated test, build, and
+   Docker image push on merge to main.
+10. PDF Report Localisation: generate reports in regional languages using
+    WeasyPrint with Unicode font support.
+
+================================================================================
+SECTION 12 — BIBLIOGRAPHY (suggested references)
+================================================================================
+
+[1] Somerville, C. et al., "Small-scale aquaponic food production," FAO
+    Fisheries and Aquaculture Technical Paper 589, Rome, 2014.
+
+[2] ICAR-CIFA, "Aquaponics — A Handbook for India," Indian Council of
+    Agricultural Research, Bhubaneswar, 2020.
+
+[3] Radford, A. et al., "Robust Speech Recognition via Large-Scale Weak
+    Supervision," OpenAI Technical Report, 2022.
+
+[4] Lewis, M. et al., "Retrieval-Augmented Generation for Knowledge-Intensive
+    NLP Tasks," NeurIPS, 2020.
+
+[5] Paszke, A. et al., "PyTorch: An Imperative Style, High-Performance Deep
+    Learning Library," NeurIPS, 2019.
+
+[6] FastAPI Documentation, S. Ramirez, https://fastapi.tiangolo.com, 2024.
+
+[7] React 18 Documentation, Meta Open Source, https://react.dev, 2024.
+
+[8] Sarvam AI, "Sarvam-M: A Multilingual Large Language Model for Indian
+    Languages," Sarvam Research, 2024.
+
+[9] data.gov.in Agmarknet Dataset — Daily Wholesale Prices of Agricultural
+    Commodities, National Informatics Centre, Government of India.
+
+[10] NABARD, "Status of Microfinance in India 2022-23," National Bank for
+     Agriculture and Rural Development, Mumbai, 2023.
+
+[11] Grand View Research, "Aquaponics Market Size & Share Report, 2023-2030,"
+     San Francisco, 2023.
+
+[12] PostgreSQL 16 Documentation, The PostgreSQL Global Development Group,
+     https://www.postgresql.org/docs/16/, 2024.
+
+================================================================================
+SECTION 13 — ENVIRONMENT VARIABLES REFERENCE
+================================================================================
+
+Variable                  | Purpose
+--------------------------|--------------------------------------------------
+SECRET_KEY                | General app secret (32+ hex chars)
+JWT_SECRET_KEY            | JWT signing key
+POSTGRES_PASSWORD         | Local PostgreSQL password
+DATABASE_URL              | Full asyncpg connection string (Supabase or local)
+REDIS_URL                 | Redis connection string
+DEFAULT_LLM_PROVIDER      | anthropic | openai | local
+ANTHROPIC_API_KEY         | Anthropic Claude API key
+OPENAI_API_KEY            | OpenAI API key
+SARVAM_API_KEY            | Sarvam AI API key (AI Advisor + EVAL_MODE)
+VITE_API_URL              | Frontend API base URL
+STT_PROVIDER              | whisper | google | deepgram
+FASTER_WHISPER_MODEL      | Whisper model size (default: large-v3)
+FASTER_WHISPER_DEVICE     | cpu | cuda
+FASTER_WHISPER_COMPUTE_TYPE| int8 | float16
+DATA_GOV_IN_API_KEY       | data.gov.in Agmarknet API key
+LAND_MARKET_ENABLE_REALTIME| true | false
+EVAL_MODE                 | true to enable /eval/* endpoints
+SUPABASE_URL              | Supabase project URL (optional)
+SUPABASE_ANON_KEY         | Supabase anon/public key
+LOOKER_STUDIO_REPORT_ID   | Google Looker Studio report UUID
+
+================================================================================
+END OF PROJECT CONTEXT DOCUMENT
+================================================================================

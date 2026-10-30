@@ -1,0 +1,18 @@
+<mxfile host="app.diagrams.net" agent="GitHub Copilot" version="24.7.6" type="device">
+  <diagram id="pdl" name="5.2 Module-wise Logic (PDL)">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Module-wise PDL" style="text;html=1;fontStyle=1;fontSize=20;strokeColor=none;fillColor=none;" vertex="1" parent="1"><mxGeometry x="60" y="30" width="300" height="40" as="geometry"/></mxCell>
+        <mxCell id="3" value="Session Module\nBEGIN\n  authenticate user\n  initialize session context\n  fetch next question\n  store answer\n  if complete then mark session completed\nEND" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1"><mxGeometry x="60" y="100" width="420" height="260" as="geometry"/></mxCell>
+        <mxCell id="4" value="Financial Module\nBEGIN\n  load session + farm inputs\n  compute CAPEX/OPEX/revenue\n  generate scenarios(base/pessimistic/optimistic)\n  calculate ROI/payback/break-even\n  persist financial plan\nEND" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1"><mxGeometry x="540" y="100" width="460" height="260" as="geometry"/></mxCell>
+        <mxCell id="5" value="Report Module\nBEGIN\n  gather financial + advisory data\n  render report sections\n  generate downloadable file\n  store report metadata\n  return report reference\nEND" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1"><mxGeometry x="60" y="420" width="420" height="240" as="geometry"/></mxCell>
+        <mxCell id="6" value="Integration Module\nBEGIN\n  validate integration config\n  push/pull external records\n  transform external schema to internal model\n  log sync status and errors\nEND" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;" vertex="1" parent="1"><mxGeometry x="540" y="420" width="460" height="240" as="geometry"/></mxCell>
+        <mxCell id="20" style="endArrow=block;html=1;" edge="1" parent="1" source="3" target="4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="21" style="endArrow=block;html=1;" edge="1" parent="1" source="4" target="5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="22" style="endArrow=block;html=1;" edge="1" parent="1" source="5" target="6"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

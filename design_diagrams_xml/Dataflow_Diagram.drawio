@@ -1,0 +1,70 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="5.1 Data Flow Diagram" id="j0aGTkE1pY5yR5iq_9Tc">
+    <mxGraphModel dx="1348" dy="759" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-1" parent="1" style="shape=actor;html=1;" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;User" vertex="1">
+          <mxGeometry height="90" width="70" x="60" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="P1: Session Management" vertex="1">
+          <mxGeometry height="90" width="220" x="300" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="P2: Financial Analysis" vertex="1">
+          <mxGeometry height="90" width="220" x="640" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="P3: Report Generation" vertex="1">
+          <mxGeometry height="90" width="220" x="990" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-5" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;" value="D1: Sessions DB" vertex="1">
+          <mxGeometry height="70" width="180" x="320" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-6" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;" value="D2: Financial Plans DB" vertex="1">
+          <mxGeometry height="70" width="200" x="650" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-7" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;" value="D3: Reports DB" vertex="1">
+          <mxGeometry height="70" width="180" x="1010" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-8" edge="1" parent="1" source="SXxaLATlGfhyiNE0PUtj-1" style="endArrow=block;html=1;fillColor=none;exitX=0.9;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.589;entryDx=0;entryDy=0;entryPerimeter=0;" target="SXxaLATlGfhyiNE0PUtj-2" value="questionnaire responses">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-9" edge="1" parent="1" source="SXxaLATlGfhyiNE0PUtj-2" style="endArrow=block;html=1;fillColor=none;" target="SXxaLATlGfhyiNE0PUtj-3" value="validated session data">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-10" edge="1" parent="1" source="SXxaLATlGfhyiNE0PUtj-3" style="endArrow=block;html=1;fillColor=none;" target="SXxaLATlGfhyiNE0PUtj-4" value="financial metrics">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-11" edge="1" parent="1" source="SXxaLATlGfhyiNE0PUtj-4" style="endArrow=block;html=1;rounded=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" target="SXxaLATlGfhyiNE0PUtj-1" value="generated report">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1100" y="70" />
+              <mxPoint x="95" y="70" />
+            </Array>
+            <mxPoint x="979.64" y="300" as="sourcePoint" />
+            <mxPoint x="99.99714285714288" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-12" edge="1" parent="1" source="SXxaLATlGfhyiNE0PUtj-2" style="endArrow=block;html=1;" target="SXxaLATlGfhyiNE0PUtj-5" value="session data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-13" edge="1" parent="1" source="SXxaLATlGfhyiNE0PUtj-5" style="endArrow=block;html=1;fillColor=none;" target="SXxaLATlGfhyiNE0PUtj-2" value="stored sessions">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-14" edge="1" parent="1" source="SXxaLATlGfhyiNE0PUtj-3" style="endArrow=block;html=1;" target="SXxaLATlGfhyiNE0PUtj-6" value="financial analysis data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-15" edge="1" parent="1" source="SXxaLATlGfhyiNE0PUtj-6" style="endArrow=block;html=1;fillColor=none;" target="SXxaLATlGfhyiNE0PUtj-3" value="historical plans">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-16" edge="1" parent="1" source="SXxaLATlGfhyiNE0PUtj-4" style="endArrow=block;html=1;" target="SXxaLATlGfhyiNE0PUtj-7" value="report records">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="SXxaLATlGfhyiNE0PUtj-17" edge="1" parent="1" source="SXxaLATlGfhyiNE0PUtj-7" style="endArrow=block;html=1;fillColor=none;" target="SXxaLATlGfhyiNE0PUtj-4" value="saved reports">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

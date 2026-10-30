@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- Title -->
+    <mxCell id="title" value="AgriSense — Use Case Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Times New Roman;fontSize=20;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="300" y="8" width="620" height="32" as="geometry"/>
+    </mxCell>
+
+    <!-- System Boundary -->
+    <mxCell id="boundary" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;fontFamily=Times New Roman;fontSize=14;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="200" y="50" width="920" height="980" as="geometry"/>
+    </mxCell>
+    <mxCell id="boundary_label" value="AgriSense System" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Times New Roman;fontSize=16;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="430" y="54" width="260" height="28" as="geometry"/>
+    </mxCell>
+
+    <!-- ========== ACTORS ========== -->
+
+    <!-- Farmer Actor -->
+    <mxCell id="farmer" value="Farmer" style="shape=mxgraph.uml.actor;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="250" width="50" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- Admin Actor -->
+    <mxCell id="admin" value="Admin" style="shape=mxgraph.uml.actor;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="60" y="780" width="50" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- LLM Service Actor -->
+    <mxCell id="llm" value="LLM Service" style="shape=mxgraph.uml.actor;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+      <mxGeometry x="1180" y="440" width="50" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- ========== USE CASES ========== -->
+
+    <!-- UC1: Register / Login -->
+    <mxCell id="uc_auth" value="Register / Login" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="340" y="95" width="190" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC2: Manage Farm Profile -->
+    <mxCell id="uc_farm" value="Manage Farm Profile" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="310" y="195" width="210" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC3: Add Fish Batch -->
+    <mxCell id="uc_fish" value="Add Fish Batch" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="310" y="295" width="190" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC4: Add Crop Record -->
+    <mxCell id="uc_crop" value="Add Crop Record" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="310" y="395" width="190" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC5: Record Water Reading -->
+    <mxCell id="uc_water" value="Record Water Reading" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="304" y="495" width="210" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC6: Start Voice Survey -->
+    <mxCell id="uc_survey" value="Start Voice Survey" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="310" y="595" width="195" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC7: View Financial Plan -->
+    <mxCell id="uc_plan" value="View Financial Plan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="310" y="695" width="195" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC8: Generate PDF Report -->
+    <mxCell id="uc_report" value="Generate PDF Report" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="310" y="795" width="195" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC9: View Market Prices -->
+    <mxCell id="uc_market" value="View Market Prices" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="310" y="895" width="195" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC10: Answer Question (included) -->
+    <mxCell id="uc_answer" value="Answer Question" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="720" y="565" width="175" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC11: Generate 3 Scenarios (included) -->
+    <mxCell id="uc_scenarios" value="Generate 3 Scenarios" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="715" y="665" width="195" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC12: Export to Google Sheets (extend) -->
+    <mxCell id="uc_sheets" value="Export to Google Sheets" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="710" y="765" width="210" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC13: LLM Recommendations (included) -->
+    <mxCell id="uc_llm_rec" value="LLM Recommendations" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="715" y="415" width="200" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC14: Manage Users (Admin) -->
+    <mxCell id="uc_users" value="Manage Users" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="570" y="855" width="165" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- UC15: View System Logs (Admin) -->
+    <mxCell id="uc_logs" value="View System Logs" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="570" y="945" width="175" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- ========== ACTOR CONNECTIONS ========== -->
+
+    <!-- Farmer connections -->
+    <mxCell id="f_auth" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="farmer" target="uc_auth">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="f_farm" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="farmer" target="uc_farm">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="f_fish" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="farmer" target="uc_fish">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="f_crop" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="farmer" target="uc_crop">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="f_water" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="farmer" target="uc_water">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="f_survey" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="farmer" target="uc_survey">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="f_plan" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="farmer" target="uc_plan">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="f_report" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="farmer" target="uc_report">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="f_market" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="farmer" target="uc_market">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Admin connections -->
+    <mxCell id="a_auth" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="admin" target="uc_auth">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_users" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="admin" target="uc_users">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="a_logs" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="admin" target="uc_logs">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- LLM Service connections -->
+    <mxCell id="l_rec" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="llm" target="uc_llm_rec">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="l_market" value="" style="endArrow=none;html=1;strokeColor=#000000;" edge="1" parent="1" source="llm" target="uc_market">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- ========== INCLUDE / EXTEND RELATIONSHIPS ========== -->
+
+    <!-- Start Voice Survey <<include>> Answer Question -->
+    <mxCell id="inc_survey_answer" value="&lt;&lt;include&gt;&gt;" style="dashed=1;endArrow=open;endFill=0;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="uc_survey" target="uc_answer">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- View Financial Plan <<include>> Generate 3 Scenarios -->
+    <mxCell id="inc_plan_scen" value="&lt;&lt;include&gt;&gt;" style="dashed=1;endArrow=open;endFill=0;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="uc_plan" target="uc_scenarios">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- View Financial Plan <<include>> LLM Recommendations -->
+    <mxCell id="inc_plan_llm" value="&lt;&lt;include&gt;&gt;" style="dashed=1;endArrow=open;endFill=0;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="uc_plan" target="uc_llm_rec">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Generate PDF Report <<include>> View Financial Plan -->
+    <mxCell id="inc_report_plan" value="&lt;&lt;include&gt;&gt;" style="dashed=1;endArrow=open;endFill=0;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="uc_report" target="uc_plan">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+    <!-- Export to Google Sheets <<extend>> View Financial Plan -->
+    <mxCell id="ext_sheets_plan" value="&lt;&lt;extend&gt;&gt;" style="dashed=1;endArrow=open;endFill=0;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="uc_sheets" target="uc_plan">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>

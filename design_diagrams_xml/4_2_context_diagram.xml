@@ -1,0 +1,40 @@
+<mxfile host="app.diagrams.net" agent="GitHub Copilot">
+  <diagram id="context" name="4.2 Context Diagram">
+    <mxGraphModel dx="1348" dy="759" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;" value="AquaponicAI System" vertex="1">
+          <mxGeometry height="170" width="280" x="590" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="3" parent="1" style="shape=actor;whiteSpace=wrap;html=1;" value="Farmer / Farm Manager" vertex="1">
+          <mxGeometry height="90" width="70" x="160" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="4" parent="1" style="shape=actor;whiteSpace=wrap;html=1;" value="Admin" vertex="1">
+          <mxGeometry height="100" width="70" x="180" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Google Sheets" vertex="1">
+          <mxGeometry height="70" width="180" x="1080" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="AI Providers" vertex="1">
+          <mxGeometry height="70" width="180" x="1080" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="20" edge="1" parent="1" source="3" style="endArrow=block;html=1;" target="2" value="Survey answers, voice/text">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="21" edge="1" parent="1" source="2" style="endArrow=block;html=1;" target="3" value="Reports, recommendations">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="22" edge="1" parent="1" source="4" style="endArrow=block;html=1;" target="2" value="User &amp; config management">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="24" edge="1" parent="1" source="2" style="endArrow=block;html=1;" target="6" value="Push/Pull finance data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="25" edge="1" parent="1" source="2" style="endArrow=block;html=1;" target="7" value="Prompt/response">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

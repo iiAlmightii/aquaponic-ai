@@ -1,0 +1,201 @@
+participant_id,clip_id,group,ground_truth,whisper_transcript,sarvam_transcript,whisper_wer,sarvam_wer
+Balajik,1,A,My farm uses an NFT system.,my farm uses an nfd system,My farm uses an NFT system.,0.1667,0.0
+Balajik,2,A,I am raising tilapia and barramundi.,I am raising tilapia and barramundi,I am raising tilapia and barra mundi.,0.0,0.3333
+Balajik,3,A,The fish tank holds two thousand litres.,"the fish tank holds 2,000 liters",The fish tank holds 2000 liters.,0.4286,0.4286
+Balajik,4,A,I have one hundred tilapia fingerlings.,I have 100 tilapia fingerlings.,I have 100 Tilapia fingerlings.,0.3333,0.3333
+Balajik,5,A,The harvest cycle is six months.,The harvest cycle is six months.,The harvest cycle is 6 months.,0.0,0.1667
+Balajik,6,A,I also grow trout in a media bed system.,I also grow proud in a media bed system.,I also grow rout in a media bed system.,0.1111,0.1111
+Balajik,7,A,The system type is deep water culture.,the system type is dwc culture,The system type is deep water culture.,0.2857,0.0
+Balajik,8,A,I have fifty catfish and thirty trout.,I have 50 catfish and 30 trout.,I have 50 catfish and 30 trout.,0.2857,0.2857
+Balajik,9,A,We use a raft system for the crops.,we use raft system for the crops,We use raft system for the crops.,0.125,0.125
+Balajik,10,A,The stocking density is five fish per cubic metre.,the stocking density is five fish per cubic meter,The stocking density is five fish per cubic meter.,0.1111,0.1111
+Balajik,11,B,The capital expenditure is five lakh rupees.,The capital expenditure is 5 lakh rupees.,The capital expenditure is ₹5 lakh.,0.1429,0.2857
+Balajik,12,B,Monthly revenue is fifty-five thousand rupees.,"Monthly revenue is 55,000 rupees.","Monthly revenue is ₹55,000.",0.3333,0.5
+Balajik,13,B,I spent two lakh on infrastructure.,I spent 2 lakh on infrastructure.,I spend ₹2 lakh on infrastructure.,0.1667,0.3333
+Balajik,14,B,The monthly operating cost is thirty thousand.,"the monthly operating cost is 30,000",The monthly operating cost is 30000.,0.2857,0.2857
+Balajik,15,B,My total investment was one crore rupees.,My total investment was 1 crore rupees.,My total investment was one crore rupees.,0.1429,0.0
+Balajik,16,B,I earn forty thousand from fish every month.,"I earn 40,000 from fish every month",I earn 40000 from fish every month.,0.25,0.25
+Balajik,17,B,The equipment cost one lakh fifty thousand.,"The equipment cost 1,50,000.","The equipment cost 1,50,000.",0.5714,0.5714
+Balajik,18,B,Annual profit is three lakh rupees.,annual profit is 3 lakh rupees,Annual profit is ₹3 lakh rupees.,0.1667,0.1667
+Balajik,19,B,My farm area is one thousand square metres.,"my farm area is 1,000 square meters",My farm area is 1000 square meters.,0.375,0.375
+Balajik,20,B,I started with fifty thousand rupees initial stock.,"I started with ₹50,000 initial stock.","I started with ₹50,000 initial stock.",0.375,0.375
+Balajik,21,C,"I grow lettuce, spinach, and basil in the aquaponic beds.","I grow lettuce, spinach and basil in aquaponics beds.","I grow lettuce, spinach, and basil in aquaponic beds.",0.2,0.1
+Balajik,22,C,The crop area is two hundred square metres.,The crop area is 200 square meters.,The crop area is 200 square meters.,0.375,0.375
+Balajik,23,C,Monthly yield is about fifty kilograms of lettuce.,Monthly yield is about 50 kilograms of lettuce.,Monthly yield is about 50 kilograms of lettuce.,0.125,0.125
+Balajik,24,C,"My farm is located in Bengaluru, Karnataka.","My farm is located in Bengaluru, Karnataka.","My farm is located in Bengaluru, Karnataka.",0.0,0.0
+Balajik,25,C,I also cultivate mint and okra.,I also cultivate mint and okra.,I also cultivate mint and okra.,0.0,0.0
+Balajik,26,C,The growing area covers five hundred square feet.,The growing area covers 500 sq ft.,The growing area covers 500 square feet.,0.5,0.25
+Balajik,27,C,I sell tomatoes and capsicum to local markets.,I sell tomatoes and capsicum to local markets.,I sell tomatoes and capsicum to local markets.,0.0,0.0
+Balajik,28,C,"The farm is in Pune, Maharashtra.","The farm is in Pune, Maharashtra.","The farm is in Pune, Maharashtra.",0.0,0.0
+Balajik,29,C,Crop revenue is fifteen thousand per month.,"crop revenue is 50,000 per month",Crop revenue is 50000 per month.,0.2857,0.2857
+Balajik,30,C,I grow herbs like basil and mint near the fish tanks.,I grow herbs basil and mint near the fish tanks,I grow herbs like basil and mint near the fish tanks.,0.0909,0.0
+Balajik,31,D,"Um, I have, uh, about twenty thousand litres capacity.","mmm I have but 20,000 liters capacity",I have about 20000 liters capacity.,0.6667,0.5556
+Balajik,32,D,"You know, I raise till, I mean tilapia, in the main tank.",", I raised til, tilapia, in the main tank.","You know, I raised till, I mean, tilapia in the main tank.",0.5,0.0833
+Balajik,33,D,"My farm, basically, earns around two lakh, sort of, annually.",My farm earns around 2 lakh annually.,My farm basically earns around ₹2 lakh sort of annually.,0.4,0.1
+Balajik,34,D,"I think it is, like, an NFT, an n f t, system.",I think it is an nft and nft system.,"I think it is like an NFT, an NFT system.",0.4167,0.25
+Balajik,35,D,"Uh, the harvest is, um, every six months or so.",The harvest is every six months or so.,"Uh, the harvest is, um, every 6 months or so.",0.2,0.1
+Balajik,36,D,"I have, you know, around five lakh in capital expenses.","I have,, around 5 lakh in capital expenses.","I have, you know, around ₹5 lakh in capital expenses.",0.3,0.1
+Balajik,37,D,"Actually I grow talapia, I mean tilapia, and some trout.",i grow tilapia tilapia and some trout,"Actually, I grew Talapia, I mean Tilapia and some trout.",0.4,0.1
+Balajik,38,D,"My location is, uh, Bangalore, Bengaluru, in Karnataka.","My location is Bangalore, Bengaluru in Karnataka.","My location is Bangalore, Bengaluru in Karnataka.",0.125,0.125
+Balajik,39,D,"Um, the monthly revenue is, like, fifty five thousand rupees.","The monthly revenue is 55,000 rupees.","The monthly revenue is like ₹55,000.",0.5,0.5
+Balajik,40,D,"I use, basically, a media bead, I mean media bed, system.",I use a media bed media bed system,"I use basically a media bead, I mean media bed system.",0.3636,0.0
+Chandan,1,A,My farm uses an NFT system.,My farm uses an nft system.,My farm uses an NFT system.,0.0,0.0
+Chandan,2,A,I am raising tilapia and barramundi.,I am raising tilapia and barramundi barramundi.,I am raising tilapia and barra mundi,0.1667,0.3333
+Chandan,3,A,The fish tank holds two thousand litres.,"the fish tank holds 2,000 liters",The fish tank holds 2000 liters.,0.4286,0.4286
+Chandan,4,A,I have one hundred tilapia fingerlings.,I have 100 LAPR finger links,I have 100 tile pia fingerlings.,0.6667,0.5
+Chandan,5,A,The harvest cycle is six months.,the harvest cycle is six months,The harvest cycle is 6 months.,0.0,0.1667
+Chandan,6,A,I also grow trout in a media bed system.,I also grow trout in a media bed system.,I also grow trout in a media bed system.,0.0,0.0
+Chandan,7,A,The system type is deep water culture.,system type is dwc culture,The system type is deep water culture.,0.4286,0.0
+Chandan,8,A,I have fifty catfish and thirty trout.,I have 50 catfish and 30 trout,I have 50 catfish and 30 trout.,0.2857,0.2857
+Chandan,9,A,We use a raft system for the crops.,we use a raft system for the crops,We use raft system for the crops.,0.0,0.125
+Chandan,10,A,The stocking density is five fish per cubic metre.,the stocking density is five fish per cubic meter,The stocking density is 5 fish per cubic meter.,0.1111,0.2222
+Chandan,11,B,The capital expenditure is five lakh rupees.,A capital expenditure is 5 lakh rupees.,A capital expenditure is ₹5 lakh rupees.,0.2857,0.2857
+Chandan,12,B,Monthly revenue is fifty-five thousand rupees.,"Monthly revenue is 55,000 rupees.","Monthly revenue is ₹55,000.",0.3333,0.5
+Chandan,13,B,I spent two lakh on infrastructure.,I spent 2 lakh on infrastructure.,I spend 2 lakh on infrastructure.,0.1667,0.3333
+Chandan,14,B,The monthly operating cost is thirty thousand.,"the monthly operating cost is 30,000",The monthly operating cost is 30000.,0.2857,0.2857
+Chandan,15,B,My total investment was one crore rupees.,My total investment was 1 crore rupees.,My total investment was ₹1 crore.,0.1429,0.2857
+Chandan,16,B,I earn forty thousand from fish every month.,"I earn 40,000 from fish every month.",I earn 40000 from fish every month.,0.25,0.25
+Chandan,17,B,The equipment cost one lakh fifty thousand.,the equipment cost one lakh fifty thousand,"The equipment cost ₹1,50,000.",0.0,0.5714
+Chandan,18,B,Annual profit is three lakh rupees.,annual profit is 3 lakh rupees,Annual profit is ₹3 lakh rupees.,0.1667,0.1667
+Chandan,19,B,My farm area is one thousand square metres.,My farm area is 1000 square meters.,My farm area is 1000 square meters.,0.375,0.375
+Chandan,20,B,I started with fifty thousand rupees initial stock.,"I started with 50,000 rupees initial stock","I started with ₹50,000 initial stock.",0.25,0.375
+Chandan,21,C,"I grow lettuce, spinach, and basil in the aquaponic beds.","I grow lettuce, spinach and basil in the aquaponics beds.","I grow lettuce, spinach, and basil in the aquaponic beds.",0.1,0.0
+Chandan,22,C,The crop area is two hundred square metres.,the crop is 200 square meters,The crop is 200 square meters.,0.5,0.5
+Chandan,23,C,Monthly yield is about fifty kilograms of lettuce.,monthly yield is about 50 kilograms of lettuce,Monthly yield is about 50 kilograms of lettuce.,0.125,0.125
+Chandan,24,C,"My farm is located in Bengaluru, Karnataka.","My farm is located in Bengaluru, Karnataka.",My farm is located in Bengaluru Karnataka,0.0,0.0
+Chandan,25,C,I also cultivate mint and okra.,I also cultivate mint and okra.,I also cultivate mint and okra.,0.0,0.0
+Chandan,26,C,The growing area covers five hundred square feet.,The growing area covers 500 sq ft.,The growing area covers 500 square feet.,0.5,0.25
+Chandan,27,C,I sell tomatoes and capsicum to local markets.,I sell tomatoes and capsicum to local markets,I sell tomatoes and capsicum to local markets.,0.0,0.0
+Chandan,28,C,"The farm is in Pune, Maharashtra.","The farm is in Pune, Maharashtra.","The farm is in Pune, Maharashtra.",0.0,0.0
+Chandan,29,C,Crop revenue is fifteen thousand per month.,Crop revenue is 15000 per month.,Crop revenue is 15000 per month.,0.2857,0.2857
+Chandan,30,C,I grow herbs like basil and mint near the fish tanks.,I grow herbs basil and mint near the fish tanks.,I grow herbs like basil and mint near the fish tanks.,0.0909,0.0
+Chandan,31,D,"Um, I have, uh, about twenty thousand litres capacity.",i have about 20 000 liters capacity,"Um, I have about 20000 liters capacity.",0.5556,0.4444
+Chandan,32,D,"You know, I raise till, I mean tilapia, in the main tank.",I raised tilapia tilapia in the main tank,"You know, I raced till, I mean, till Apiya in the main tank.",0.5,0.25
+Chandan,33,D,"My farm, basically, earns around two lakh, sort of, annually.",My farm earns around 2 lakh annually.,My farm basically earns around ₹2 lakh sort of annually.,0.4,0.1
+Chandan,34,D,"I think it is, like, an NFT, an n f t, system.",I think it is an nft and nft system,"I think it is like an NFT, an NFT system.",0.4167,0.25
+Chandan,35,D,"Uh, the harvest is, um, every six months or so.",the harvest is every six months or so,"Uh, the harvest is, um, every 6 months or so.",0.2,0.1
+Chandan,36,D,"I have, you know, around five lakh in capital expenses.",i have around 5 lakhs in capital expenses,"I have, you know, around ₹5 lakhs in capital expenses.",0.4,0.2
+Chandan,37,D,"Actually I grow talapia, I mean tilapia, and some trout.",I grow tilapia tilapia and some trout,"Actually, I grow Talapia, I mean Tilapia and some trout.",0.4,0.0
+Chandan,38,D,"My location is, uh, Bangalore, Bengaluru, in Karnataka.",my location is Bangalore Bengaluru in Karnataka,"My location is Bangalore, Bengaluru in Karnataka.",0.125,0.125
+Chandan,39,D,"Um, the monthly revenue is, like, fifty five thousand rupees.",the monthly revenue is 50 000 rupees,"Um, the monthly revenue is like ₹50,000.",0.5,0.4
+Chandan,40,D,"I use, basically, a media bead, I mean media bed, system.",i use a media bed a media bed system,"I use basically a media bead, I mean a media bed system.",0.3636,0.0909
+Chethana,1,A,My farm uses an NFT system.,my farm uses an nft system,My farm uses an NFT system.,0.0,0.0
+Chethana,2,A,I am raising tilapia and barramundi.,I'm raising the tilapia and vermin.,I'm raising the tilapia and garam masala.,0.6667,0.8333
+Chethana,3,A,The fish tank holds two thousand litres.,"The fish tank holds 2,000 litres.",The fish tank holds 2000 liters.,0.2857,0.4286
+Chethana,4,A,I have one hundred tilapia fingerlings.,I have hundreds of your fingerings.,I have 100 kilos of fingerlings.,0.6667,0.5
+Chethana,5,A,The harvest cycle is six months.,The harvest cycle in six months.,The harvest cycle is six months.,0.1667,0.0
+Chethana,6,A,I also grow trout in a media bed system.,I also grow up in a media-based system.,I also got caught in a mediated system.,0.3333,0.4444
+Chethana,7,A,The system type is deep water culture.,The system type is water culture.,The system type is water culture.,0.1429,0.1429
+Chethana,8,A,I have fifty catfish and thirty trout.,"I have to take care of patient, so I'll be taught.","I have 50 cat questions, 30 thoughts.",1.2857,0.7143
+Chethana,9,A,We use a raft system for the crops.,,,1.0,1.0
+Chethana,10,A,The stocking density is five fish per cubic metre.,The stocking density is 5 fresh per cubic meter.,The stocking density is 5 mesh per cubic meter.,0.3333,0.3333
+Chethana,11,B,The capital expenditure is five lakh rupees.,"The capital expenditure is 5,000.",The capital expenditure is ₹5 lakh.,0.4286,0.2857
+Chethana,12,B,Monthly revenue is fifty-five thousand rupees.,"Monthly revenue is 55,000 rupees.","Monthly revenue is ₹50,000, ₹55,000.",0.3333,0.5
+Chethana,13,B,I spent two lakh on infrastructure.,I spent two lakhs on infrastructure.,I spend ₹2 lakh on infrastructure.,0.1667,0.3333
+Chethana,14,B,The monthly operating cost is thirty thousand.,"The monthly operating cost is 30,000.",The monthly operating cost is 30000.,0.2857,0.2857
+Chethana,15,B,My total investment was one crore rupees.,My total investment was 1 crore rupees.,My total investment was 1 crore rupees.,0.1429,0.1429
+Chethana,16,B,I earn forty thousand from fish every month.,"I earn INR 40,000 every month.",I earn 40000 from fish every month.,0.5,0.25
+Chethana,17,B,The equipment cost one lakh fifty thousand.,"The equipment cost one blad, 50,000.","Equipment Cost 1,50,000.",0.4286,0.7143
+Chethana,18,B,Annual profit is three lakh rupees.,"Animal Properties 3, LACOPIS.",Annual Properties ₹3 Lakh Rupees,1.0,0.5
+Chethana,19,B,My farm area is one thousand square metres.,My farm area is 1000 square meters.,My farm area is 1000 square meters.,0.375,0.375
+Chethana,20,B,I started with fifty thousand rupees initial stock.,"I started with 50,000 initial stock","I started with 50,000 initial stock.",0.375,0.375
+Chethana,21,C,"I grow lettuce, spinach, and basil in the aquaponic beds.","I grow lettuce, spinach, and basil in the aquaponics bench.","Hydrolator, spinach and basil and aqua conflict.",0.2,0.7
+Chethana,22,C,The crop area is two hundred square metres.,Crop area is 200 square meters.,Crop area is 200 square meters.,0.5,0.5
+Chethana,23,C,Monthly yield is about fifty kilograms of lettuce.,Manjhi is about 50 kilometers of latest,Mantri is held about 50 kilometers of light us.,0.625,0.875
+Chethana,24,C,"My farm is located in Bengaluru, Karnataka.","My farm is located in Bengaluru, Karnataka.","Nuppam is located in Bengaluru, Karnataka.",0.0,0.2857
+Chethana,25,C,I also cultivate mint and okra.,I also go to bed mint and oka.,I also cultivate mint and okra.,0.6667,0.0
+Chethana,26,C,The growing area covers five hundred square feet.,The growing area covers 500 sq ft.,The growing area covers 500 square feet.,0.5,0.25
+Chethana,27,C,I sell tomatoes and capsicum to local markets.,I sell tomatoes and capsicum to local markets.,I sell tomatoes and capsicum to local markets.,0.0,0.0
+Chethana,28,C,"The farm is in Pune, Maharashtra.",Năfame Sântune Mahărastră!,"Nafam is in Pune, Maharashtra.",1.0,0.3333
+Chethana,29,C,Crop revenue is fifteen thousand per month.,"Crop revenue is 15,000 for now.",Crop revenue is 15000 per annum,0.5714,0.4286
+Chethana,30,C,I grow herbs like basil and mint near the fish tanks.,I grew herbs Brussels and mint near the fish,Agro herbs like pestles and mint near the fish tank.,0.3636,0.3636
+Chethana,31,D,"Um, I have, uh, about twenty thousand litres capacity.","I have about 20,000 liters capacity.",I have about 20000 liters capacity.,0.5556,0.5556
+Chethana,32,D,"You know, I raise till, I mean tilapia, in the main tank.",i stick friday still tilapia and the main time,"You know, I stick to Friday still. I mean, tilapia in the meantime.",0.6667,0.5
+Chethana,33,D,"My farm, basically, earns around two lakh, sort of, annually.",My farm earns around 2 lakhs out of annually.,My farm basically earns around ₹2 lakhs or of annually.,0.4,0.3
+Chethana,34,D,"I think it is, like, an NFT, an n f t, system.",I think it is an nft and an nft system.,I think it is like an NFT and an NFT system.,0.4167,0.3333
+Chethana,35,D,"Uh, the harvest is, um, every six months or so.",The harvest is in six months or so.,"Uh, the harvest is in six months or so.",0.3,0.2
+Chethana,36,D,"I have, you know, around five lakh in capital expenses.","I have, I don't buy in capitalism.","I have, you know, around ₹5 lakh in capital expenditure.",0.7,0.2
+Chethana,37,D,"Actually I grow talapia, I mean tilapia, and some trout.",", I need tilapia and some drops.","Actually, I got tilapia, I mean the tilapia and some trough.",0.6,0.4
+Chethana,38,D,"My location is, uh, Bangalore, Bengaluru, in Karnataka.",my location is Bangalore Bangalore and Karnataka,"My location is Bengaluru, Bangalore and Karnataka.",0.375,0.375
+Chethana,39,D,"Um, the monthly revenue is, like, fifty five thousand rupees.","The mostly revenue is 55,000.",The mostly revenue is like 55000.,0.7,0.6
+Chethana,40,D,"I use, basically, a media bead, I mean media bed, system.","I use a MediaBit, MediaBit system.","I use basically a media bed, I mean media bed system.",0.6364,0.0909
+Sangeethan,1,A,My farm uses an NFT system.,my farm uses an nft system,My farm uses an NFT system.,0.0,0.0
+Sangeethan,2,A,I am raising tilapia and barramundi.,I am raising tilapia and barramundi.,I am raising tilapia and beramundi.,0.0,0.1667
+Sangeethan,3,A,The fish tank holds two thousand litres.,"the fish tank holds 2,000 liters",The fish tank holds 2000 liters.,0.4286,0.4286
+Sangeethan,4,A,I have one hundred tilapia fingerlings.,I have 100 tilapia fingerlings.,I have 100 tilapia fingerlings.,0.3333,0.3333
+Sangeethan,5,A,The harvest cycle is six months.,The harvest cycle is 6 months.,The harvest cycle is 6 months.,0.1667,0.1667
+Sangeethan,6,A,I also grow trout in a media bed system.,I also grow trout in a media bed system.,I also grow trout in a media bed system.,0.0,0.0
+Sangeethan,7,A,The system type is deep water culture.,The system type is dwc culture.,The system type is deep water culture.,0.2857,0.0
+Sangeethan,8,A,I have fifty catfish and thirty trout.,I have 50 catfish and 30 trout.,I have fifty catfish and thirty trout.,0.2857,0.0
+Sangeethan,9,A,We use a raft system for the crops.,We use a raft system for the crops.,We use a raft system for the crops.,0.0,0.0
+Sangeethan,10,A,The stocking density is five fish per cubic metre.,The stocking density is 5 fish per cubic meter.,The stocking density is five fish per cubic meter.,0.2222,0.1111
+Sangeethan,11,B,The capital expenditure is five lakh rupees.,The capital expenditure is 5 lakh rupees.,The capital expenditure is ₹5 lakh.,0.1429,0.2857
+Sangeethan,12,B,Monthly revenue is fifty-five thousand rupees.,"Monthly revenue is 55,000 rupees.",Monthly revenue is ₹55000.,0.3333,0.5
+Sangeethan,13,B,I spent two lakh on infrastructure.,I spent 2 lakh on infrastructure.,I spent ₹2 lakh on infrastructure.,0.1667,0.1667
+Sangeethan,14,B,The monthly operating cost is thirty thousand.,"The monthly operating cost is 30,000.",The monthly operating cost is 30000.,0.2857,0.2857
+Sangeethan,15,B,My total investment was one crore rupees.,My total investment was 1 crore rupees.,My total investment was ₹1 crore.,0.1429,0.2857
+Sangeethan,16,B,I earn forty thousand from fish every month.,"I earn 40,000 from fish every month.",I earn 40000 from fish every month.,0.25,0.25
+Sangeethan,17,B,The equipment cost one lakh fifty thousand.,"The equipment cost Rs. 1,50,000.","The equipment cost 1,50,000.",0.5714,0.5714
+Sangeethan,18,B,Annual profit is three lakh rupees.,Annual profit is 3 lakh rupees.,Annual Profit Is ₹3 Lakh Rupees.,0.1667,0.1667
+Sangeethan,19,B,My farm area is one thousand square metres.,"My farm area is 1,000 square meters.",My farm area is 1000 square meters.,0.375,0.375
+Sangeethan,20,B,I started with fifty thousand rupees initial stock.,"I started with 50,000 rupees initial stock.","I started with ₹50,000 initial stock.",0.25,0.375
+Sangeethan,21,C,"I grow lettuce, spinach, and basil in the aquaponic beds.","I grow lettuce, spinach and basil in the aquaponics beds.","I grow lettuce, spinach and basil in the aquaponic beds.",0.1,0.0
+Sangeethan,22,C,The crop area is two hundred square metres.,The crop area is 200 sqm.,The crop area is 200 square meters.,0.5,0.375
+Sangeethan,23,C,Monthly yield is about fifty kilograms of lettuce.,Monthly yield is about 50 kg of lettuce.,Monthly yield is about 50 kilograms of lettuce.,0.25,0.125
+Sangeethan,24,C,"My farm is located in Bengaluru, Karnataka.","My farm is located in Bengaluru, Karnataka.",My farm is located in Bengaluru Karnataka,0.0,0.0
+Sangeethan,25,C,I also cultivate mint and okra.,I also cultivate mint and okra.,I also cultivate mint and okra.,0.0,0.0
+Sangeethan,26,C,The growing area covers five hundred square feet.,The growing area covers 500 sq ft.,The growing area covers 500 square feet.,0.5,0.25
+Sangeethan,27,C,I sell tomatoes and capsicum to local markets.,I sell tomatoes and capsicum to local markets.,I sell tomatoes and capsicum to local markets.,0.0,0.0
+Sangeethan,28,C,"The farm is in Pune, Maharashtra.","The farm is in Pune, Maharashtra.","The farm is in Pune, Maharashtra.",0.0,0.0
+Sangeethan,29,C,Crop revenue is fifteen thousand per month.,"Crop revenue is 15,000 per month.",Crop revenue is 15000 per month.,0.2857,0.2857
+Sangeethan,30,C,I grow herbs like basil and mint near the fish tanks.,I grow herbs basil and mint near the fish tanks.,I grow herbs like basil and mint near the fish tanks.,0.0909,0.0
+Sangeethan,31,D,"Um, I have, uh, about twenty thousand litres capacity.","I have about 20,000 liters capacity.",I have about 20000 liters capacity.,0.5556,0.5556
+Sangeethan,32,D,"You know, I raise till, I mean tilapia, in the main tank.",", I raised til, tilapia, in the main tank.","You know, I raised till, I mean, tilapia in the main tank.",0.5,0.0833
+Sangeethan,33,D,"My farm, basically, earns around two lakh, sort of, annually.",My farm earns around 2 lakh set off annually.,My farm basically earns around 2 lakh sort of annually.,0.4,0.1
+Sangeethan,34,D,"I think it is, like, an NFT, an n f t, system.","I think it is an nft, an nft system.","I think it is like an NFT, an NFT system.",0.3333,0.25
+Sangeethan,35,D,"Uh, the harvest is, um, every six months or so.",The harvest is every six months or so.,"Uh, the harvest is every 6 months or so.",0.2,0.2
+Sangeethan,36,D,"I have, you know, around five lakh in capital expenses.","I have,, around 5 lakh in capital expenses.","I have, you know, around ₹5 lakh in capital expenses.",0.3,0.1
+Sangeethan,37,D,"Actually I grow talapia, I mean tilapia, and some trout.",I grow tilapia tilapia and some trot,"Actually, I grow tilapia, I mean tilapia and some trout.",0.5,0.1
+Sangeethan,38,D,"My location is, uh, Bangalore, Bengaluru, in Karnataka.","My location is Bangalore, Bengaluru in Karnataka.","My location is Bangalore, Bengaluru in Karnataka.",0.125,0.125
+Sangeethan,39,D,"Um, the monthly revenue is, like, fifty five thousand rupees.","The monthly revenue is 55,000 rupees.",The monthly revenue is like ₹55000.,0.5,0.5
+Sangeethan,40,D,"I use, basically, a media bead, I mean media bed, system.",I use a media bed media bed system,"I use basically a media bead, I mean media bed system.",0.3636,0.0
+chandana,1,A,My farm uses an NFT system.,My farm uses an nft system.,My farm uses an NFT system.,0.0,0.0
+chandana,2,A,I am raising tilapia and barramundi.,I am rising tilappai and baram only.,I am rising till up by and bara mundi,0.6667,1.0
+chandana,3,A,The fish tank holds two thousand litres.,The fish tank holds 2000 litres.,The fish tank holds 2000 liters.,0.2857,0.4286
+chandana,4,A,I have one hundred tilapia fingerlings.,I have 100 tilapia fingerlings.,I have 100 pilappai fingerlings,0.3333,0.5
+chandana,5,A,The harvest cycle is six months.,The harvest cycle is six months.,The harvest cycle is six months.,0.0,0.0
+chandana,6,A,I also grow trout in a media bed system.,I also grow trot in media bed system.,I also grow trout in media bed system.,0.2222,0.1111
+chandana,7,A,The system type is deep water culture.,This system type is dwc culture.,The system type is deep water culture.,0.4286,0.0
+chandana,8,A,I have fifty catfish and thirty trout.,I have 50 catfish and 30 throat,I have 50 catfish and 30 throat.,0.4286,0.4286
+chandana,9,A,We use a raft system for the crops.,We use a raft system for the crops.,We use a raft system for the crops.,0.0,0.0
+chandana,10,A,The stocking density is five fish per cubic metre.,The stocking density is 5 fish per cubic meter.,This stocking density is 5 fish per cubic meter.,0.2222,0.3333
+chandana,11,B,The capital expenditure is five lakh rupees.,The capital expenditure is 5 lakh rupees.,The capital expenditure is ₹5 lakh rupees.,0.1429,0.1429
+chandana,12,B,Monthly revenue is fifty-five thousand rupees.,"monthly revenue is 50,000 55,000 rupees","Monthly Revenue is ₹50,000, ₹55,000.",0.3333,0.5
+chandana,13,B,I spent two lakh on infrastructure.,I spent 2 lakhs on infrastructure,I spend 2 lakhs on infrastructure.,0.3333,0.5
+chandana,14,B,The monthly operating cost is thirty thousand.,"The monthly operating cost is 30,000.",The monthly operating cost is 30000.,0.2857,0.2857
+chandana,15,B,My total investment was one crore rupees.,My total investment was 1 crore rupees.,My total investment was 1 crore rupees.,0.1429,0.1429
+chandana,16,B,I earn forty thousand from fish every month.,"I earn 40,000 from fish every month.",I earn 40000 from fish every month.,0.25,0.25
+chandana,17,B,The equipment cost one lakh fifty thousand.,"The equipment cost Rs. 1,50,000.","The equipment cost ₹1,50,000.",0.5714,0.5714
+chandana,18,B,Annual profit is three lakh rupees.,annual profit is 3 lakh rupees,Annual Profit Is ₹3 Lakh Rupees.,0.1667,0.1667
+chandana,19,B,My farm area is one thousand square metres.,"My farm area is 1,000 square meters.",My farm area is 1000 square meters.,0.375,0.375
+chandana,20,B,I started with fifty thousand rupees initial stock.,"I started with ₹50,000 initial stock.","I started with ₹50,000 initial stock.",0.375,0.375
+chandana,21,C,"I grow lettuce, spinach, and basil in the aquaponic beds.",I grow spinach and basil in the aquaponics beds.,I grow spinach and basil in the aquaponic beds.,0.2,0.1
+chandana,22,C,The crop area is two hundred square metres.,The crop area is 200 square meters.,The crop area is 200 square meters.,0.375,0.375
+chandana,23,C,Monthly yield is about fifty kilograms of lettuce.,Monthly yield is about 50 kg of lettuce.,Monthly yield is about 50 kilograms of lettuce.,0.25,0.125
+chandana,24,C,"My farm is located in Bengaluru, Karnataka.","My farm is located in Bengaluru, Karnataka.",My farm is located in Bengaluru Karnataka.,0.0,0.0
+chandana,25,C,I also cultivate mint and okra.,I also cultivated mint and okra.,I also cultivated mint and okra.,0.1667,0.1667
+chandana,26,C,The growing area covers five hundred square feet.,The growing area covers 500 square feet.,The growing area covers 500 square feet.,0.25,0.25
+chandana,27,C,I sell tomatoes and capsicum to local markets.,I sell tomatoes and capsicum to local markets.,I sell tomatoes and capsicum to local markets.,0.0,0.0
+chandana,28,C,"The farm is in Pune, Maharashtra.","The farm is in Pune, Maharashtra.","The farm is in Pune, Maharashtra.",0.0,0.0
+chandana,29,C,Crop revenue is fifteen thousand per month.,"Crop revenue is 15,000 per month.",Crop revenue is 15000 per month.,0.2857,0.2857
+chandana,30,C,I grow herbs like basil and mint near the fish tanks.,I grow herbs basil and mint near the fish tanks.,I grow herbs like basil and mint near the fish tanks.,0.0909,0.0
+chandana,31,D,"Um, I have, uh, about twenty thousand litres capacity.","I have about 20,000 litres capacity.",I have about 20000 liters capacity.,0.4444,0.5556
+chandana,32,D,"You know, I raise till, I mean tilapia, in the main tank.",I rise still tilapai in the main time,"You know, I rise till, I mean, Tilapai in the meantime.",0.6667,0.3333
+chandana,33,D,"My farm, basically, earns around two lakh, sort of, annually.",My farm earns around 2 lakh annually.,My farm basically earns around ₹2 lakh sort of annually.,0.4,0.1
+chandana,34,D,"I think it is, like, an NFT, an n f t, system.",i think it is an nft an nft system,"I think it is like an NFT, an NFT system.",0.3333,0.25
+chandana,35,D,"Uh, the harvest is, um, every six months or so.",The RSS every six months or so.,"Uh, the RHS every 6 months or so.",0.4,0.4
+chandana,36,D,"I have, you know, around five lakh in capital expenses.","I have,, around 5 lakh in capital expenses.","I have, you know, around ₹5 lakh in capital expenses.",0.3,0.1
+chandana,37,D,"Actually I grow talapia, I mean tilapia, and some trout.",", I grow tilapia and some trout.","Actually I grow Tilapia, I mean Tilapia and some Trout.",0.4,0.1
+chandana,38,D,"My location is, uh, Bangalore, Bengaluru, in Karnataka.",か,Okay,1.0,1.0
+chandana,39,D,"Um, the monthly revenue is, like, fifty five thousand rupees.","The monthly revenue is 55,000 rupees.","The monthly revenue is like ₹55,000.",0.5,0.5
+chandana,40,D,"I use, basically, a media bead, I mean media bed, system.",I use a media bed media bed system,"I use basically a media bead, I mean media bed system.",0.3636,0.0

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- ===================== LEVEL 0: CONTEXT DIAGRAM ===================== -->
+    <mxCell id="l0_title" value="DFD Level 0 — Context Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Times New Roman;fontSize=18;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="280" y="8" width="500" height="30" as="geometry"/>
+    </mxCell>
+
+    <!-- Central process -->
+    <mxCell id="l0_sys" value="0.0&#xa;AgriSense&#xa;System" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="420" y="140" width="200" height="120" as="geometry"/>
+    </mxCell>
+
+    <!-- External entities -->
+    <mxCell id="l0_farmer" value="Farmer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="180" width="130" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="l0_admin" value="Admin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="280" width="130" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="l0_llm" value="LLM API&#xa;(Anthropic/OpenAI)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="820" y="160" width="160" height="50" as="geometry"/>
+    </mxCell>
+    <mxCell id="l0_sheets" value="Google Sheets" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="820" y="260" width="160" height="50" as="geometry"/>
+    </mxCell>
+
+    <!-- Flows: Farmer -->
+    <mxCell id="l0_f1" value="Survey answers, farm data,&#xa;water readings" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="l0_farmer" target="l0_sys">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="l0_f2" value="Financial reports, market prices,&#xa;recommendations" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="l0_sys" target="l0_farmer">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="300" y="220"/>
+          <mxPoint x="145" y="220"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Flows: Admin -->
+    <mxCell id="l0_a1" value="User management, config" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="l0_admin" target="l0_sys">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="l0_a2" value="System logs, status reports" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="l0_sys" target="l0_admin">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="300" y="290"/>
+          <mxPoint x="145" y="290"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Flows: LLM API -->
+    <mxCell id="l0_l1" value="Financial context, crop info" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="l0_sys" target="l0_llm">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="l0_l2" value="Recommendations, market prices" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="l0_llm" target="l0_sys">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="900" y="220"/>
+          <mxPoint x="900" y="230"/>
+          <mxPoint x="640" y="230"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Flows: Google Sheets -->
+    <mxCell id="l0_s1" value="Financial plan data" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="l0_sys" target="l0_sheets">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="l0_s2" value="Sync confirmation" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;align=center;" edge="1" parent="1" source="l0_sheets" target="l0_sys">
+      <mxGeometry relative="1" as="geometry">
+        <Array as="points">
+          <mxPoint x="900" y="300"/>
+          <mxPoint x="900" y="330"/>
+          <mxPoint x="640" y="330"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Separator line -->
+    <mxCell id="sep" value="" style="line;strokeWidth=2;fillColor=none;strokeColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="20" y="400" width="1100" height="8" as="geometry"/>
+    </mxCell>
+
+    <!-- ===================== LEVEL 1 DFD ===================== -->
+    <mxCell id="l1_title" value="DFD Level 1 — Detailed Data Flow" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Times New Roman;fontSize=18;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+      <mxGeometry x="280" y="418" width="500" height="30" as="geometry"/>
+    </mxCell>
+
+    <!-- ===== EXTERNAL ENTITIES (Level 1) ===== -->
+    <mxCell id="e_farmer" value="Farmer" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="20" y="480" width="110" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_admin" value="Admin" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="20" y="820" width="110" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_llm" value="LLM API" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="990" y="630" width="110" height="44" as="geometry"/>
+    </mxCell>
+    <mxCell id="e_sheets" value="Google&#xa;Sheets" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="990" y="930" width="110" height="44" as="geometry"/>
+    </mxCell>
+
+    <!-- ===== PROCESSES (Level 1) ===== -->
+    <!-- P1.0 User Auth & Management -->
+    <mxCell id="p10" value="1.0&#xa;User Auth &amp;&#xa;Management" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="200" y="460" width="150" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- P2.0 Voice Survey Management -->
+    <mxCell id="p20" value="2.0&#xa;Voice Survey&#xa;Management" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="440" y="460" width="150" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- P3.0 Financial Calculation -->
+    <mxCell id="p30" value="3.0&#xa;Financial&#xa;Calculation" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="680" y="460" width="150" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- P4.0 Report Generation -->
+    <mxCell id="p40" value="4.0&#xa;Report&#xa;Generation" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="680" y="620" width="150" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- P5.0 Market Price Service -->
+    <mxCell id="p50" value="5.0&#xa;Market Price&#xa;Service" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="440" y="760" width="150" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- P6.0 Farm Management -->
+    <mxCell id="p60" value="6.0&#xa;Farm&#xa;Management" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="200" y="620" width="150" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- P7.0 Google Sheets Sync -->
+    <mxCell id="p70" value="7.0&#xa;Google Sheets&#xa;Sync" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="680" y="900" width="150" height="80" as="geometry"/>
+    </mxCell>
+
+    <!-- ===== DATA STORES (cylinder shapes) ===== -->
+    <!-- D1: Users DB -->
+    <mxCell id="d1" value="D1: Users DB" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="195" y="795" width="160" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- D2: Sessions DB -->
+    <mxCell id="d2" value="D2: Sessions DB" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="435" y="585" width="160" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- D3: Financial Plans DB -->
+    <mxCell id="d3" value="D3: Financial Plans DB" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="435" y="655" width="180" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- D4: Reports DB -->
+    <mxCell id="d4" value="D4: Reports DB" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="820" y="795" width="160" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- D5: Market Prices Cache -->
+    <mxCell id="d5" value="D5: Market Prices Cache" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="190" y="895" width="185" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- D6: Farm Data DB -->
+    <mxCell id="d6" value="D6: Farm Data DB" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="15" y="695" width="155" height="55" as="geometry"/>
+    </mxCell>
+
+    <!-- ===== DATA FLOWS (Level 1) ===== -->
+
+    <!-- Farmer -> P1.0: Login credentials -->
+    <mxCell id="f_p10" value="Login credentials" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="130" y="502" as="sourcePoint"/>
+        <mxPoint x="200" y="502" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Farmer -> P2.0: Survey answers -->
+    <mxCell id="f_p20" value="Survey answers / voice audio" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="130" y="530" as="sourcePoint"/>
+        <mxPoint x="440" y="520" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Farmer -> P6.0: Farm data -->
+    <mxCell id="f_p60" value="Farm / crop / water data" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="130" y="560" as="sourcePoint"/>
+        <mxPoint x="200" y="660" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P1.0 -> D1: Store / Read user -->
+    <mxCell id="p10_d1" value="Read/Write user" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="275" y="540" as="sourcePoint"/>
+        <mxPoint x="275" y="800" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Admin -> P1.0: User management -->
+    <mxCell id="a_p10" value="User management" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="130" y="842" as="sourcePoint"/>
+        <mxPoint x="200" y="800" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P2.0 -> D2: Save session/answers -->
+    <mxCell id="p20_d2" value="Save session &amp; answers" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="515" y="540" as="sourcePoint"/>
+        <mxPoint x="515" y="590" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P2.0 -> P3.0: Context data -->
+    <mxCell id="p20_p30" value="Completed context data" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="590" y="500" as="sourcePoint"/>
+        <mxPoint x="680" y="500" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P3.0 -> D3: Store financial plan -->
+    <mxCell id="p30_d3" value="Store financial plan" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="680" y="510" as="sourcePoint"/>
+        <mxPoint x="610" y="660" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P3.0 -> LLM: Get recommendations -->
+    <mxCell id="p30_llm" value="Financial context" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="830" y="490" as="sourcePoint"/>
+        <mxPoint x="990" y="640" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- LLM -> P3.0: Recommendations -->
+    <mxCell id="llm_p30" value="Recommendations / prices" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="990" y="660" as="sourcePoint"/>
+        <mxPoint x="830" y="520" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P3.0 -> P4.0: Plan for report -->
+    <mxCell id="p30_p40" value="Financial plan" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="755" y="540" as="sourcePoint"/>
+        <mxPoint x="755" y="620" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P4.0 -> D4: Store report -->
+    <mxCell id="p40_d4" value="Store PDF report" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="830" y="660" as="sourcePoint"/>
+        <mxPoint x="830" y="800" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P4.0 -> Farmer: Report -->
+    <mxCell id="p40_farmer" value="PDF report &amp; recommendations" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="680" y="700" as="sourcePoint"/>
+        <mxPoint x="75" y="510" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P5.0 -> D5: Cache prices -->
+    <mxCell id="p50_d5" value="Cache / read prices" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="440" y="820" as="sourcePoint"/>
+        <mxPoint x="370" y="912" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P5.0 -> Farmer: Market prices -->
+    <mxCell id="p50_farmer" value="Market prices" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="440" y="800" as="sourcePoint"/>
+        <mxPoint x="75" y="524" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P6.0 -> D6: Store farm data -->
+    <mxCell id="p60_d6" value="Store farm / crop / water data" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="200" y="700" as="sourcePoint"/>
+        <mxPoint x="150" y="712" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P3.0 -> P7.0: Plan data for Sheets -->
+    <mxCell id="p30_p70" value="Financial plan data" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="755" y="540" as="sourcePoint"/>
+        <mxPoint x="755" y="900" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- P7.0 -> Google Sheets -->
+    <mxCell id="p70_sheets" value="Formatted plan data" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="830" y="940" as="sourcePoint"/>
+        <mxPoint x="990" y="952" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="sheets_p70" value="Sync confirmation" style="endArrow=block;endFill=1;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="990" y="962" as="sourcePoint"/>
+        <mxPoint x="830" y="962" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <!-- Legend -->
+    <mxCell id="leg_title" value="Legend:" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontFamily=Times New Roman;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="20" y="970" width="80" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_ext" value="External Entity" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="105" y="966" width="120" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_proc" value="Process" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="250" y="966" width="90" height="28" as="geometry"/>
+    </mxCell>
+    <mxCell id="leg_ds" value="Data Store" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontFamily=Times New Roman;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="365" y="960" width="130" height="40" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>

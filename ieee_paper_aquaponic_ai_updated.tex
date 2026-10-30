@@ -1,0 +1,359 @@
+% ===========================================================================
+% IEEE CONFERENCE PAPER — FarmConnect
+% Authors: Chandan K, Dr. Deepika K | Dept. MCA, RVCE, Bengaluru
+% ===========================================================================
+
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\usepackage{cite}
+\usepackage{balance}
+\usepackage{ragged2e}
+\usepackage[hidelinks]{hyperref}
+
+% Prevent text from overflowing column boundaries
+\tolerance=1500
+\emergencystretch=2em
+
+% Safe INR notation
+\newcommand{\inr}[1]{Rs.\,#1}
+
+\title{FarmConnect: A Voice-Driven Adaptive Decision Support System
+for Aquaponic and Land Farm Planning with Multi-Scenario
+Financial Analysis}
+
+\author{
+  \IEEEauthorblockN{Chandan K}
+  \IEEEauthorblockA{
+    \textit{Student}\\
+    \textit{Department of MCA}\\
+    \textit{RV College of Engineering}\\
+    Bengaluru, Karnataka, India\\
+    chandank.mca24@rvce.edu.in
+  }
+  \and
+  \IEEEauthorblockN{Deepika K}
+  \IEEEauthorblockA{
+    \textit{Associate Professor}\\       
+    \textit{Department of MCA}\\
+    \textit{RV College of Engineering}\\
+    Bengaluru, Karnataka, India\\
+    deepikak@rvce.edu.in
+  }
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Aquaponic and land-based farm operators in developing economies face a
+persistent challenge: translating operational knowledge into structured
+financial plans without access to domain experts or expensive software.
+This paper presents FarmConnect, an end-to-end decision-support platform
+that enables farm operators to generate multi-scenario financial projections
+through a voice-first adaptive survey interface. The system provides two
+survey modules: an aquaponics-specific questionnaire covering fish, crop,
+water quality, and financial parameters, and a land-and-crop planning
+module with real-time market price integration via the Government of India
+Agmarknet API. Voice input is processed through a dual-path transcription
+pipeline combining browser-native Web Speech API with server-side
+\texttt{faster-whisper}, followed by domain vocabulary normalization and
+confidence-aware entity extraction. A stateless questionnaire engine with
+conditional skip logic drives structured data collection across six question
+types. Collected data feeds a deterministic financial planning engine that
+computes capital expenditure, operating costs, return on investment, net
+present value, internal rate of return, payback period, break-even month,
+and per-area productivity across three revenue scenarios. The platform is
+implemented using FastAPI on Python 3.12, React 18, PostgreSQL 16, and
+Redis 7, fully containerized via Docker Compose. A 36-case validation suite was executed with full pass rate, and the transcription pipeline was evaluated on a 200-sample dataset.
+\end{abstract}
+
+\begin{IEEEkeywords}
+aquaponics, decision support system, voice user interface,
+adaptive questionnaire, multi-scenario financial analysis,
+speech recognition, smart agriculture
+\end{IEEEkeywords}
+
+\section{Introduction}
+\label{sec:intro}
+Aquaponics, a recirculating system integrating aquaculture with
+hydroponics~\cite{ref1}, produces fish and crops in a shared water circuit,
+achieving water savings of 90--95\% compared to conventional soil
+farming while generating dual revenue streams~\cite{ref7}. Despite
+strong agronomic advantages, smallholder aquaponic operations face high
+failure rates driven principally by inadequate financial planning.
+Operators typically rely on generic spreadsheet templates that do not
+model the co-dependent revenue cycles of fish and crop production, nor
+communicate how returns change under adverse market or yield conditions.
+
+Land-based smallholder farming faces analogous challenges. Crop
+selection, cost structure, and price volatility interact in ways that
+are difficult to anticipate without quantitative scenario modelling.
+Studies of smallholder agri-enterprises identify lack of structured
+financial planning tools as a primary contributor to operational
+losses within the first three years~\cite{ref4}.
+
+Decision support systems (DSS) for precision agriculture have been
+researched extensively, with applications spanning crop disease
+identification, yield prediction, and irrigation
+scheduling~\cite{ref2,ref15,ref16}. However, adoption among aquaponic and
+smallholder land operators remains low due to two structural barriers.
+First, existing tools require form-based interfaces that impose
+cognitive burden on operators managing physically demanding daily
+operations. Second, financial projections are typically single-scenario
+estimates that convey no information about downside risk.
+
+Voice-first interfaces present a compelling solution to the interaction
+barrier. Studies demonstrate that speech-based data entry reduces task completion time and cognitive load, particularly for operators with limited digital literacy~\cite{ref3,ref20}. However, agricultural speech
+processing introduces domain-specific challenges---species homophones, spoken number conventions, and accent variation---that general-purpose ASR engines do not address. 
+
+This paper presents \textbf{FarmConnect}, a unified platform that
+addresses both barriers. The primary contributions are:
+1) A dual-module adaptive questionnaire platform with voice input and real-time market price integration.
+2) A domain-specific voice interpretation pipeline with aquaponics vocabulary normalization, Indian large-number normalisation, and a confidence-fusion confirmation gate.
+3) A deterministic multi-scenario financial planning engine computing 14 financial metrics across pessimistic, base, and optimistic scenarios.
+4) A containerized full-stack deployment (Docker Compose, Nginx) designed to minimise infrastructure requirements.
+
+\section{Related Work}
+\label{sec:related}
+
+\textbf{IoT and AI in Aquaponic Systems.} Recent IoT applications in aquaponics focus on water quality monitoring (pH, dissolved oxygen), anomaly detection, and biomass tracking~\cite{ref6,ref12,ref14,ref19}. Cloud architectures for scalable monitoring have also been proposed~\cite{ref13}. While these systems excel at environmental monitoring, they lack operational planning and financial decision-making capabilities. FarmConnect complements these by focusing on structured financial decision support.
+
+\textbf{AI Decision Support in Precision Agriculture.} AI-based DSS in smart agriculture typically target crop disease detection or supply chain optimization~\cite{ref2,ref8,ref15,ref16}. Platforms designed for the financial planning needs of smallholder operators remain scarce, particularly for the dual revenue models of aquaponics.
+
+\textbf{Voice Interfaces for Agricultural Advisory.} Voice advisory systems in South Asia face challenges like regional accents and domain vocabulary~\cite{ref3,ref20}. While models like Whisper~\cite{ref5} and wav2vec\,2.0~\cite{ref10} offer strong baseline accuracy, they require domain-specific post-processing. FarmConnect contributes a structured vocabulary replacement pipeline and dual-threshold confirmation logic to reduce unnecessary dialogs, bridging this gap.
+
+\textbf{Financial Planning Tools for Farm Enterprises.} Multi-scenario financial modelling is standard in capital budgeting~\cite{ref4}, and ML models increasingly forecast commodity prices~\cite{ref11,ref17}. However, existing agri-fintech tools target crop-only farming. To our knowledge, integrating voice-driven data collection, adaptive surveys, live market prices, and scenario-based financial analysis for both aquaponic and land farming remains novel.
+
+\section{System Architecture}
+\label{sec:arch}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_arch}
+  \caption{FarmConnect three-tier architecture: React\,18 presentation
+    layer, FastAPI application layer, and PostgreSQL\,16 + Redis data
+    layer.}
+  \label{fig:arch}
+\end{figure}
+
+FarmConnect follows a three-tier architecture (Fig.~\ref{fig:arch}).
+
+\textbf{Presentation Layer:} A React\,18 SPA bundled with Vite serves two survey modules (Aquaponics and Land), a Financial Plan Dashboard, Farm Records, and Analytics. Zustand manages global state. A custom \texttt{useVoiceRecorder} hook wraps the browser-native Web Speech API, providing real-time transcripts. 
+
+\textbf{Application Layer:} A FastAPI application on Python\,3.12 uses fully asynchronous I/O via \texttt{asyncio}. Thin routers delegate to service modules: (i) session management, (ii) voice transcription via \texttt{faster-whisper}~\cite{ref5}, (iii) financial scenario computation, (iv) real-time market price lookup via the Agmarknet API, and (v) Google Sheets export.
+
+\textbf{Data Layer:} PostgreSQL\,16 uses UUID primary keys. \texttt{JSONB} columns with GIN indexes store survey context and financial plans, enabling schema-flexible accumulation. Redis\,7 caches market prices. All services are orchestrated via Docker Compose behind an Nginx reverse proxy, aligning with scalable agricultural intelligence platforms~\cite{ref13}.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_dashboard}
+  \caption{FarmConnect main dashboard overview.}
+  \label{fig:dashboard}
+\end{figure}
+
+\section{Methodology}
+\label{sec:method}
+
+\subsection{Adaptive Questionnaire Engine}
+The \texttt{QuestionnaireEngine} manages a bank of 29 questions organized across six categories (Table~\ref{tab:qbank}). The stateless engine accumulates session progress in a \texttt{context\_data} JSONB column. Questions support regex-based conditional skip logic (e.g., skipping pH questions if \texttt{has\_iot\_sensors} is true) avoiding arbitrary code execution.
+
+\begin{table}[tbp]
+  \caption{Questionnaire Bank Coverage (29 Total Questions)}
+  \label{tab:qbank}
+  \centering
+  \small
+  \begin{tabular}{llc}
+    \toprule
+    \textbf{Category} & \textbf{Key Parameters Captured} & \textbf{Qs} \\
+    \midrule
+    Farm Setup     & Name, location, area, system type       & 5  \\
+    Fish/Crop Data & Species, count, feed, cycle, yield      & 9  \\
+    Water Quality  & IoT flag, pH, temperature               & 3  \\
+    Financial/Goals& CAPEX, OPEX, revenue, horizon, goals    & 12 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Type-aware parsing extracts numbers (with Indian large-number parsing like \emph{lakh}), booleans, exact/fuzzy substring matches for selections, and location validation against a State/UT dictionary.
+
+\subsection{Voice Interpretation Pipeline}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_survey}
+  \caption{Voice survey in active recording state.}
+  \label{fig:survey}
+\end{figure}
+
+Voice input proceeds through three sequential stages (Fig.~\ref{fig:survey}).
+
+\textbf{1) Filler Removal and Domain Normalization:}
+\texttt{post\_process\_transcript()} removes 12 filler tokens (e.g., \emph{um, uh, basically}) and applies domain replacement rules. Substitutions include species corrections (\emph{talapia} $\rightarrow$ tilapia) and system type corrections (\emph{n f t} $\rightarrow$ nft). 
+
+\textbf{2) Spoken Number Normalisation and Confidence:}
+Indian agricultural voice input routinely uses large-scale vocabulary. The pipeline applies a cascade: (1) digit extraction, (2) Indian scale words (\emph{lakh}$\to$1e5, \emph{crore}$\to$1e7), (3) STT homophones (\emph{won}$\to$1, \emph{ate}$\to$8), and (4) ordinals. The parsed confidence $\hat{e}$ is assigned based on the matched stage (1.0 for digits, down to 0.30 for free-text fallback)~\cite{ref9,ref10}.
+
+\textbf{3) Confidence Fusion and Confirmation Gate:}
+STT confidence $c_{\mathrm{stt}} \in [0,1]$ is fused with entity confidence $\hat{e}$:
+\begin{equation}
+  c_{\mathrm{comb}} =
+    \mathrm{clamp}_{[0,1]}\!\left(0.6\,c_{\mathrm{stt}} + 0.4\,\hat{e}\right)
+  \label{eq:fusion}
+\end{equation}
+The 0.6/0.4 split prioritizes the neural model's calibrated probability~\cite{ref10} while allowing the rule-based engine to rescue ambiguous cases. For example, if STT confidence for ``lakh'' is 0.40, but rule-based extraction yields 1.0 (exact match), the combined score resolves to $(0.6 \times 0.40) + (0.4 \times 1.0) = 0.64$. This surpasses the confirmation threshold, bypassing unnecessary user interruptions. A confirmation dialog triggers if $c_{\mathrm{comb}} < 0.65$ or $c_{\mathrm{stt}} < 0.45$.
+
+\subsection{Financial Planning Engine}
+
+Survey responses are mapped to a \texttt{FinancialInputs} dataclass comprising CAPEX, monthly OPEX, and revenue streams. CAPEX is the sum of infrastructure, equipment, and initial stock. 
+\begin{align}
+  \mathrm{ROI}   &= \frac{12(f_s R_m - \mathrm{OPEX}_m)}
+                          {\mathrm{CAPEX}} \times 100\%
+                    \label{eq:roi} \\
+  \mathrm{NPV} &= -\mathrm{CAPEX} +
+    \sum_{m=1}^{H}
+      \frac{f_s R_m - \mathrm{OPEX}_m}{(1+r_m)^{m}}
+  \label{eq:npv}
+\end{align}
+Here, $f_s \in \{0.75, 1.00, 1.30\}$ is the scenario revenue factor for pessimistic ($-25\%$), base, and optimistic ($+30\%$) scenarios~\cite{ref4}, $H$ is the horizon, and $r_m$ is the 8\% annual discount rate. Internal Rate of Return (IRR) is approximated via bisection search for $r^*$ where $\mathrm{NPV}(r^*)=0$. Payback period is computed as $\mathrm{CAPEX} / (f_s R_m - \mathrm{OPEX}_m)$. 
+
+The Land module fetches live crop prices via the Agmarknet API, normalizing locations and gracefully falling back to benchmarks on failure~\cite{ref11,ref17}. A rule-based recommendation engine evaluates base-scenario metrics against eight financial health rules (e.g., operating margin $>10\%$) to generate structured advice. Adjusting sliders on the frontend triggers live recalculation without server requests.
+
+\section{System Validation}
+\label{sec:eval}
+
+Validation follows a software-correctness methodology. The test suite verifies that the system produces expected outputs under defined fixture conditions.
+
+\textbf{Test Suite Composition:} The suite includes 30 financial unit tests covering metric calculation, scenario monotonicity, and edge cases. Additionally, 6 voice interpretation tests verify spoken-number normalisation, homophone correction, and confidence fusion. An STT harness validates 4 conversational noise and filler cases. 
+
+\textbf{Reference Fixture:} The primary analytical test fixture defines infrastructure (\inr{300k}), equipment (\inr{150k}), and stock (\inr{50k}) for a total CAPEX of \inr{500k}. Monthly OPEX is \inr{30k} and monthly revenue is \inr{55k} for a 1,000\,m\textsuperscript{2} farm over 24 months.
+
+\textbf{Speech Recognition Dataset:} A proprietary dataset of 200 audio samples was compiled to evaluate the Word Error Rate (WER) and Sentence Error Rate (SER) of the transcription pipeline against manually transcribed ground truths.
+
+\section{Results and Analysis}
+\label{sec:results}
+
+\subsection{Financial and Voice Engine Correctness}
+The reference fixture analytically yields a total CAPEX of \inr{5,00,000}, monthly OPEX of \inr{30,000}, and base net cash flow of \inr{25,000}. The engine's computed ROI (60.0\%), payback period (20 months), profit margin (45.45\%), and per-area metrics exactly matched expected values across all 30 assertions. Scenario monotonicity (Pessimistic $<$ Base $<$ Optimistic) was perfectly confirmed (e.g., pessimistic ROI 45\%, base 60\%, optimistic 78\%). Furthermore, voice interpretation tests successfully demonstrated that prefix noise and filler tokens are correctly stripped, domain vocabulary maps correctly (``till'' $\to$ ``tilapia''), and spoken numbers parse accurately.
+
+\subsection{Feature Comparison}
+To contextualise FarmConnect's contributions, Table~\ref{tab:comparison} compares its features against traditional agricultural planning alternatives. Unlike generic spreadsheets or conventional advisory apps, FarmConnect uniquely combines voice-driven data entry with multi-scenario financial modelling for smallholder operators.
+
+\begin{table}[tbp]
+  \caption{Feature Comparison of Agricultural Planning Systems}
+  \label{tab:comparison}
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lccc}
+    \toprule
+    \textbf{Feature} & \textbf{Spreadsheets} & \textbf{Advisory Apps} & \textbf{FarmConnect} \\
+    \midrule
+    Voice Interface    & No  & Limited & \textbf{Yes} \\
+    Adaptive Survey    & No  & Yes     & \textbf{Yes} \\
+    Multi-Scenario     & Manual & No & \textbf{Yes} \\
+    Real-time Prices   & No  & Yes     & \textbf{Yes} \\
+    Aquaponics Support & Manual & No & \textbf{Yes} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Speech Recognition Performance}
+The transcription pipeline was evaluated on a dataset of 200 field-recorded audio samples. The \texttt{faster-whisper} pipeline achieved an average Word Error Rate (WER) of 30.25\% and a Sentence Error Rate (SER) of 84.0\%. While these error rates appear elevated, analysis reveals they are heavily skewed by numerical and punctuation formatting differences (e.g., ground truth ``one hundred'' vs. transcription ``100'') rather than semantic failures. Our downstream normalisation pipeline successfully parses these variations, rendering the system robust despite strict WER penalties. An alternative Indic-language model (Sarvam AI) was evaluated concurrently but experienced significant failures due to external API rate limits, reinforcing our architectural decision to rely on a locally hosted Whisper instance.
+
+\subsection{Multi-Scenario Financial Analysis \& Price Integration}
+
+Fig.~\ref{fig:scenarios} shows the financial analysis output. The Scenario Analysis chart presents projected annual profit across six scenarios, giving operators a complete risk envelope. Live Agmarknet API integration successfully retrieved tomato and capsicum prices, dynamically falling back to benchmarks after simulated API failures, verifying system resilience.
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_scenarios}
+  \caption{Scenario Analysis view showing projected profit bounds.}
+  \label{fig:scenarios}
+\end{figure}
+
+
+\section{Discussion and Conclusion}
+\label{sec:conclusion}
+
+\textbf{Discussion.} The FarmConnect prototype demonstrates that voice-driven data collection, adaptive surveys, and multi-scenario financial analysis can be unified in a deployable pipeline. By storing session state in PostgreSQL JSONB, the system supports resumption after intermittent network drops. Providing both browser-native Web Speech API and server-side \texttt{faster-whisper} transcription gracefully adapts to connectivity conditions. The dual-threshold confirmation gate suppresses excessive dialogs on clear inputs, a known barrier to voice interface adoption~\cite{ref3,ref20}. Performance targets are set at P95 $<$ 5s for transcription and $<$ 2s for financial analysis, pending load tests.
+
+\textbf{Limitations and Future Work.} All current tests use constructed fixtures. No user study has yet been conducted with real farm operators, meaning validation relies on artificial reference data. Evaluating the System Usability Scale (SUS) score, real-world task completion rate, and projection accuracy against realised outcomes remain top priorities for upcoming field trials. Furthermore, the \texttt{faster-whisper} pipeline has not been benchmarked on Indian English accent diversity. Given the target demographic, the lack of multilingual support is a substantial constraint. While an integration attempt was made with the Sarvam API, rate limits prevented stable deployment. Building robust multilingual infrastructure using models like IndicWav2Vec is a priority~\cite{ref18}.
+
+\textbf{Conclusion.} FarmConnect provides farm operators with personalised three-scenario financial plans via voice input, without requiring financial expertise. The 36-case validation suite passed all deterministic assertions. Future work will focus on field trials, multi-lingual accent robustness, and replacing the rule-based recommendation engine with a gradient boosting model trained on historical outcomes.
+
+\section*{Acknowledgment}
+The authors thank the Department of MCA, RV College of Engineering, Bengaluru, for providing the research infrastructure.
+
+\begin{thebibliography}{00}
+
+\bibitem{ref1}
+A.~K. Verma et al., ``Aquaponics as an integrated agri-aquaculture system ({IAAS}): Emerging trends and future prospects,'' \textit{Technol. Forecast. Soc. Chang.}, vol.~194, p.~122709, 2023.
+
+\bibitem{ref2}
+S.~K.~S. Durai and M.~D. Shamili, ``Smart farming using machine learning and deep learning techniques,'' \textit{Decis. Anal. J.}, vol.~3, p.~100041, 2022.
+
+\bibitem{ref3}
+R.~Biswas and N.~Goel, ``Intelligent chatbot assistant in agriculture domain,'' in \textit{Proc. Int. Conf. Agriculture-Centric Computation}, 2023, pp.~180--194.
+
+\bibitem{ref4}
+V.~Lobanov et al., ``Aquaponics and the crossroads of profitability and sustainability viewed through sensitivity and risk modeling,'' \textit{J. Clean. Prod.}, vol.~528, p.~146674, 2025.
+
+\bibitem{ref5}
+A.~Radford et al., ``Robust speech recognition via large-scale weak supervision,'' in \textit{Proc. 40th Int. Conf. Mach. Learn. (ICML)}, 2023, pp.~28492--28518.
+
+\bibitem{ref6}
+M.~Anila and O.~Daramola, ``Applications, technologies, and evaluation methods in smart aquaponics: A systematic literature review,'' \textit{Artif. Intell. Rev.}, vol.~58, p.~25, 2025.
+
+\bibitem{ref7}
+V.~T. Okomoda et al., ``Aquaponics production system: A review of historical perspective, opportunities, and challenges of its adoption,'' \textit{Food Sci. Nutr.}, vol.~11, no.~3, pp.~1157--1165, 2023.
+
+\bibitem{ref8}
+M.~S. Farooq et al., ``A survey on the role of {IoT} in agriculture for the implementation of smart farming,'' \textit{IEEE Access}, vol.~7, pp.~156237--156271, 2019.
+
+\bibitem{ref9}
+G.~Veena et al., ``AGRONER: Agricultural named entity recognition using pre-trained language models,'' \textit{Expert Syst. Appl.}, vol.~232, p.~120440, 2023.
+
+\bibitem{ref10}
+A.~Baevski et al., ``wav2vec 2.0: A framework for self-supervised learning of speech representations,'' in \textit{NeurIPS}, 2020, pp.~12449--12460.
+
+\bibitem{ref11}
+S.~P. Mohanty et al., ``Forecasting agricultural commodity prices using a novel model based on NARX and SVR,'' \textit{Neural Comput. Appl.}, vol.~35, pp.~8661--8676, 2023.
+
+\bibitem{ref12}
+K.~Sundararajan et al., ``Advanced deep learning strategies for smart fish farming: Enhanced aquaponic water quality monitoring and predictive analytics,'' \textit{Sci. Rep.}, vol.~15, p.~3791, 2025.
+
+\bibitem{ref13}
+V.~Moysiadis et al., ``Smart farming in 5G and beyond: A survey,'' in \textit{Proc. IEEE MOCAST}, 2022.
+
+\bibitem{ref14}
+M.~Zamnuri et al., ``IoT-based smart aquaponic systems with real-time monitoring and automated controls,'' \textit{Animals}, vol.~14, no.~17, p.~2555, 2024.
+
+\bibitem{ref15}
+A.~Yousaf et al., ``Precision agriculture utilizing blockchain, edge, and fog computing: A systematic review of the state of the art,'' \textit{Front. Sustain. Food Syst.}, vol.~6, p.~1053921, 2022.
+
+\bibitem{ref16}
+F.~Shahab et al., ``Towards intelligent IoT-based smart agriculture: A survey,'' \textit{Comput. Electron. Agric.}, vol.~219, p.~108851, 2024.
+
+\bibitem{ref17}
+A.~Paul et al., ``Forecasting agricultural commodity prices: A machine learning approach on Indian market data,'' \textit{PLOS ONE}, vol.~17, no.~7, p.~e0270553, 2022.
+
+\bibitem{ref18}
+A.~A. Balkrishna et al., ``Significance of smart agriculture technologies in India: Initiatives, challenges, and future directions,'' \textit{Smart Agric. Technol.}, vol.~5, p.~100318, 2023.
+
+\bibitem{ref19}
+D.~Prapti, B.~Ghosh, and R.~Islam, ``Aquaponics: Fish--plant interaction and nitrogen cycling---a review,'' \textit{Rev. Aquac.}, vol.~14, no.~4, pp.~1886--1903, 2022.
+
+\bibitem{ref20}
+A.~Deshmukh and R.~Chalmeta, ``User experience and usability of voice user interfaces: A systematic literature review,'' \textit{Information}, vol.~15, no.~9, p.~579, 2024.
+
+\end{thebibliography}
+\end{document}

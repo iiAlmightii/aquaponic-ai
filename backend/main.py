@@ -21,7 +21,7 @@ from slowapi.util import get_remote_address
 from core.config import settings
 from core.database import engine, Base
 from core.redis_client import init_redis, close_redis
-from routers import auth, session, analysis, report, farm, iot, audio, finance_sheets, land_survey, crop, ai_advisor, admin
+from routers import auth, session, analysis, report, farm, iot, audio, finance_sheets, land_survey, crop, ai_advisor, admin, password_reset
 
 # ── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -254,6 +254,7 @@ app.include_router(land_survey.router, prefix=f"{API_PREFIX}/land-survey", tags=
 app.include_router(crop.router,        prefix=f"{API_PREFIX}/crop",        tags=["Crop Intelligence"])
 app.include_router(ai_advisor.router,  prefix=f"{API_PREFIX}/ai",          tags=["AI Advisor"])
 app.include_router(admin.router,       prefix=f"{API_PREFIX}/admin",        tags=["Admin"])
+app.include_router(password_reset.router, prefix=f"{API_PREFIX}/auth/password", tags=["Password Reset"])
 
 if settings.EVAL_MODE:
     from routers import eval as eval_router

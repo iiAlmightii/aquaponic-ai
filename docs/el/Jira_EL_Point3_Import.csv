@@ -1,0 +1,23 @@
+Issue Type,Summary,Description,Priority,Labels,Epic Name,Epic Link,Story Points,Start Date,Due Date
+Epic,EL-01 Project Planning & Objectives,"Define project charter, measurable objectives, constraints, team responsibilities, and success metrics for Aquaponic AI major project.",Highest,"el,project-management,semester4",EL-01 Project Planning & Objectives,,5,2026-02-17,2026-02-24
+Epic,EL-02 Research & High-Level Design,"Prepare architecture, module decomposition, API boundaries, data flow, and ER/data modeling decisions.",Highest,"el,architecture,semester4",EL-02 Research & High-Level Design,,8,2026-02-24,2026-03-05
+Epic,EL-03 Core Implementation,"Deliver backend/frontend features for survey, advisory, finance projection, reporting, and role-based workflows.",Highest,"el,implementation,semester4",EL-03 Core Implementation,,13,2026-03-01,2026-03-28
+Epic,EL-04 Testing & Quality Assurance,"Create and execute testing plan including unit/integration/API/UX checks and defect closure.",High,"el,testing,semester4",EL-04 Testing & Quality Assurance,,8,2026-03-20,2026-04-08
+Epic,EL-05 Documentation & Final Reporting,"Compile EL evidence, technical documentation, progress report, and final presentation/submission artifacts.",Highest,"el,documentation,semester4",EL-05 Documentation & Final Reporting,,8,2026-04-01,2026-04-15
+Story,Define SMART objectives,"Objectives for functionality, performance, reliability, and deliverable quality.",Highest,"el,objectives",,EL-01 Project Planning & Objectives,3,2026-02-17,2026-02-19
+Story,Create work breakdown structure,"Break major project into sprint-level deliverables and ownership.",High,"el,planning",,EL-01 Project Planning & Objectives,3,2026-02-18,2026-02-21
+Story,Risk and mitigation register,"Identify schedule, integration, infra, and model risks with response plans.",High,"el,risk",,EL-01 Project Planning & Objectives,2,2026-02-20,2026-02-24
+Story,Architecture and flow diagrams,"System context, module interactions, and sequence flow for core user journey.",Highest,"el,design",,EL-02 Research & High-Level Design,3,2026-02-24,2026-02-28
+Story,Data model and schema alignment,"Define/validate entities for users, sessions, reports, financial plans, and IoT readings.",High,"el,design,data",,EL-02 Research & High-Level Design,3,2026-02-27,2026-03-03
+Story,API contract baseline,"Document endpoint groups, request/response contracts, and auth boundaries.",High,"el,api",,EL-02 Research & High-Level Design,2,2026-03-01,2026-03-05
+Story,Implement survey-session workflow,"Session start, answer progression, and context persistence.",Highest,"el,backend,frontend",,EL-03 Core Implementation,5,2026-03-01,2026-03-10
+Story,Implement financial scenario engine outputs,"Generate base/pessimistic/optimistic projections with KPIs.",Highest,"el,finance,backend",,EL-03 Core Implementation,5,2026-03-06,2026-03-16
+Story,Implement advisory/report workflow,"Generate and expose report pipeline and dashboard integration.",High,"el,reporting",,EL-03 Core Implementation,3,2026-03-14,2026-03-22
+Story,Integrate auth and role-safe APIs,"JWT auth paths, protected routes, and session controls.",High,"el,security",,EL-03 Core Implementation,3,2026-03-08,2026-03-18
+Story,Implement IoT ingestion validation,"Ingest sample sensor streams with schema validation and storage.",Medium,"el,iot",,EL-03 Core Implementation,2,2026-03-18,2026-03-28
+Story,Unit and service tests,"Write tests for finance/service logic and critical edge cases.",Highest,"el,testing,unit",,EL-04 Testing & Quality Assurance,3,2026-03-20,2026-03-28
+Story,API integration test pass,"Validate key backend routes and response correctness.",High,"el,testing,api",,EL-04 Testing & Quality Assurance,3,2026-03-25,2026-04-03
+Story,Defect triage and closure,"Track defects, prioritize fixes, and verify closure evidence.",High,"el,qa",,EL-04 Testing & Quality Assurance,2,2026-04-02,2026-04-08
+Story,Prepare technical report and EL evidence,"Compile objectives, architecture, implementation snapshots, and test evidence.",Highest,"el,report",,EL-05 Documentation & Final Reporting,3,2026-04-01,2026-04-10
+Story,Create demo walkthrough and presentation,"Narrative for problem statement, solution, results, and impact.",High,"el,presentation",,EL-05 Documentation & Final Reporting,3,2026-04-08,2026-04-13
+Story,Final submission packaging,"Final review checklist, artifact bundling, and submission handoff.",Highest,"el,submission",,EL-05 Documentation & Final Reporting,2,2026-04-12,2026-04-15
